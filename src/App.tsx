@@ -32,6 +32,7 @@ import {
 import {
   SiteSettingsConfig,
   DEFAULT_SITE_CONFIG,
+  DEFAULT_SITE_VISIBILITY,
   SITE_CONFIG_STORAGE_KEY,
   AdminStepByStepSettingsHub
 } from './components/AdminStepByStepSettingsHub';
@@ -325,7 +326,11 @@ export default function App() {
             categories:
               Array.isArray(parsed.categories) && parsed.categories.length > 0
                 ? parsed.categories
-                : DEFAULT_SITE_CONFIG.categories
+                : DEFAULT_SITE_CONFIG.categories,
+            visibility: {
+              ...DEFAULT_SITE_VISIBILITY,
+              ...(parsed.visibility || {})
+            }
           };
         }
       }
@@ -334,6 +339,20 @@ export default function App() {
     }
     return DEFAULT_SITE_CONFIG;
   });
+
+  const siteVisibility = {
+    ...DEFAULT_SITE_VISIBILITY,
+    ...(siteConfig.visibility || {})
+  };
+
+  const allStoreCategories =
+    siteConfig.categories && siteConfig.categories.length > 0
+      ? siteConfig.categories
+      : CATEGORY_META;
+  const visibleStoreCategories = allStoreCategories.filter((cat) => !cat.hidden);
+  const hiddenCategoryIdSet = new Set(
+    allStoreCategories.filter((cat) => cat.hidden).map((cat) => cat.id)
+  );
 
   useEffect(() => {
     try {
@@ -999,6 +1018,10 @@ export default function App() {
 
     const chosenPlushObj = PLUSH_OPTIONS.find((p) => p.value === adminPlush) || PLUSH_OPTIONS[0];
 
+    const existingService = editingServiceId
+      ? servicesCatalog.find((s) => s.id === editingServiceId)
+      : undefined;
+
     const newService: StoreService = {
       id: editingServiceId || 'srv-' + Date.now(),
       category: adminCategory,
@@ -1010,6 +1033,7 @@ export default function App() {
       iconType: adminIconType,
       customIconUrl: adminCustomIconUrl.trim() || undefined,
       directToolUrl: adminDirectToolUrl.trim() || undefined,
+      hidden: existingService?.hidden ?? false,
       inputLabel: adminInputLabel.trim() || 'Enter Your WhatsApp Number or Link:',
       placeholder: adminPlaceholder.trim() || '0300-1234567',
       tiers: parsedTiers
@@ -1053,6 +1077,34 @@ export default function App() {
     showToast(`Removed "${title}" from catalog`);
   };
 
+  const toggleServiceHidden = (id: string) => {
+    playPopSound(640);
+    const target = servicesCatalog.find((s) => s.id === id);
+    const nextHidden = !(target?.hidden ?? false);
+    setServicesCatalog((prev) =>
+      prev.map((s) => (s.id === id ? { ...s, hidden: nextHidden } : s))
+    );
+    if (target) {
+      showToast(
+        nextHidden
+          ? `🙈 Hidden "${target.title}" from Storefront!`
+          : `👁️ Shown "${target.title}" on Storefront!`
+      );
+    }
+  };
+
+  const setAllServicesHidden = (hidden: boolean, categoryFilter?: CategoryId) => {
+    playPopSound(720);
+    setServicesCatalog((prev) =>
+      prev.map((s) => {
+        if (!categoryFilter || categoryFilter === 'all' || s.category === categoryFilter) {
+          return { ...s, hidden };
+        }
+        return s;
+      })
+    );
+  };
+
   const resetCatalogToDefault = () => {
     playPopSound(780);
     setServicesCatalog(DEFAULT_STORE_SERVICES);
@@ -1093,6 +1145,10 @@ export default function App() {
       normalizedUrl = 'https://' + normalizedUrl;
     }
 
+    const existingTool = editingToolId
+      ? webToolsCatalog.find((t) => t.id === editingToolId)
+      : undefined;
+
     const newTool: WebToolItem = {
       id: editingToolId || 'tool-' + Date.now(),
       title: toolTitle.trim(),
@@ -1104,7 +1160,8 @@ export default function App() {
       buttonLabel: toolButtonLabel.trim() || 'Open Live Tool',
       plush: chosenPlushObj.value,
       orbGrad: chosenPlushObj.orb,
-      openMode: toolOpenMode
+      openMode: toolOpenMode,
+      hidden: existingTool?.hidden ?? false
     };
 
     if (editingToolId) {
@@ -1141,6 +1198,27 @@ export default function App() {
       resetToolForm();
     }
     showToast(`Removed Tool "${title}"`);
+  };
+
+  const toggleToolHidden = (id: string) => {
+    playPopSound(640);
+    const target = webToolsCatalog.find((t) => t.id === id);
+    const nextHidden = !(target?.hidden ?? false);
+    setWebToolsCatalog((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, hidden: nextHidden } : t))
+    );
+    if (target) {
+      showToast(
+        nextHidden
+          ? `🙈 Hidden Tool "${target.title}" from Website!`
+          : `👁️ Shown Tool "${target.title}" on Website!`
+      );
+    }
+  };
+
+  const setAllToolsHidden = (hidden: boolean) => {
+    playPopSound(720);
+    setWebToolsCatalog((prev) => prev.map((t) => ({ ...t, hidden })));
   };
 
   const resetToolsToDefault = () => {
@@ -1232,8 +1310,14 @@ export default function App() {
 
   const pendingProofsCount = paymentProofs.filter((p) => p.status === 'pending').length;
 
+  // Visible Store Services & Web Tools (Filtered by Admin Hide/Show Switches)
+  const visibleServicesCatalog = servicesCatalog.filter(
+    (srv) => !srv.hidden && !hiddenCategoryIdSet.has(srv.category)
+  );
+  const visibleWebToolsCatalog = webToolsCatalog.filter((t) => !t.hidden);
+
   // Filtered Store Services (Category + Live Search)
-  const filteredServices = servicesCatalog.filter((srv) => {
+  const filteredServices = visibleServicesCatalog.filter((srv) => {
     const matchesCategory = currentCategory === 'all' || srv.category === currentCategory;
     if (!matchesCategory) return false;
     const q = storeSearchQuery.trim().toLowerCase();
@@ -1247,8 +1331,8 @@ export default function App() {
   });
 
   const getCategoryCount = (catId: CategoryId) => {
-    if (catId === 'all') return servicesCatalog.length;
-    return servicesCatalog.filter((s) => s.category === catId).length;
+    if (catId === 'all') return visibleServicesCatalog.length;
+    return visibleServicesCatalog.filter((s) => s.category === catId).length;
   };
 
   const filteredFaqs =
@@ -1520,7 +1604,7 @@ export default function App() {
                   MUHAMMAD SAQIB
                 </span>
                 <span className="text-[8px] sm:text-[10px] font-semibold text-pink-600 truncate">
-                  SAQIB VISUALS • {servicesCatalog.length} SERVICES
+                  SAQIB VISUALS • {visibleServicesCatalog.length} SERVICES
                 </span>
               </div>
             </div>
@@ -1541,83 +1625,93 @@ export default function App() {
                   activeTab === 'store' ? 'text-white' : 'text-pink-500'
                 }`}
               ></i>
-              Store ({servicesCatalog.length})
+              Store ({visibleServicesCatalog.length})
             </button>
-            <button
-              onClick={() => switchTab('siminfo')}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'siminfo'
-                  ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
-              }`}
-            >
-              <i
-                className={`fa-solid fa-screwdriver-wrench mr-1 ${
-                  activeTab === 'siminfo' ? 'text-white' : 'text-emerald-600'
+            {siteVisibility.showToolsTab && (
+              <button
+                onClick={() => switchTab('siminfo')}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === 'siminfo'
+                    ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                    : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
-              ></i>
-              Web Tools ({webToolsCatalog.length})
-            </button>
-            <button
-              onClick={() => switchTab('about')}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'about'
-                  ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
-              }`}
-            >
-              <i
-                className={`fa-solid fa-user-astronaut mr-1 ${
-                  activeTab === 'about' ? 'text-white' : 'text-sky-600'
+              >
+                <i
+                  className={`fa-solid fa-screwdriver-wrench mr-1 ${
+                    activeTab === 'siminfo' ? 'text-white' : 'text-emerald-600'
+                  }`}
+                ></i>
+                Web Tools ({visibleWebToolsCatalog.length})
+              </button>
+            )}
+            {siteVisibility.showAboutTab && (
+              <button
+                onClick={() => switchTab('about')}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === 'about'
+                    ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                    : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
-              ></i>
-              About
-            </button>
-            <button
-              onClick={() => switchTab('faqs')}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'faqs'
-                  ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
-              }`}
-            >
-              <i
-                className={`fa-solid fa-circle-question mr-1 ${
-                  activeTab === 'faqs' ? 'text-white' : 'text-amber-600'
+              >
+                <i
+                  className={`fa-solid fa-user-astronaut mr-1 ${
+                    activeTab === 'about' ? 'text-white' : 'text-sky-600'
+                  }`}
+                ></i>
+                About
+              </button>
+            )}
+            {siteVisibility.showFaqsTab && (
+              <button
+                onClick={() => switchTab('faqs')}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === 'faqs'
+                    ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                    : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
-              ></i>
-              FAQs
-            </button>
-            <button
-              onClick={() => switchTab('contact')}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'contact'
-                  ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
-              }`}
-            >
-              <i
-                className={`fa-solid fa-headset mr-1 ${
-                  activeTab === 'contact' ? 'text-white' : 'text-blue-600'
+              >
+                <i
+                  className={`fa-solid fa-circle-question mr-1 ${
+                    activeTab === 'faqs' ? 'text-white' : 'text-amber-600'
+                  }`}
+                ></i>
+                FAQs
+              </button>
+            )}
+            {siteVisibility.showContactTab && (
+              <button
+                onClick={() => switchTab('contact')}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === 'contact'
+                    ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                    : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
-              ></i>
-              Contact
-            </button>
-            <button
-              onClick={() => switchTab('login')}
-              className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
-                activeTab === 'login'
-                  ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
-                  : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
-              }`}
-            >
-              <i
-                className={`fa-solid fa-wallet mr-1 ${
-                  activeTab === 'login' ? 'text-white' : 'text-emerald-600'
+              >
+                <i
+                  className={`fa-solid fa-headset mr-1 ${
+                    activeTab === 'contact' ? 'text-white' : 'text-blue-600'
+                  }`}
+                ></i>
+                Contact
+              </button>
+            )}
+            {siteVisibility.showLoginTab && (
+              <button
+                onClick={() => switchTab('login')}
+                className={`px-3 py-1.5 rounded-full text-xs transition-all whitespace-nowrap cursor-pointer ${
+                  activeTab === 'login'
+                    ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-sm'
+                    : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
-              ></i>
-              {vipUser ? 'VIP Wallet' : 'Wallet / Login'}
-            </button>
+              >
+                <i
+                  className={`fa-solid fa-wallet mr-1 ${
+                    activeTab === 'login' ? 'text-white' : 'text-emerald-600'
+                  }`}
+                ></i>
+                {vipUser ? 'VIP Wallet' : 'Wallet / Login'}
+              </button>
+            )}
           </div>
 
           {/* Right: Live Wallet Balance + Cart + Audio + Mobile 3-Line Menu Trigger */}
@@ -1634,65 +1728,71 @@ export default function App() {
             )}
 
             {/* LIVE USER WALLET BALANCE + ADD FUNDS PILL */}
-            <button
-              type="button"
-              onClick={() => {
-                playPopSound(680);
-                setAddFundsModalOpen(true);
-              }}
-              title="Your Live Wallet Balance — Click to Add Funds"
-              className={
-                websiteUiMode === 'astro-neu'
-                  ? 'space-navy-box px-2 sm:px-3.5 py-1.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-extrabold text-sky-300 border border-sky-400/50 flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer'
-                  : 'px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer border border-white/80'
-              }
-            >
-              <i className="fa-solid fa-wallet text-sky-200 sm:text-sky-400"></i>
-              <span className="font-display tracking-wide whitespace-nowrap">
-                Rs. {walletBalance.toLocaleString()}
-              </span>
-              <span className="hidden xs:inline-block sm:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
-                +Add
-              </span>
-            </button>
+            {siteVisibility.showHeaderWalletPill && (
+              <button
+                type="button"
+                onClick={() => {
+                  playPopSound(680);
+                  setAddFundsModalOpen(true);
+                }}
+                title="Your Live Wallet Balance — Click to Add Funds"
+                className={
+                  websiteUiMode === 'astro-neu'
+                    ? 'space-navy-box px-2 sm:px-3.5 py-1.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-extrabold text-sky-300 border border-sky-400/50 flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer'
+                    : 'px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer border border-white/80'
+                }
+              >
+                <i className="fa-solid fa-wallet text-sky-200 sm:text-sky-400"></i>
+                <span className="font-display tracking-wide whitespace-nowrap">
+                  Rs. {walletBalance.toLocaleString()}
+                </span>
+                <span className="hidden xs:inline-block sm:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
+                  +Add
+                </span>
+              </button>
+            )}
 
-            <button
-              onClick={() => {
-                playPopSound(660);
-                setCartModalOpen(true);
-              }}
-              title="View Selected Orders"
-              className="relative px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1 hover:scale-105 transition cursor-pointer"
-            >
-              <i className="fa-solid fa-bag-shopping"></i>
-              <span>{shoppingCart.length}</span>
-            </button>
+            {siteVisibility.showHeaderCartButton && (
+              <button
+                onClick={() => {
+                  playPopSound(660);
+                  setCartModalOpen(true);
+                }}
+                title="View Selected Orders"
+                className="relative px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold text-[11px] sm:text-xs shadow-md flex items-center gap-1 hover:scale-105 transition cursor-pointer"
+              >
+                <i className="fa-solid fa-bag-shopping"></i>
+                <span>{shoppingCart.length}</span>
+              </button>
+            )}
 
-            {/* SOFT LIGHT RGB BORDER ON/OFF TOGGLE (HEADER) */}
-            <button
-              type="button"
-              onClick={toggleRgbBorderLight}
-              title={
-                rgbBorderEnabled
-                  ? 'Soft Light RGB Borders ON — Click to turn OFF'
-                  : 'Soft Light RGB Borders OFF — Click to turn ON'
-              }
-              className={`px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[10px] sm:text-[11px] flex items-center gap-1 transition cursor-pointer ${
-                rgbBorderEnabled
-                  ? 'rgb-pill-active text-slate-900'
-                  : 'bg-white/90 text-slate-500 border border-slate-300/80 shadow-2xs'
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
+            {/* SOFT LIGHT RGB BORDER ON/OFF TOGGLE (ADMIN MODE ONLY) */}
+            {activeTab === 'saqibadmb' && (
+              <button
+                type="button"
+                onClick={toggleRgbBorderLight}
+                title={
                   rgbBorderEnabled
-                    ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
-                    : 'bg-slate-400'
+                    ? 'Admin: Soft Light RGB Borders ON — Click to turn OFF'
+                    : 'Admin: Soft Light RGB Borders OFF — Click to turn ON'
+                }
+                className={`px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[10px] sm:text-[11px] flex items-center gap-1 transition cursor-pointer ${
+                  rgbBorderEnabled
+                    ? 'rgb-pill-active text-slate-900'
+                    : 'bg-white/90 text-slate-500 border border-slate-300/80 shadow-2xs'
                 }`}
-              ></span>
-              <span>RGB</span>
-              <span className="hidden lg:inline">{rgbBorderEnabled ? 'ON' : 'OFF'}</span>
-            </button>
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    rgbBorderEnabled
+                      ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                      : 'bg-slate-400'
+                  }`}
+                ></span>
+                <span>RGB</span>
+                <span className="hidden lg:inline">{rgbBorderEnabled ? 'ON' : 'OFF'}</span>
+              </button>
+            )}
 
             <button
               onClick={toggleSound}
@@ -1729,81 +1829,63 @@ export default function App() {
         </nav>
 
         {/* ==================== MOBILE UPPER QUICK-BUTTON BAR (CATEGORIES + TOOLS + GRID) ==================== */}
-        <div className="md:hidden acrylic-frame rounded-2xl px-2 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-          <button
-            type="button"
-            onClick={() => {
-              playPopSound(640);
-              setMobileMenuOpen((prev) => !prev);
-            }}
-            className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 cursor-pointer flex-shrink-0 border ${
-              mobileMenuOpen
-                ? 'bg-slate-900 text-white border-slate-900'
-                : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-white/80 shadow-xs'
-            }`}
-          >
-            <i className="fa-solid fa-bars text-[10px]"></i>
-            <span>All Menu</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={toggleRgbBorderLight}
-            className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 cursor-pointer flex-shrink-0 ${
-              rgbBorderEnabled
-                ? 'rgb-pill-active text-slate-900'
-                : 'bg-white/90 text-slate-600 border border-slate-200'
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${
-                rgbBorderEnabled
-                  ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
-                  : 'bg-slate-400'
+        {siteVisibility.showMobileQuickBar && (
+          <div className="md:hidden acrylic-frame rounded-2xl px-2 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound(640);
+                setMobileMenuOpen((prev) => !prev);
+              }}
+              className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 cursor-pointer flex-shrink-0 border ${
+                mobileMenuOpen
+                  ? 'bg-slate-900 text-white border-slate-900'
+                  : 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-white/80 shadow-xs'
               }`}
-            ></span>
-            <span>RGB {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
-          </button>
+            >
+              <i className="fa-solid fa-bars text-[10px]"></i>
+              <span>All Menu</span>
+            </button>
 
-          {(siteConfig.categories && siteConfig.categories.length > 0
-            ? siteConfig.categories
-            : CATEGORY_META
-          ).map((cat) => {
-            const isActive = activeTab === 'store' && currentCategory === cat.id;
-            return (
+            {visibleStoreCategories.map((cat) => {
+              const isActive = activeTab === 'store' && currentCategory === cat.id;
+              return (
+                <button
+                  key={`mob-top-${cat.id}`}
+                  type="button"
+                  onClick={() => filterStore(cat.id)}
+                  className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 transition cursor-pointer flex-shrink-0 ${
+                    isActive
+                      ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
+                      : 'bg-white/90 text-slate-800 border border-slate-200/80'
+                  }`}
+                >
+                  {renderCategoryIcon(
+                    cat.id,
+                    `w-3 h-3 ${isActive ? 'text-white' : cat.iconColor}`,
+                    cat
+                  )}
+                  <span>{cat.shortLabel}</span>
+                </button>
+              );
+            })}
+
+            {siteVisibility.showToolsTab && (
               <button
-                key={`mob-top-${cat.id}`}
                 type="button"
-                onClick={() => filterStore(cat.id)}
+                onClick={() => switchTab('siminfo')}
                 className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 transition cursor-pointer flex-shrink-0 ${
-                  isActive
-                    ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
-                    : 'bg-white/90 text-slate-800 border border-slate-200/80'
+                  activeTab === 'siminfo'
+                    ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xs'
+                    : 'bg-white/90 text-emerald-700 border border-emerald-200'
                 }`}
               >
-                {renderCategoryIcon(
-                  cat.id,
-                  `w-3 h-3 ${isActive ? 'text-white' : cat.iconColor}`,
-                  cat
-                )}
-                <span>{cat.shortLabel}</span>
+                <i className="fa-solid fa-screwdriver-wrench text-[9px]"></i>
+                <span>Web Tools ({visibleWebToolsCatalog.length})</span>
               </button>
-            );
-          })}
-
-          <button
-            type="button"
-            onClick={() => switchTab('siminfo')}
-            className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 transition cursor-pointer flex-shrink-0 ${
-              activeTab === 'siminfo'
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xs'
-                : 'bg-white/90 text-emerald-700 border border-emerald-200'
-            }`}
-          >
-            <i className="fa-solid fa-screwdriver-wrench text-[9px]"></i>
-            <span>Web Tools ({webToolsCatalog.length})</span>
-          </button>
-        </div>
+            )}
+          </div>
+        )}
 
         {/* ==================== 3-LINE MOBILE SLIDE-DOWN MENU DRAWER (MD:HIDDEN) ==================== */}
         {mobileMenuOpen && (
@@ -1820,7 +1902,7 @@ export default function App() {
                       Saqib Visuals Quick Menu
                     </div>
                     <div className="text-[10px] font-semibold text-pink-600">
-                      {servicesCatalog.length} Pro Services • {webToolsCatalog.length} Live Web Tools
+                      {visibleServicesCatalog.length} Pro Services • {visibleWebToolsCatalog.length} Live Web Tools
                     </div>
                   </div>
                 </div>
@@ -1877,58 +1959,66 @@ export default function App() {
                   {[
                     {
                       id: 'store' as TabId,
-                      label: `All Services (${servicesCatalog.length})`,
+                      label: `All Services (${visibleServicesCatalog.length})`,
                       icon: 'fa-solid fa-fire-flame-curved',
-                      color: 'text-pink-600'
+                      color: 'text-pink-600',
+                      show: true
                     },
                     {
                       id: 'siminfo' as TabId,
-                      label: `Web Tools (${webToolsCatalog.length})`,
+                      label: `Web Tools (${visibleWebToolsCatalog.length})`,
                       icon: 'fa-solid fa-screwdriver-wrench',
-                      color: 'text-emerald-600'
+                      color: 'text-emerald-600',
+                      show: siteVisibility.showToolsTab
                     },
                     {
                       id: 'about' as TabId,
                       label: 'About Saqib',
                       icon: 'fa-solid fa-user-astronaut',
-                      color: 'text-purple-600'
+                      color: 'text-purple-600',
+                      show: siteVisibility.showAboutTab
                     },
                     {
                       id: 'faqs' as TabId,
                       label: 'FAQs & Help',
                       icon: 'fa-solid fa-circle-question',
-                      color: 'text-amber-600'
+                      color: 'text-amber-600',
+                      show: siteVisibility.showFaqsTab
                     },
                     {
                       id: 'contact' as TabId,
                       label: 'Contact Support',
                       icon: 'fa-solid fa-headset',
-                      color: 'text-blue-600'
+                      color: 'text-blue-600',
+                      show: siteVisibility.showContactTab
                     },
                     {
                       id: 'login' as TabId,
                       label: vipUser ? 'VIP Wallet' : 'VIP Login',
                       icon: 'fa-solid fa-crown',
-                      color: 'text-rose-600'
+                      color: 'text-rose-600',
+                      show: siteVisibility.showLoginTab
                     }
-                  ].map((item) => {
-                    const isActive = activeTab === item.id;
-                    return (
-                      <button
-                        key={`drawer-nav-${item.id}`}
-                        type="button"
-                        onClick={() => switchTab(item.id)}
-                        className={`px-3 py-2.5 rounded-xl text-left text-xs font-extrabold flex items-center gap-2 transition cursor-pointer border ${
-                          isActive
-                            ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-pink-500 shadow-sm'
-                            : 'bg-white/90 text-slate-900 border-white hover:bg-white'
-                        }`}
-                      >
-                        <i className={`${item.icon} ${isActive ? 'text-white' : item.color}`}></i>
-                        <span className="truncate">{item.label}</span>
-                      </button>
-                    );
-                  })}
+                  ]
+                    .filter((item) => item.show)
+                    .map((item) => {
+                      const isActive = activeTab === item.id;
+                      return (
+                        <button
+                          key={`drawer-nav-${item.id}`}
+                          type="button"
+                          onClick={() => switchTab(item.id)}
+                          className={`px-3 py-2.5 rounded-xl text-left text-xs font-extrabold flex items-center gap-2 transition cursor-pointer border ${
+                            isActive
+                              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-pink-500 shadow-sm'
+                              : 'bg-white/90 text-slate-900 border-white hover:bg-white'
+                          }`}
+                        >
+                          <i className={`${item.icon} ${isActive ? 'text-white' : item.color}`}></i>
+                          <span className="truncate">{item.label}</span>
+                        </button>
+                      );
+                    })}
                 </div>
               </div>
 
@@ -1938,10 +2028,7 @@ export default function App() {
                   Store Categories
                 </div>
                 <div className="flex flex-wrap gap-1.5">
-                  {(siteConfig.categories && siteConfig.categories.length > 0
-                    ? siteConfig.categories
-                    : CATEGORY_META
-                  ).map((cat) => {
+                  {visibleStoreCategories.map((cat) => {
                     const isActive = activeTab === 'store' && currentCategory === cat.id;
                     return (
                       <button
@@ -2004,25 +2091,6 @@ export default function App() {
 
                 <button
                   type="button"
-                  onClick={toggleRgbBorderLight}
-                  className={`px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 cursor-pointer ${
-                    rgbBorderEnabled
-                      ? 'rgb-pill-active text-slate-900'
-                      : 'bg-white/90 border border-slate-200 text-slate-600'
-                  }`}
-                >
-                  <span
-                    className={`w-2 h-2 rounded-full ${
-                      rgbBorderEnabled
-                        ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
-                        : 'bg-slate-400'
-                    }`}
-                  ></span>
-                  <span>RGB {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
-                </button>
-
-                <button
-                  type="button"
                   onClick={toggleSound}
                   className="px-2.5 py-1.5 rounded-xl bg-white/90 border border-pink-200 text-[10px] font-extrabold text-slate-800 flex items-center gap-1 cursor-pointer"
                 >
@@ -2072,26 +2140,6 @@ export default function App() {
                   </h1>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <button
-                    type="button"
-                    onClick={toggleRgbBorderLight}
-                    title="Turn Soft Light RGB Borders ON or OFF"
-                    className={`rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold whitespace-nowrap cursor-pointer transition ${
-                      rgbBorderEnabled
-                        ? 'rgb-pill-active text-slate-900'
-                        : 'bg-white/90 text-slate-600 border border-slate-300 shadow-xs'
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        rgbBorderEnabled
-                          ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
-                          : 'bg-slate-400'
-                      }`}
-                    ></span>
-                    <span>RGB Light: {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
-                  </button>
-
                   <a
                     href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
                       siteConfig.contact.whatsappDefaultMessage
@@ -2145,81 +2193,85 @@ export default function App() {
                   </div>
 
                   {/* Floating Badge 1: CapCut Pro Icon (Top-Left) */}
-                  <button
-                    onClick={() => filterStore('capcut_ai', '')}
-                    onMouseEnter={() => playPopSound(680)}
-                    title="CapCut Pro & Lovable Pro"
-                    className="orbit-badge float-slow -top-2 -left-4 sm:-left-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
-                      <svg
-                        className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2.3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                  {siteVisibility.showPortraitOrbitBadges && (
+                    <>
+                      <button
+                        onClick={() => filterStore('capcut_ai', '')}
+                        onMouseEnter={() => playPopSound(680)}
+                        title="CapCut Pro & Lovable Pro"
+                        className="orbit-badge float-slow -top-2 -left-4 sm:-left-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
                       >
-                        <path d="M4 7l16 10" />
-                        <path d="M20 7L4 17" />
-                        <rect x="2" y="5" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
-                        <rect x="2" y="15" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
-                      </svg>
-                    </div>
-                    <div className="text-left leading-none">
-                      <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">CapCut &amp; Lovable</div>
-                      <div className="text-[7px] sm:text-[8px] font-bold text-pink-600 uppercase">PRO UNLOCKED</div>
-                    </div>
-                  </button>
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                          <svg
+                            className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2.3"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <path d="M4 7l16 10" />
+                            <path d="M20 7L4 17" />
+                            <rect x="2" y="5" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
+                            <rect x="2" y="15" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
+                          </svg>
+                        </div>
+                        <div className="text-left leading-none">
+                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">CapCut &amp; Lovable</div>
+                          <div className="text-[7px] sm:text-[8px] font-bold text-pink-600 uppercase">PRO UNLOCKED</div>
+                        </div>
+                      </button>
 
-                  {/* Floating Badge 2: AI Tools / Gemini / ElevenLabs (Top-Right) */}
-                  <button
-                    onClick={() => filterStore('capcut_ai', '')}
-                    onMouseEnter={() => playPopSound(720)}
-                    title="Gemini 18M, Claude, Muse AI & ElevenLabs"
-                    className="orbit-badge float-reverse -top-2 -right-4 sm:-right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center shadow-sm">
-                      <i className="fa-solid fa-wand-magic-sparkles text-[10px] sm:text-xs"></i>
-                    </div>
-                    <div className="text-left leading-none">
-                      <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">AI Suite</div>
-                      <div className="text-[7px] sm:text-[8px] font-bold text-emerald-600 uppercase">GEMINI • CLAUDE</div>
-                    </div>
-                  </button>
+                      {/* Floating Badge 2: AI Tools / Gemini / ElevenLabs (Top-Right) */}
+                      <button
+                        onClick={() => filterStore('capcut_ai', '')}
+                        onMouseEnter={() => playPopSound(720)}
+                        title="Gemini 18M, Claude, Muse AI & ElevenLabs"
+                        className="orbit-badge float-reverse -top-2 -right-4 sm:-right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center shadow-sm">
+                          <i className="fa-solid fa-wand-magic-sparkles text-[10px] sm:text-xs"></i>
+                        </div>
+                        <div className="text-left leading-none">
+                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">AI Suite</div>
+                          <div className="text-[7px] sm:text-[8px] font-bold text-emerald-600 uppercase">GEMINI • CLAUDE</div>
+                        </div>
+                      </button>
 
-                  {/* Floating Badge 3: TikTok UK/USA & Ads (Bottom-Left) */}
-                  <button
-                    onClick={() => filterStore('tiktok_fb', '')}
-                    onMouseEnter={() => playPopSound(640)}
-                    title="TikTok UK/USA & Ad Agency"
-                    className="orbit-badge float-reverse -bottom-2 -left-3 sm:-left-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
-                      <i className="fa-brands fa-tiktok text-[10px] sm:text-xs"></i>
-                    </div>
-                    <div className="text-left leading-none">
-                      <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">TikTok UK/USA</div>
-                      <div className="text-[7px] sm:text-[8px] font-bold text-rose-600 uppercase">ADS &amp; BOOST</div>
-                    </div>
-                  </button>
+                      {/* Floating Badge 3: TikTok UK/USA & Ads (Bottom-Left) */}
+                      <button
+                        onClick={() => filterStore('tiktok_fb', '')}
+                        onMouseEnter={() => playPopSound(640)}
+                        title="TikTok UK/USA & Ad Agency"
+                        className="orbit-badge float-reverse -bottom-2 -left-3 sm:-left-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
+                          <i className="fa-brands fa-tiktok text-[10px] sm:text-xs"></i>
+                        </div>
+                        <div className="text-left leading-none">
+                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">TikTok UK/USA</div>
+                          <div className="text-[7px] sm:text-[8px] font-bold text-rose-600 uppercase">ADS &amp; BOOST</div>
+                        </div>
+                      </button>
 
-                  {/* Floating Badge 4: Franchise & NADRA Info (Bottom-Right) */}
-                  <button
-                    onClick={() => filterStore('franchise_sim', '')}
-                    onMouseEnter={() => playPopSound(760)}
-                    title="Franchise SIM, CDR & NADRA Info"
-                    className="orbit-badge float-slow -bottom-2 -right-3 sm:-right-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-sm">
-                      <i className="fa-solid fa-satellite-dish text-[10px] sm:text-xs"></i>
-                    </div>
-                    <div className="text-left leading-none">
-                      <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">SIM &amp; NADRA</div>
-                      <div className="text-[7px] sm:text-[8px] font-bold text-blue-600 uppercase">CDR • FRC • LIVE</div>
-                    </div>
-                  </button>
+                      {/* Floating Badge 4: Franchise & NADRA Info (Bottom-Right) */}
+                      <button
+                        onClick={() => filterStore('franchise_sim', '')}
+                        onMouseEnter={() => playPopSound(760)}
+                        title="Franchise SIM, CDR & NADRA Info"
+                        className="orbit-badge float-slow -bottom-2 -right-3 sm:-right-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-sm">
+                          <i className="fa-solid fa-satellite-dish text-[10px] sm:text-xs"></i>
+                        </div>
+                        <div className="text-left leading-none">
+                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">SIM &amp; NADRA</div>
+                          <div className="text-[7px] sm:text-[8px] font-bold text-blue-600 uppercase">CDR • FRC • LIVE</div>
+                        </div>
+                      </button>
+                    </>
+                  )}
                 </div>
 
                 {/* Right: Soft Pink/Peach Plush Hero Bio & Feature Pills */}
@@ -2242,44 +2294,48 @@ export default function App() {
                     </p>
 
                     {/* Interactive Showcase Feature Badges */}
-                    <div className="mt-3.5 flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
-                      <button
-                        onClick={() => filterStore('capcut_ai', '')}
-                        className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-purple-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI &amp; Pro Apps
-                      </button>
-                      <button
-                        onClick={() => filterStore('tiktok_fb', '')}
-                        className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-pink-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-brands fa-tiktok text-rose-500"></i> TikTok UK &amp; Ads
-                      </button>
-                      <button
-                        onClick={() => filterStore('franchise_sim', '')}
-                        className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-emerald-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-satellite-dish text-emerald-600"></i> Franchise &amp; CDR
-                      </button>
-                      <button
-                        onClick={() => filterStore('nadra_records', '')}
-                        className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-blue-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-id-card text-blue-600"></i> NADRA &amp; Records
-                      </button>
-                      <button
-                        onClick={() => filterStore('creative_crypto', '')}
-                        className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-amber-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-brands fa-bitcoin text-amber-500"></i> USDT &amp; Editing
-                      </button>
-                      <button
-                        onClick={() => switchTab('siminfo')}
-                        className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-[11px] shadow-md flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-screwdriver-wrench"></i> Live Web Tools
-                      </button>
-                    </div>
+                    {siteVisibility.showHeroFeaturePills && (
+                      <div className="mt-3.5 flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
+                        <button
+                          onClick={() => filterStore('capcut_ai', '')}
+                          className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-purple-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                        >
+                          <i className="fa-solid fa-wand-magic-sparkles text-purple-600"></i> AI &amp; Pro Apps
+                        </button>
+                        <button
+                          onClick={() => filterStore('tiktok_fb', '')}
+                          className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-pink-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                        >
+                          <i className="fa-brands fa-tiktok text-rose-500"></i> TikTok UK &amp; Ads
+                        </button>
+                        <button
+                          onClick={() => filterStore('franchise_sim', '')}
+                          className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-emerald-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                        >
+                          <i className="fa-solid fa-satellite-dish text-emerald-600"></i> Franchise &amp; CDR
+                        </button>
+                        <button
+                          onClick={() => filterStore('nadra_records', '')}
+                          className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-blue-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                        >
+                          <i className="fa-solid fa-id-card text-blue-600"></i> NADRA &amp; Records
+                        </button>
+                        <button
+                          onClick={() => filterStore('creative_crypto', '')}
+                          className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-amber-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                        >
+                          <i className="fa-brands fa-bitcoin text-amber-500"></i> USDT &amp; Editing
+                        </button>
+                        {siteVisibility.showToolsTab && (
+                          <button
+                            onClick={() => switchTab('siminfo')}
+                            className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-[11px] shadow-md flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                          >
+                            <i className="fa-solid fa-screwdriver-wrench"></i> Live Web Tools
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2291,215 +2347,218 @@ export default function App() {
         {activeTab === 'store' && (
           <div className="space-y-5 transition-all duration-300">
             {/* Infinite 3D Brand Marquee & Live Server Pulse Strip */}
-            <MarqueeAndPulseBanner
-              onQuickFilter={(cat, kw) => filterStore(cat, kw)}
-              onPlayPop={playPopSound}
-              onSelectServiceById={(id) => {
-                const found = servicesCatalog.find((s) => s.id === id);
-                if (found) {
-                  openOrderModal(found);
-                } else {
-                  filterStore('all', '');
-                }
-              }}
-            />
+            {siteVisibility.showMarqueeBanner && (
+              <MarqueeAndPulseBanner
+                onQuickFilter={(cat, kw) => filterStore(cat, kw)}
+                onPlayPop={playPopSound}
+                onSelectServiceById={(id) => {
+                  const found = visibleServicesCatalog.find((s) => s.id === id);
+                  if (found) {
+                    openOrderModal(found);
+                  } else {
+                    filterStore('all', '');
+                  }
+                }}
+              />
+            )}
 
             {/* ==================== STOREFRONT LIVE WALLET BALANCE & INSTANT ADD PAYMENT BAR ==================== */}
-            <div data-scroll="up" className="acrylic-frame rounded-[28px] p-2.5 sm:p-3.5">
-              <div className="rounded-[22px] bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white px-3.5 py-3 sm:px-5 sm:py-3.5 border border-white/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
-                <div className="flex items-center gap-3 text-center sm:text-left">
-                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center text-lg shadow-md border border-white flex-shrink-0">
-                    <i className="fa-solid fa-wallet"></i>
-                  </div>
-                  <div>
-                    <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
-                        ● LIVE ACCOUNT BALANCE:
-                      </span>
-                      <span className="font-display font-bold text-lg sm:text-2xl text-white">
-                        Rs. {walletBalance.toLocaleString()}
-                      </span>
-                      {pendingProofsCount > 0 && (
-                        <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
-                          ⏳ {pendingProofsCount} Pending Proof
-                        </span>
-                      )}
+            {siteVisibility.showStoreWalletBar && (
+              <div data-scroll="up" className="acrylic-frame rounded-[28px] p-2.5 sm:p-3.5">
+                <div className="rounded-[22px] bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white px-3.5 py-3 sm:px-5 sm:py-3.5 border border-white/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 text-center sm:text-left">
+                    <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center text-lg shadow-md border border-white flex-shrink-0">
+                      <i className="fa-solid fa-wallet"></i>
                     </div>
-                    <p className="text-[10px] sm:text-xs font-medium text-pink-200">
-                      Add balance via <strong>EasyPaisa / JazzCash / Bank</strong> (Enter Amount → Select Method → Upload SS → Instant Balance!)
-                    </p>
+                    <div>
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
+                          ● LIVE ACCOUNT BALANCE:
+                        </span>
+                        <span className="font-display font-bold text-lg sm:text-2xl text-white">
+                          Rs. {walletBalance.toLocaleString()}
+                        </span>
+                        {pendingProofsCount > 0 && (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
+                            ⏳ {pendingProofsCount} Pending Proof
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[10px] sm:text-xs font-medium text-pink-200">
+                        Add balance via <strong>EasyPaisa / JazzCash / Bank</strong> (Enter Amount → Select Method → Upload SS → Instant Balance!)
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPopSound(680);
-                      setAddFundsModalOpen(true);
-                    }}
-                    className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                  >
-                    <i className="fa-solid fa-circle-plus text-amber-200"></i>
-                    <span>+ Add Payment / Balance</span>
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => switchTab('login')}
-                    className="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs transition cursor-pointer whitespace-nowrap"
-                  >
-                    <i className="fa-solid fa-receipt mr-1 text-pink-300"></i>History
-                  </button>
+                  <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-center">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playPopSound(680);
+                        setAddFundsModalOpen(true);
+                      }}
+                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                    >
+                      <i className="fa-solid fa-circle-plus text-amber-200"></i>
+                      <span>+ Add Payment / Balance</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => switchTab('login')}
+                      className="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs transition cursor-pointer whitespace-nowrap"
+                    >
+                      <i className="fa-solid fa-receipt mr-1 text-pink-300"></i>History
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Live Search Bar + Quick Service Tags in 3D Pink Glass */}
-            <div data-scroll="up" className="acrylic-frame rounded-[30px] p-3 sm:p-4 space-y-3">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                <div className="sim-input-box flex-grow !py-2 !px-3.5 !rounded-2xl">
-                  <i className="fa-solid fa-magnifying-glass text-pink-500 mr-2.5 text-sm"></i>
-                  <input
-                    type="text"
-                    value={storeSearchQuery}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val.trim().toLowerCase() === '/saqibadmb') {
-                        setStoreSearchQuery('');
-                        openSecretAdminPortal();
-                        return;
-                      }
-                      setStoreSearchQuery(val);
-                    }}
-                    placeholder="Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)..."
-                    className="w-full bg-transparent border-none outline-none font-bold text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 placeholder:font-medium"
-                  />
-                  {storeSearchQuery && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPopSound(440);
-                        setStoreSearchQuery('');
+            {siteVisibility.showSearchAndCategoryBar && (
+              <div data-scroll="up" className="acrylic-frame rounded-[30px] p-3 sm:p-4 space-y-3">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+                  <div className="sim-input-box flex-grow !py-2 !px-3.5 !rounded-2xl">
+                    <i className="fa-solid fa-magnifying-glass text-pink-500 mr-2.5 text-sm"></i>
+                    <input
+                      type="text"
+                      value={storeSearchQuery}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val.trim().toLowerCase() === '/saqibadmb') {
+                          setStoreSearchQuery('');
+                          openSecretAdminPortal();
+                          return;
+                        }
+                        setStoreSearchQuery(val);
                       }}
-                      className="text-slate-400 hover:text-pink-600 px-1.5 cursor-pointer"
-                    >
-                      <i className="fa-solid fa-circle-xmark"></i>
-                    </button>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
-                  <span className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-white/85 border border-pink-200 text-[10px] sm:text-[11px] font-extrabold text-pink-700 shadow-sm whitespace-nowrap">
-                    <i className="fa-solid fa-sparkles mr-1 text-amber-500"></i>
-                    Showing {filteredServices.length} of {servicesCatalog.length} Services
-                  </span>
-
-                  {/* Mobile 2-Grid / 1-Grid Instant Switcher */}
-                  <div className="flex sm:hidden items-center bg-white/90 rounded-xl p-0.5 border border-pink-200 shadow-sm">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPopSound(600);
-                        setMobileGridCols(2);
-                      }}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
-                        mobileGridCols === 2
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      <i className="fa-solid fa-border-all text-[10px]"></i> 2-Grid
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPopSound(540);
-                        setMobileGridCols(1);
-                      }}
-                      className={`px-2 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
-                        mobileGridCols === 1
-                          ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      <i className="fa-solid fa-list text-[10px]"></i> 1-Grid
-                    </button>
+                      placeholder="Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)..."
+                      className="w-full bg-transparent border-none outline-none font-bold text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 placeholder:font-medium"
+                    />
+                    {storeSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playPopSound(440);
+                          setStoreSearchQuery('');
+                        }}
+                        className="text-slate-400 hover:text-pink-600 px-1.5 cursor-pointer"
+                      >
+                        <i className="fa-solid fa-circle-xmark"></i>
+                      </button>
+                    )}
                   </div>
-                </div>
-              </div>
 
-              {/* Quick Filter Tags */}
-              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-[11px] font-bold">
-                <span className="text-[10px] font-extrabold text-slate-500 uppercase pr-1 flex-shrink-0">
-                  Hot Searches:
-                </span>
-                {[
-                  { label: 'CapCut Pro', q: 'CapCut' },
-                  { label: 'Lovable Pro', q: 'Lovable' },
-                  { label: 'Gemini 18M', q: 'Gemini' },
-                  { label: 'Muse AI 1B', q: 'Muse' },
-                  { label: 'ElevenLabs 300k', q: 'ElevenLabs' },
-                  { label: 'TikTok UK/USA', q: 'UK / USA' },
-                  { label: 'Ad Agency', q: 'Agency' },
-                  { label: 'Call CDR', q: 'CDR' },
-                  { label: 'NADRA FRC', q: 'FRC' },
-                  { label: 'Hostinger 12M', q: 'Hostinger' },
-                  { label: 'BTC / USDT', q: 'USDT' }
-                ].map((chip) => (
-                  <button
-                    key={chip.label}
-                    type="button"
-                    onClick={() => {
-                      playPopSound(580);
-                      setCurrentCategory('all');
-                      setStoreSearchQuery(storeSearchQuery === chip.q ? '' : chip.q);
-                    }}
-                    className={`px-2.5 py-1 rounded-full border transition whitespace-nowrap cursor-pointer ${
-                      storeSearchQuery.toLowerCase() === chip.q.toLowerCase()
-                        ? 'bg-pink-500 text-white border-pink-500 shadow-sm'
-                        : 'bg-white/80 hover:bg-white text-slate-700 border-pink-200'
-                    }`}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
-              </div>
+                  <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
+                    <span className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-white/85 border border-pink-200 text-[10px] sm:text-[11px] font-extrabold text-pink-700 shadow-sm whitespace-nowrap">
+                      <i className="fa-solid fa-sparkles mr-1 text-amber-500"></i>
+                      Showing {filteredServices.length} of {visibleServicesCatalog.length} Services
+                    </span>
 
-              {/* Category Filter Tabs (Dynamic from Admin Categories & Icons Studio) */}
-              <div className="flex items-center justify-between gap-1.5 overflow-x-auto pt-1 border-t border-white/70 scrollbar-none">
-                {(siteConfig.categories && siteConfig.categories.length > 0
-                  ? siteConfig.categories
-                  : CATEGORY_META
-                ).map((cat) => {
-                  const isActive = currentCategory === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => filterStore(cat.id)}
-                      className={`cat-pill px-3.5 py-2 rounded-2xl text-xs transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
-                        isActive
-                          ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
-                          : 'font-bold bg-white/95 hover:bg-white text-slate-900 border border-slate-200/80 shadow-xs'
-                      }`}
-                    >
-                      {renderCategoryIcon(
-                        cat.id,
-                        `w-3.5 h-3.5 ${isActive ? 'text-white' : cat.iconColor}`,
-                        cat
-                      )}
-                      <span>{cat.shortLabel}</span>
-                      <span
-                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
-                          isActive ? 'bg-black/25 text-white' : 'bg-slate-200 text-slate-800'
+                    {/* Mobile 2-Grid / 1-Grid Instant Switcher */}
+                    <div className="flex sm:hidden items-center bg-white/90 rounded-xl p-0.5 border border-pink-200 shadow-sm">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playPopSound(600);
+                          setMobileGridCols(2);
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
+                          mobileGridCols === 2
+                            ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
+                            : 'text-slate-600'
                         }`}
                       >
-                        {getCategoryCount(cat.id)}
-                      </span>
+                        <i className="fa-solid fa-border-all text-[10px]"></i> 2-Grid
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playPopSound(540);
+                          setMobileGridCols(1);
+                        }}
+                        className={`px-2 py-1 rounded-lg text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer ${
+                          mobileGridCols === 1
+                            ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-xs'
+                            : 'text-slate-600'
+                        }`}
+                      >
+                        <i className="fa-solid fa-list text-[10px]"></i> 1-Grid
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Filter Tags */}
+                <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none text-[11px] font-bold">
+                  <span className="text-[10px] font-extrabold text-slate-500 uppercase pr-1 flex-shrink-0">
+                    Hot Searches:
+                  </span>
+                  {[
+                    { label: 'CapCut Pro', q: 'CapCut' },
+                    { label: 'Lovable Pro', q: 'Lovable' },
+                    { label: 'Gemini 18M', q: 'Gemini' },
+                    { label: 'Muse AI 1B', q: 'Muse' },
+                    { label: 'ElevenLabs 300k', q: 'ElevenLabs' },
+                    { label: 'TikTok UK/USA', q: 'UK / USA' },
+                    { label: 'Ad Agency', q: 'Agency' },
+                    { label: 'Call CDR', q: 'CDR' },
+                    { label: 'NADRA FRC', q: 'FRC' },
+                    { label: 'Hostinger 12M', q: 'Hostinger' },
+                    { label: 'BTC / USDT', q: 'USDT' }
+                  ].map((chip) => (
+                    <button
+                      key={chip.label}
+                      type="button"
+                      onClick={() => {
+                        playPopSound(580);
+                        setCurrentCategory('all');
+                        setStoreSearchQuery(storeSearchQuery === chip.q ? '' : chip.q);
+                      }}
+                      className={`px-2.5 py-1 rounded-full border transition whitespace-nowrap cursor-pointer ${
+                        storeSearchQuery.toLowerCase() === chip.q.toLowerCase()
+                          ? 'bg-pink-500 text-white border-pink-500 shadow-sm'
+                          : 'bg-white/80 hover:bg-white text-slate-700 border-pink-200'
+                      }`}
+                    >
+                      {chip.label}
                     </button>
-                  );
-                })}
+                  ))}
+                </div>
+
+                {/* Category Filter Tabs (Dynamic from Admin Categories & Icons Studio) */}
+                <div className="flex items-center justify-between gap-1.5 overflow-x-auto pt-1 border-t border-white/70 scrollbar-none">
+                  {visibleStoreCategories.map((cat) => {
+                    const isActive = currentCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => filterStore(cat.id)}
+                        className={`cat-pill px-3.5 py-2 rounded-2xl text-xs transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                          isActive
+                            ? 'font-extrabold bg-gradient-to-r from-pink-500 to-rose-500 text-white shadow-md'
+                            : 'font-bold bg-white/95 hover:bg-white text-slate-900 border border-slate-200/80 shadow-xs'
+                        }`}
+                      >
+                        {renderCategoryIcon(
+                          cat.id,
+                          `w-3.5 h-3.5 ${isActive ? 'text-white' : cat.iconColor}`,
+                          cat
+                        )}
+                        <span>{cat.shortLabel}</span>
+                        <span
+                          className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                            isActive ? 'bg-black/25 text-white' : 'bg-slate-200 text-slate-800'
+                          }`}
+                        >
+                          {getCategoryCount(cat.id)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Storefront Grid */}
             {filteredServices.length === 0 ? (
@@ -2639,7 +2698,7 @@ export default function App() {
             )}
 
             {/* ==================== LIVE WEB TOOLS & AI UTILITIES HUB (2-COLUMN MOBILE GRID) ==================== */}
-            {webToolsCatalog.length > 0 && (
+            {siteVisibility.showWebToolsOnStore && visibleWebToolsCatalog.length > 0 && (
               <section data-scroll="up" className="acrylic-frame rounded-[24px] sm:rounded-[34px] p-1.5 sm:p-5 space-y-3">
                 <div className="plush-pillow plush-capcut rounded-[18px] sm:rounded-[26px] p-2.5 sm:p-6 space-y-3.5 sm:space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200/80 pb-2.5 sm:pb-3 text-center sm:text-left">
@@ -2671,7 +2730,7 @@ export default function App() {
                       mobileGridCols === 2 ? 'grid-cols-2' : 'grid-cols-1'
                     } sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3.5`}
                   >
-                    {webToolsCatalog.map((tool, idx) => {
+                    {visibleWebToolsCatalog.map((tool, idx) => {
                       const cleanDomain =
                         tool.toolUrl === '#siminfo'
                           ? 'Built-in Live SIM Engine'
@@ -2747,34 +2806,38 @@ export default function App() {
             )}
 
             {/* Interactive SMM Panel Tools: Price & Profit Calculator + Live Order Tracker + Real-Time Activity Ticker */}
-            <PanelToolsSection
-              primaryWaNumber={PRIMARY_WA_NUMBER}
-              onQuickFilter={(cat, kw) => filterStore(cat, kw)}
-              onPlayPop={playPopSound}
-              onSelectServiceById={(id) => {
-                const found = servicesCatalog.find((s) => s.id === id);
-                if (found) {
-                  openOrderModal(found);
-                } else {
-                  filterStore('all', '');
-                }
-              }}
-            />
+            {siteVisibility.showSimDatabaseTracker && (
+              <PanelToolsSection
+                primaryWaNumber={PRIMARY_WA_NUMBER}
+                onQuickFilter={(cat, kw) => filterStore(cat, kw)}
+                onPlayPop={playPopSound}
+                onSelectServiceById={(id) => {
+                  const found = visibleServicesCatalog.find((s) => s.id === id);
+                  if (found) {
+                    openOrderModal(found);
+                  } else {
+                    filterStore('all', '');
+                  }
+                }}
+              />
+            )}
 
             {/* Flagship AI Pro Accounts Spotlight + 1-2-3 Steps + 100% Trusted Reviews Sections */}
-            <ShowcaseSections
-              servicesCatalog={servicesCatalog}
-              onQuickFilter={(cat, kw) => filterStore(cat, kw)}
-              onPlayPop={playPopSound}
-              onSelectServiceById={(id) => {
-                const found = servicesCatalog.find((s) => s.id === id);
-                if (found) {
-                  openOrderModal(found);
-                } else {
-                  filterStore('capcut_ai', '');
-                }
-              }}
-            />
+            {siteVisibility.showReviewsSection && (
+              <ShowcaseSections
+                servicesCatalog={visibleServicesCatalog}
+                onQuickFilter={(cat, kw) => filterStore(cat, kw)}
+                onPlayPop={playPopSound}
+                onSelectServiceById={(id) => {
+                  const found = visibleServicesCatalog.find((s) => s.id === id);
+                  if (found) {
+                    openOrderModal(found);
+                  } else {
+                    filterStore('capcut_ai', '');
+                  }
+                }}
+              />
+            )}
 
             {/* Instant Custom SMM / Franchise Deal Banner */}
             <div data-scroll="zoom" className="acrylic-frame rounded-[32px] p-3 sm:p-4">
@@ -2791,12 +2854,14 @@ export default function App() {
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center justify-center gap-2 flex-shrink-0">
-                  <button
-                    onClick={() => switchTab('siminfo')}
-                    className="px-4 py-2.5 rounded-full bg-white hover:bg-pink-50 text-pink-700 border border-pink-300 font-extrabold text-xs shadow-sm transition cursor-pointer flex items-center gap-1.5"
-                  >
-                    <FaScrewdriverWrench className="w-3.5 h-3.5" /> Open Web Tools Hub
-                  </button>
+                  {siteVisibility.showToolsTab && (
+                    <button
+                      onClick={() => switchTab('siminfo')}
+                      className="px-4 py-2.5 rounded-full bg-white hover:bg-pink-50 text-pink-700 border border-pink-300 font-extrabold text-xs shadow-sm transition cursor-pointer flex items-center gap-1.5"
+                    >
+                      <FaScrewdriverWrench className="w-3.5 h-3.5" /> Open Web Tools Hub
+                    </button>
+                  )}
                   <a
                     href={`https://wa.me/${PRIMARY_WA_NUMBER}?text=Assalam-o-Alaikum%20Saqib%20Bhai!%20Mujhe%20AI%20Pro%20Tools,%20SMM%20ya%20Franchise/NADRA%20service%20ki%20deal%20chahiye.`}
                     target="_blank"
@@ -2828,13 +2893,13 @@ export default function App() {
               </p>
             </div>
 
-            {webToolsCatalog.length > 0 && (
+            {visibleWebToolsCatalog.length > 0 && (
               <div data-scroll="up" className="acrylic-frame rounded-[24px] sm:rounded-[30px] p-2 sm:p-5 space-y-3.5">
                 <div className="plush-pillow plush-about rounded-[18px] sm:rounded-[24px] p-3 sm:p-5 space-y-3.5">
                   <div className="flex items-center justify-between border-b border-pink-200 pb-2.5">
                     <div>
                       <span className="text-[10px] font-extrabold uppercase text-purple-700">
-                        ⚡ ALL CONNECTED WEB TOOLS ({webToolsCatalog.length})
+                        ⚡ ALL CONNECTED WEB TOOLS ({visibleWebToolsCatalog.length})
                       </span>
                       <h3 className="text-base sm:text-xl font-extrabold text-slate-900">
                         Live Tools &amp; Creator Utilities
@@ -2842,7 +2907,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3.5">
-                    {webToolsCatalog.map((tool, idx) => (
+                    {visibleWebToolsCatalog.map((tool, idx) => (
                       <div
                         key={tool.id}
                         data-scroll="zoom"
@@ -4332,6 +4397,8 @@ export default function App() {
             handleSaveAdminService={handleSaveAdminService}
             startEditService={startEditService}
             deleteService={deleteService}
+            toggleServiceHidden={toggleServiceHidden}
+            setAllServicesHidden={setAllServicesHidden}
             resetAdminForm={resetAdminForm}
             resetCatalogToDefault={resetCatalogToDefault}
             webToolsCatalog={webToolsCatalog}
@@ -4360,6 +4427,8 @@ export default function App() {
             handleSaveAdminTool={handleSaveAdminTool}
             startEditTool={startEditTool}
             deleteTool={deleteTool}
+            toggleToolHidden={toggleToolHidden}
+            setAllToolsHidden={setAllToolsHidden}
             resetToolForm={resetToolForm}
             resetToolsToDefault={resetToolsToDefault}
             launchWebTool={launchWebTool}
@@ -4397,43 +4466,63 @@ export default function App() {
                 onClick={() => switchTab('store')}
                 className="text-pink-600 hover:underline font-extrabold cursor-pointer"
               >
-                All Services ({servicesCatalog.length})
+                All Services ({visibleServicesCatalog.length})
               </button>
-              <span>•</span>
-              <button
-                onClick={() => switchTab('siminfo')}
-                className="text-emerald-700 hover:underline font-extrabold cursor-pointer"
-              >
-                Web Tools
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => switchTab('about')}
-                className="text-purple-700 hover:underline font-extrabold cursor-pointer"
-              >
-                About
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => switchTab('faqs')}
-                className="text-amber-700 hover:underline font-extrabold cursor-pointer"
-              >
-                FAQs
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => switchTab('contact')}
-                className="text-blue-700 hover:underline font-extrabold cursor-pointer"
-              >
-                Contact
-              </button>
-              <span>•</span>
-              <button
-                onClick={() => switchTab('login')}
-                className="text-rose-600 hover:underline font-extrabold cursor-pointer"
-              >
-                VIP Login
-              </button>
+              {siteVisibility.showToolsTab && (
+                <>
+                  <span>•</span>
+                  <button
+                    onClick={() => switchTab('siminfo')}
+                    className="text-emerald-700 hover:underline font-extrabold cursor-pointer"
+                  >
+                    Web Tools
+                  </button>
+                </>
+              )}
+              {siteVisibility.showAboutTab && (
+                <>
+                  <span>•</span>
+                  <button
+                    onClick={() => switchTab('about')}
+                    className="text-purple-700 hover:underline font-extrabold cursor-pointer"
+                  >
+                    About
+                  </button>
+                </>
+              )}
+              {siteVisibility.showFaqsTab && (
+                <>
+                  <span>•</span>
+                  <button
+                    onClick={() => switchTab('faqs')}
+                    className="text-amber-700 hover:underline font-extrabold cursor-pointer"
+                  >
+                    FAQs
+                  </button>
+                </>
+              )}
+              {siteVisibility.showContactTab && (
+                <>
+                  <span>•</span>
+                  <button
+                    onClick={() => switchTab('contact')}
+                    className="text-blue-700 hover:underline font-extrabold cursor-pointer"
+                  >
+                    Contact
+                  </button>
+                </>
+              )}
+              {siteVisibility.showLoginTab && (
+                <>
+                  <span>•</span>
+                  <button
+                    onClick={() => switchTab('login')}
+                    className="text-rose-600 hover:underline font-extrabold cursor-pointer"
+                  >
+                    VIP Login
+                  </button>
+                </>
+              )}
             </>
           )}
           {siteConfig.footer.copyrightTagline && (
@@ -4448,68 +4537,112 @@ export default function App() {
       </footer>
 
       {/* ==================== FLOATING 3D ROCKET SCROLL-TO-TOP BUTTON ==================== */}
-      <button
-        type="button"
-        onClick={() => {
-          playPopSound(740);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        title="Scroll Back to Top"
-        className={`fixed bottom-34 md:bottom-22 right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
-          showScrollTopBtn
-            ? 'opacity-100 translate-y-0 scale-100'
-            : 'opacity-0 translate-y-6 scale-75 pointer-events-none'
-        }`}
-      >
-        <FaRocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 -rotate-45" />
-      </button>
+      {siteVisibility.showFloatingScrollTop && (
+        <button
+          type="button"
+          onClick={() => {
+            playPopSound(740);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          title="Scroll Back to Top"
+          className={`fixed bottom-34 md:bottom-22 right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+            showScrollTopBtn
+              ? 'opacity-100 translate-y-0 scale-100'
+              : 'opacity-0 translate-y-6 scale-75 pointer-events-none'
+          }`}
+        >
+          <FaRocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 -rotate-45" />
+        </button>
+      )}
 
       {/* ==================== FLOATING 1-TAP WHATSAPP QUICK ORDER ORB ==================== */}
-      <a
-        href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
-          siteConfig.contact.whatsappDefaultMessage
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        title={`Chat on WhatsApp with ${siteConfig.banner.mainTitle}`}
-        className="fixed bottom-20 md:bottom-6 right-3 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white border-2 border-white shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-      >
-        <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white animate-ping"></span>
-        <SiWhatsapp className="w-6 h-6 sm:w-7 sm:h-7" />
-      </a>
+      {siteVisibility.showFloatingWhatsApp && (
+        <a
+          href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
+            siteConfig.contact.whatsappDefaultMessage
+          )}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          title={`Chat on WhatsApp with ${siteConfig.banner.mainTitle}`}
+          className="fixed bottom-20 md:bottom-6 right-3 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white border-2 border-white shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
+        >
+          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white animate-ping"></span>
+          <SiWhatsapp className="w-6 h-6 sm:w-7 sm:h-7" />
+        </a>
+      )}
 
       {/* ==================== FIXED 3D GLASS MOBILE BOTTOM APP DOCK (MD:HIDDEN) ==================== */}
-      <div className="fixed bottom-2 inset-x-2 z-40 md:hidden rounded-[26px] mobile-bottom-dock px-1.5 pt-1.5">
-        <div className="grid grid-cols-6 gap-1">
-          {[
-            { id: 'store' as TabId, label: 'Store', icon: 'fa-solid fa-fire-flame-curved', activeColor: 'from-pink-500 to-rose-500' },
-            { id: 'siminfo' as TabId, label: 'Tools', icon: 'fa-solid fa-screwdriver-wrench', activeColor: 'from-emerald-500 to-teal-600' },
-            { id: 'about' as TabId, label: 'About', icon: 'fa-solid fa-user-astronaut', activeColor: 'from-purple-500 to-indigo-600' },
-            { id: 'faqs' as TabId, label: 'FAQs', icon: 'fa-solid fa-circle-question', activeColor: 'from-amber-500 to-orange-500' },
-            { id: 'contact' as TabId, label: 'Contact', icon: 'fa-solid fa-headset', activeColor: 'from-blue-500 to-cyan-600' },
-            { id: 'login' as TabId, label: vipUser ? 'VIP' : 'Login', icon: 'fa-solid fa-crown', activeColor: 'from-rose-500 to-pink-600' }
-          ].map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => switchTab(tab.id)}
-                className={`flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all cursor-pointer ${
-                  isActive
-                    ? `bg-gradient-to-br ${tab.activeColor} text-white shadow-md scale-[1.03]`
-                    : 'text-slate-700 hover:bg-white/60'
-                }`}
-              >
-                <i className={`${tab.icon} text-xs`}></i>
-                <span className="text-[9px] font-extrabold tracking-tight mt-0.5 leading-none">
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
+      {siteVisibility.showMobileBottomDock && (
+        <div className="fixed bottom-2 inset-x-2 z-40 md:hidden rounded-[26px] mobile-bottom-dock px-1.5 pt-1.5">
+          <div className="flex items-center justify-around gap-1">
+            {[
+              {
+                id: 'store' as TabId,
+                label: 'Store',
+                icon: 'fa-solid fa-fire-flame-curved',
+                activeColor: 'from-pink-500 to-rose-500',
+                show: true
+              },
+              {
+                id: 'siminfo' as TabId,
+                label: 'Tools',
+                icon: 'fa-solid fa-screwdriver-wrench',
+                activeColor: 'from-emerald-500 to-teal-600',
+                show: siteVisibility.showToolsTab
+              },
+              {
+                id: 'about' as TabId,
+                label: 'About',
+                icon: 'fa-solid fa-user-astronaut',
+                activeColor: 'from-purple-500 to-indigo-600',
+                show: siteVisibility.showAboutTab
+              },
+              {
+                id: 'faqs' as TabId,
+                label: 'FAQs',
+                icon: 'fa-solid fa-circle-question',
+                activeColor: 'from-amber-500 to-orange-500',
+                show: siteVisibility.showFaqsTab
+              },
+              {
+                id: 'contact' as TabId,
+                label: 'Contact',
+                icon: 'fa-solid fa-headset',
+                activeColor: 'from-blue-500 to-cyan-600',
+                show: siteVisibility.showContactTab
+              },
+              {
+                id: 'login' as TabId,
+                label: vipUser ? 'VIP' : 'Login',
+                icon: 'fa-solid fa-crown',
+                activeColor: 'from-rose-500 to-pink-600',
+                show: siteVisibility.showLoginTab
+              }
+            ]
+              .filter((tab) => tab.show)
+              .map((tab) => {
+                const isActive = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => switchTab(tab.id)}
+                    className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-2xl transition-all cursor-pointer ${
+                      isActive
+                        ? `bg-gradient-to-br ${tab.activeColor} text-white shadow-md scale-[1.03]`
+                        : 'text-slate-700 hover:bg-white/60'
+                    }`}
+                  >
+                    <i className={`${tab.icon} text-xs`}></i>
+                    <span className="text-[9px] font-extrabold tracking-tight mt-0.5 leading-none">
+                      {tab.label}
+                    </span>
+                  </button>
+                );
+              })}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* ==================== QUICK ORDER / BUY MODAL (MOBILE BOTTOM-SHEET & 3D GLASS) ==================== */}
       {activeOrderService && (

@@ -50,6 +50,7 @@ import {
   FaRotateLeft,
   FaCopy,
   FaEye,
+  FaEyeSlash,
   FaVolumeHigh,
   FaCircleCheck,
   FaLayerGroup,
@@ -97,6 +98,52 @@ export interface SiteFooterConfig {
   showQuickLinks: boolean;
 }
 
+export interface SiteVisibilityConfig {
+  showMarqueeBanner: boolean;
+  showStoreWalletBar: boolean;
+  showSearchAndCategoryBar: boolean;
+  showPortraitOrbitBadges: boolean;
+  showHeroFeaturePills: boolean;
+  showWebToolsOnStore: boolean;
+  showReviewsSection: boolean;
+  showFloatingWhatsApp: boolean;
+  showFloatingScrollTop: boolean;
+  showHeaderRgbToggle: boolean;
+  showHeaderWalletPill: boolean;
+  showHeaderCartButton: boolean;
+  showMobileBottomDock: boolean;
+  showMobileQuickBar: boolean;
+  showSimDatabaseTracker: boolean;
+  showToolsTab: boolean;
+  showAboutTab: boolean;
+  showFaqsTab: boolean;
+  showContactTab: boolean;
+  showLoginTab: boolean;
+}
+
+export const DEFAULT_SITE_VISIBILITY: SiteVisibilityConfig = {
+  showMarqueeBanner: true,
+  showStoreWalletBar: true,
+  showSearchAndCategoryBar: true,
+  showPortraitOrbitBadges: true,
+  showHeroFeaturePills: true,
+  showWebToolsOnStore: true,
+  showReviewsSection: true,
+  showFloatingWhatsApp: true,
+  showFloatingScrollTop: true,
+  showHeaderRgbToggle: true,
+  showHeaderWalletPill: true,
+  showHeaderCartButton: true,
+  showMobileBottomDock: true,
+  showMobileQuickBar: true,
+  showSimDatabaseTracker: true,
+  showToolsTab: true,
+  showAboutTab: true,
+  showFaqsTab: true,
+  showContactTab: true,
+  showLoginTab: true
+};
+
 export interface SiteSettingsConfig {
   banner: SiteBannerConfig;
   contact: SiteContactConfig;
@@ -104,6 +151,7 @@ export interface SiteSettingsConfig {
   footer: SiteFooterConfig;
   paymentMethods: DepositMethodMeta[];
   categories: StoreCategoryMeta[];
+  visibility?: SiteVisibilityConfig;
 }
 
 export const SITE_CONFIG_STORAGE_KEY = 'saqib_visuals_site_config_v1';
@@ -145,11 +193,13 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     showQuickLinks: true
   },
   paymentMethods: DEPOSIT_METHODS,
-  categories: CATEGORY_META
+  categories: CATEGORY_META,
+  visibility: DEFAULT_SITE_VISIBILITY
 };
 
 export type AdminSettingsScreenId =
   | 'home'
+  | 'visibility'
   | 'categories'
   | 'services'
   | 'tools'
@@ -250,6 +300,8 @@ interface AdminStepByStepSettingsHubProps {
   handleSaveAdminService: (e: React.FormEvent) => void;
   startEditService: (srv: StoreService) => void;
   deleteService: (id: string, title: string) => void;
+  toggleServiceHidden?: (id: string) => void;
+  setAllServicesHidden?: (hidden: boolean, categoryFilter?: CategoryId) => void;
   resetAdminForm: () => void;
   resetCatalogToDefault: () => void;
   // Web Tools Props
@@ -279,6 +331,8 @@ interface AdminStepByStepSettingsHubProps {
   handleSaveAdminTool: (e: React.FormEvent) => void;
   startEditTool: (tool: WebToolItem) => void;
   deleteTool: (id: string, title: string) => void;
+  toggleToolHidden?: (id: string) => void;
+  setAllToolsHidden?: (hidden: boolean) => void;
   resetToolForm: () => void;
   resetToolsToDefault: () => void;
   launchWebTool: (tool: WebToolItem) => void;
@@ -341,6 +395,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   handleSaveAdminService,
   startEditService,
   deleteService,
+  toggleServiceHidden,
+  setAllServicesHidden,
   resetAdminForm,
   resetCatalogToDefault,
   webToolsCatalog,
@@ -369,6 +425,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   handleSaveAdminTool,
   startEditTool,
   deleteTool,
+  toggleToolHidden,
+  setAllToolsHidden,
   resetToolForm,
   resetToolsToDefault,
   launchWebTool,
@@ -395,12 +453,61 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   // Active Settings Screen ('home' shows WhatsApp/TikTok style grouped menu)
   const [activeScreen, setActiveScreen] = useState<AdminSettingsScreenId>('home');
   const [settingsSearchQuery, setSettingsSearchQuery] = useState<string>('');
+  const [visibilitySubTab, setVisibilitySubTab] = useState<
+    'sections' | 'products' | 'categories' | 'tools'
+  >('sections');
+  const [visibilitySearch, setVisibilitySearch] = useState<string>('');
+  const [visibilityCatFilter, setVisibilityCatFilter] = useState<CategoryId>('all');
+
+  const activeVisibility: SiteVisibilityConfig = {
+    ...DEFAULT_SITE_VISIBILITY,
+    ...(siteConfig.visibility || {})
+  };
+
+  const toggleSiteVisibilityKey = (key: keyof SiteVisibilityConfig, label: string) => {
+    const nextVal = !activeVisibility[key];
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      visibility: {
+        ...DEFAULT_SITE_VISIBILITY,
+        ...(prev.visibility || {}),
+        [key]: nextVal
+      }
+    }));
+    showToast(nextVal ? `👁️ Shown: ${label}` : `🙈 Hidden: ${label}`);
+  };
+
+  const toggleCategoryHidden = (catId: CategoryId, shortLabel: string) => {
+    if (catId === 'all') return;
+    onUpdateSiteConfig((prev) => {
+      const currentList =
+        prev.categories && prev.categories.length > 0 ? prev.categories : CATEGORY_META;
+      const target = currentList.find((c) => c.id === catId);
+      const nextHidden = !target?.hidden;
+      const nextList = currentList.map((c) =>
+        c.id === catId ? { ...c, hidden: nextHidden } : c
+      );
+      showToast(
+        nextHidden
+          ? `🙈 Category "${shortLabel}" Hidden from Storefront!`
+          : `👁️ Category "${shortLabel}" Shown on Storefront!`
+      );
+      return {
+        ...prev,
+        categories: nextList
+      };
+    });
+  };
+
+  const hiddenServicesCount = servicesCatalog.filter((s) => s.hidden).length;
+  const hiddenToolsCount = webToolsCatalog.filter((t) => t.hidden).length;
 
   // Dynamic Categories List (always falls back cleanly to CATEGORY_META)
   const activeCategories: StoreCategoryMeta[] =
     siteConfig.categories && siteConfig.categories.length > 0
       ? siteConfig.categories
       : CATEGORY_META;
+  const hiddenCategoriesCount = activeCategories.filter((c) => c.hidden).length;
 
   // Step-by-Step Category Wizard State
   const [catStep, setCatStep] = useState<1 | 2 | 3>(1);
@@ -897,6 +1004,42 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   <span>All Settings Menu</span>
                 </button>
               )}
+
+              {/* ADMIN-ONLY 1-TAP SOFT LIGHT RGB BORDER ON/OFF BUTTON */}
+              <button
+                type="button"
+                onClick={() => {
+                  const next = siteConfig.banner.rgbBorderEnabled === false;
+                  playPopSound(next ? 740 : 500);
+                  onUpdateSiteConfig((prev) => ({
+                    ...prev,
+                    banner: { ...prev.banner, rgbBorderEnabled: next }
+                  }));
+                  showToast(
+                    next
+                      ? '🌈 Soft Light RGB Borders Turned ON for Storefront!'
+                      : '⚪ Soft Light RGB Borders Turned OFF for Storefront!'
+                  );
+                }}
+                title="Admin Control: Turn Soft Light RGB Borders ON or OFF across the entire website"
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-2 transition shadow-md ${
+                  siteConfig.banner.rgbBorderEnabled !== false
+                    ? 'rgb-pill-active text-slate-900'
+                    : 'bg-white/15 hover:bg-white/25 text-slate-200 border border-white/25'
+                }`}
+              >
+                <span
+                  className={`w-2.5 h-2.5 rounded-full ${
+                    siteConfig.banner.rgbBorderEnabled !== false
+                      ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                      : 'bg-slate-400'
+                  }`}
+                ></span>
+                <span>
+                  🌈 RGB Light: {siteConfig.banner.rgbBorderEnabled !== false ? 'ON' : 'OFF'}
+                </span>
+              </button>
+
               <button
                 type="button"
                 onClick={() =>
@@ -933,6 +1076,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-white/15 scrollbar-none">
             {[
               { id: 'home' as const, label: '⚙️ Settings Menu', badge: 'Home' },
+              {
+                id: 'visibility' as const,
+                label: '👁️ Hide / Show Anything',
+                badge:
+                  hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount > 0
+                    ? `${hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount} Hidden`
+                    : 'All Live'
+              },
               {
                 id: 'categories' as const,
                 label: '🗂️ Categories & Icons',
@@ -1026,8 +1177,29 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               )}
             </div>
 
-            {/* 5 Step-by-Step Quick Action Cards */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            {/* 6 Step-by-Step Quick Action Cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              <button
+                type="button"
+                onClick={() => openSettingsScreen('visibility')}
+                className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 border border-sky-400/40"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="w-9 h-9 rounded-xl bg-sky-400/20 flex items-center justify-center">
+                    <FaEyeSlash className="w-4 h-4 text-sky-300" />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 text-[9px] font-extrabold uppercase">
+                    1-Tap Hide
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-extrabold">Hide / Show Anything</div>
+                  <div className="text-[10px] text-sky-200 font-semibold">
+                    Services, Sections, Tabs &amp; Tools
+                  </div>
+                </div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => {
@@ -1047,7 +1219,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 <div>
                   <div className="text-xs sm:text-sm font-extrabold">+ Add / Edit Category</div>
                   <div className="text-[10px] text-pink-100 font-semibold">
-                    Create, Delete &amp; Custom Icons
+                    Create, Hide &amp; Custom Icons
                   </div>
                 </div>
               </button>
@@ -1159,6 +1331,34 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </div>
 
                   <div className="rounded-2xl bg-white/90 border border-pink-100 divide-y divide-slate-200/70 overflow-hidden shadow-xs">
+                    {/* Row: 1-Tap Hide / Show Anything Master Studio */}
+                    <div
+                      onClick={() => openSettingsScreen('visibility')}
+                      className="p-3.5 sm:p-4 bg-gradient-to-r from-slate-900/5 via-indigo-50/70 to-pink-50/70 hover:bg-pink-50 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-800 to-purple-700 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaEyeSlash className="w-4 h-4 text-sky-300" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            👁️ Hide / Show Anything (Services, Sections, Categories &amp; Tabs)
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            1-Tap Hide or Show any Service, Category, Web Tool, Banner, Button or Section without deleting
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded-full bg-slate-900 text-sky-300 text-[10px] font-extrabold">
+                          {hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount > 0
+                            ? `${hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount} Hidden`
+                            : 'Master Switch'}
+                        </span>
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
                     {/* Row: Store Categories & Custom Icons Manager */}
                     <div
                       onClick={() => openSettingsScreen('categories', 1)}
@@ -2082,23 +2282,33 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     cat.id === 'all'
                       ? servicesCatalog.length
                       : servicesCatalog.filter((s) => s.category === cat.id).length;
+                  const isHidden = Boolean(cat.hidden);
                   return (
                     <div
                       key={cat.id}
-                      className="p-3.5 rounded-2xl bg-white/95 border border-pink-100 flex items-center justify-between gap-3 hover:border-pink-400 shadow-xs transition"
+                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                        isHidden
+                          ? 'bg-slate-100/90 border-slate-300 opacity-75'
+                          : 'bg-white/95 border-pink-100 hover:border-pink-400'
+                      }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
                           {renderCategoryIcon(cat.id, `w-5 h-5 ${cat.iconColor}`, cat)}
                         </div>
                         <div className="min-w-0">
-                          <div className="flex items-center gap-1.5">
+                          <div className="flex flex-wrap items-center gap-1.5">
                             <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
                               {cat.shortLabel}
                             </span>
                             <span className="px-2 py-0.2 rounded-full bg-pink-50 text-pink-700 border border-pink-200 text-[9px] font-extrabold">
                               {count} Products
                             </span>
+                            {isHidden && (
+                              <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[9px] font-extrabold">
+                                🙈 HIDDEN
+                              </span>
+                            )}
                           </div>
                           <div className="text-[10px] font-semibold text-slate-500 truncate">
                             {cat.label} • ID: <span className="font-mono-code">{cat.id}</span>
@@ -2107,6 +2317,30 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       </div>
 
                       <div className="flex items-center gap-1 flex-shrink-0">
+                        {cat.id !== 'all' && (
+                          <button
+                            type="button"
+                            onClick={() => toggleCategoryHidden(cat.id, cat.shortLabel)}
+                            title={isHidden ? 'Unhide / Show Category on Storefront' : 'Hide Category from Storefront'}
+                            className={`px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold cursor-pointer flex items-center gap-1 border transition ${
+                              isHidden
+                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {isHidden ? (
+                              <>
+                                <FaEyeSlash className="w-3 h-3" />
+                                <span>Hidden</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaEye className="w-3 h-3" />
+                                <span>Visible</span>
+                              </>
+                            )}
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleMoveCategory(idx, -1)}
@@ -2813,10 +3047,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-base sm:text-lg font-extrabold text-slate-900">
-                    Manage All Store Products ({adminFilteredCatalog.length})
+                    Manage All Store Products ({adminFilteredCatalog.length} • {hiddenServicesCount} Hidden)
                   </h4>
                   <p className="text-xs font-semibold text-slate-600">
-                    Tap Edit on any product to change its description, plans, or prices in the Step-by-Step Wizard.
+                    Tap <strong>Visible / Hidden</strong> to hide or show any product on the storefront without deleting it!
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -2825,8 +3059,26 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     value={adminSearchFilter}
                     onChange={(e) => setAdminSearchFilter(e.target.value)}
                     placeholder="Search products..."
-                    className="px-3.5 py-2 rounded-2xl bg-white border-2 border-pink-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-pink-500 sm:w-64"
+                    className="px-3.5 py-2 rounded-2xl bg-white border-2 border-pink-200 text-xs font-bold text-slate-900 focus:outline-none focus:border-pink-500 sm:w-52"
                   />
+                  {setAllServicesHidden && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setAllServicesHidden(false)}
+                        className="px-2.5 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-extrabold cursor-pointer"
+                      >
+                        👁️ Show All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAllServicesHidden(true)}
+                        className="px-2.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold cursor-pointer"
+                      >
+                        🙈 Hide All
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     onClick={resetCatalogToDefault}
@@ -2838,49 +3090,87 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1">
-                {adminFilteredCatalog.map((srv) => (
-                  <div
-                    key={srv.id}
-                    className="p-3.5 rounded-2xl bg-white/90 border border-pink-100 flex items-center justify-between gap-3 hover:border-pink-400 shadow-xs transition"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`w-10 h-10 rounded-xl bg-gradient-to-br ${srv.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
-                      >
-                        {renderOrbVisual(srv.iconType, srv.customIconUrl, `${srv.id} ${srv.title}`)}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="px-2 py-0.5 rounded-md bg-pink-50 text-pink-700 text-[9px] font-extrabold border border-pink-200">
-                          {srv.badge}
-                        </span>
-                        <div className="text-xs sm:text-sm font-extrabold text-slate-900 truncate mt-0.5">
-                          {srv.title}
+                {adminFilteredCatalog.map((srv) => {
+                  const isHidden = Boolean(srv.hidden);
+                  return (
+                    <div
+                      key={srv.id}
+                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                        isHidden
+                          ? 'bg-slate-100/90 border-slate-300 opacity-75'
+                          : 'bg-white/90 border-pink-100 hover:border-pink-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${srv.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
+                        >
+                          {renderOrbVisual(srv.iconType, srv.customIconUrl, `${srv.id} ${srv.title}`)}
                         </div>
-                        <div className="text-[10px] font-bold text-slate-500 truncate">
-                          {srv.tiers.length} Plans • {srv.tiers[0]}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-md bg-pink-50 text-pink-700 text-[9px] font-extrabold border border-pink-200">
+                              {srv.badge}
+                            </span>
+                            {isHidden && (
+                              <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[9px] font-extrabold border border-rose-300">
+                                🙈 HIDDEN FROM STORE
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 truncate mt-0.5">
+                            {srv.title}
+                          </div>
+                          <div className="text-[10px] font-bold text-slate-500 truncate">
+                            {srv.tiers.length} Plans • {srv.tiers[0]}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => handleEditServiceInWizard(srv)}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
-                      >
-                        <FaPenToSquare className="w-3 h-3" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteService(srv.id, srv.title)}
-                        className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        <FaTrashCan className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {toggleServiceHidden && (
+                          <button
+                            type="button"
+                            onClick={() => toggleServiceHidden(srv.id)}
+                            title={isHidden ? 'Click to Show on Storefront' : 'Click to Hide from Storefront'}
+                            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold cursor-pointer flex items-center gap-1 border transition ${
+                              isHidden
+                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {isHidden ? (
+                              <>
+                                <FaEyeSlash className="w-3 h-3" />
+                                <span>Hidden</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaEye className="w-3 h-3" />
+                                <span>Visible</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleEditServiceInWizard(srv)}
+                          className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
+                        >
+                          <FaPenToSquare className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteService(srv.id, srv.title)}
+                          className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                        >
+                          <FaTrashCan className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -3258,10 +3548,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                   <h4 className="text-base sm:text-lg font-extrabold text-slate-900">
-                    Manage All Live Web Tools ({adminFilteredTools.length})
+                    Manage All Live Web Tools ({adminFilteredTools.length} • {hiddenToolsCount} Hidden)
                   </h4>
                   <p className="text-xs font-semibold text-slate-600">
-                    Click Edit to load any tool into the 4-step wizard or Trash to remove it.
+                    Tap <strong>Visible / Hidden</strong> to hide or show any web tool without deleting it!
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -3270,8 +3560,26 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     value={toolSearchFilter}
                     onChange={(e) => setToolSearchFilter(e.target.value)}
                     placeholder="Filter tools..."
-                    className="px-3.5 py-2 rounded-2xl bg-white border-2 border-indigo-200 text-xs font-bold text-slate-900 sm:w-64"
+                    className="px-3.5 py-2 rounded-2xl bg-white border-2 border-indigo-200 text-xs font-bold text-slate-900 sm:w-52"
                   />
+                  {setAllToolsHidden && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => setAllToolsHidden(false)}
+                        className="px-2.5 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 text-xs font-extrabold cursor-pointer"
+                      >
+                        👁️ Show All
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setAllToolsHidden(true)}
+                        className="px-2.5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 text-xs font-extrabold cursor-pointer"
+                      >
+                        🙈 Hide All
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     onClick={resetToolsToDefault}
@@ -3283,56 +3591,94 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[460px] overflow-y-auto pr-1">
-                {adminFilteredTools.map((tool) => (
-                  <div
-                    key={tool.id}
-                    className="p-3.5 rounded-2xl bg-white/90 border border-indigo-100 flex items-center justify-between gap-3 hover:border-indigo-400 shadow-xs transition"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div
-                        className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tool.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
-                      >
-                        {renderOrbVisual(tool.iconType, tool.iconUrl, `${tool.id} ${tool.title}`)}
-                      </div>
-                      <div className="min-w-0">
-                        <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[9px] font-extrabold border border-indigo-200">
-                          {tool.badge}
-                        </span>
-                        <div className="text-xs sm:text-sm font-extrabold text-slate-900 truncate mt-0.5">
-                          {tool.title}
+                {adminFilteredTools.map((tool) => {
+                  const isHidden = Boolean(tool.hidden);
+                  return (
+                    <div
+                      key={tool.id}
+                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                        isHidden
+                          ? 'bg-slate-100/90 border-slate-300 opacity-75'
+                          : 'bg-white/90 border-indigo-100 hover:border-indigo-400'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div
+                          className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tool.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
+                        >
+                          {renderOrbVisual(tool.iconType, tool.iconUrl, `${tool.id} ${tool.title}`)}
                         </div>
-                        <div className="text-[10px] font-mono-code font-bold text-pink-600 truncate">
-                          {tool.toolUrl}
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-1">
+                            <span className="px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[9px] font-extrabold border border-indigo-200">
+                              {tool.badge}
+                            </span>
+                            {isHidden && (
+                              <span className="px-2 py-0.5 rounded-md bg-rose-100 text-rose-800 text-[9px] font-extrabold border border-rose-300">
+                                🙈 HIDDEN
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 truncate mt-0.5">
+                            {tool.title}
+                          </div>
+                          <div className="text-[10px] font-mono-code font-bold text-pink-600 truncate">
+                            {tool.toolUrl}
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <button
-                        type="button"
-                        onClick={() => launchWebTool(tool)}
-                        className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        <FaArrowUpRightFromSquare className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleEditToolInWizard(tool)}
-                        className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
-                      >
-                        <FaPenToSquare className="w-3 h-3" />
-                        <span>Edit</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteTool(tool.id, tool.title)}
-                        className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer"
-                      >
-                        <FaTrashCan className="w-3.5 h-3.5" />
-                      </button>
+                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                        {toggleToolHidden && (
+                          <button
+                            type="button"
+                            onClick={() => toggleToolHidden(tool.id)}
+                            title={isHidden ? 'Click to Show Tool on Website' : 'Click to Hide Tool from Website'}
+                            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold cursor-pointer flex items-center gap-1 border transition ${
+                              isHidden
+                                ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
+                                : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
+                            }`}
+                          >
+                            {isHidden ? (
+                              <>
+                                <FaEyeSlash className="w-3 h-3" />
+                                <span>Hidden</span>
+                              </>
+                            ) : (
+                              <>
+                                <FaEye className="w-3 h-3" />
+                                <span>Visible</span>
+                              </>
+                            )}
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => launchWebTool(tool)}
+                          className="px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-extrabold cursor-pointer"
+                        >
+                          <FaArrowUpRightFromSquare className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEditToolInWizard(tool)}
+                          className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
+                        >
+                          <FaPenToSquare className="w-3 h-3" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteTool(tool.id, tool.title)}
+                          className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                        >
+                          <FaTrashCan className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -4290,6 +4636,597 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           playClick={playPopSound}
           showToast={showToast}
         />
+      )}
+
+      {/* ==================== SCREEN 8: 1-TAP HIDE / SHOW ANYTHING MASTER SWITCHBOARD ==================== */}
+      {activeScreen === 'visibility' && (
+        <div className="space-y-5">
+          <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
+            <div className="plush-pillow plush-login rounded-[26px] p-4 sm:p-6 space-y-5">
+              {/* Top Header */}
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-200 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-800 text-sky-300 flex items-center justify-center text-xl shadow-md border-2 border-white">
+                    <FaEyeSlash />
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-pink-600">
+                      👁️ MASTER VISIBILITY CONTROL CENTER • 1-TAP HIDE OR SHOW
+                    </span>
+                    <h3 className="text-base sm:text-xl font-extrabold text-slate-900">
+                      Hide or Show Any Website Section, Service, Category, Tool or Button
+                    </h3>
+                    <p className="text-xs font-semibold text-slate-600">
+                      Turn any switch OFF to hide that item from customers without deleting your data! Turn it back ON anytime.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(780);
+                      onUpdateSiteConfig((prev) => ({
+                        ...prev,
+                        banner: {
+                          ...prev.banner,
+                          showHeroBanner: true,
+                          showTopStrip: true
+                        },
+                        footer: {
+                          ...prev.footer,
+                          showQuickLinks: true
+                        },
+                        categories: (prev.categories && prev.categories.length > 0
+                          ? prev.categories
+                          : CATEGORY_META
+                        ).map((c) => ({ ...c, hidden: false })),
+                        paymentMethods: prev.paymentMethods.map((m) => ({
+                          ...m,
+                          enabled: true
+                        })),
+                        visibility: DEFAULT_SITE_VISIBILITY
+                      }));
+                      if (setAllServicesHidden) setAllServicesHidden(false);
+                      if (setAllToolsHidden) setAllToolsHidden(false);
+                      showToast('👁️ Everything Unhidden & Restored to Visible!');
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-extrabold shadow-md cursor-pointer flex items-center gap-1.5"
+                  >
+                    <FaEye className="w-3.5 h-3.5" />
+                    <span>Show Everything (Unhide All)</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* 4 Sub-Tab Pills inside Visibility Studio */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  {
+                    id: 'sections' as const,
+                    label: '🌐 Website Sections & Tabs',
+                    sub: 'Banners, Bars, Buttons & Pages'
+                  },
+                  {
+                    id: 'products' as const,
+                    label: `🛍️ Store Services (${servicesCatalog.length})`,
+                    sub: `${hiddenServicesCount} Currently Hidden`
+                  },
+                  {
+                    id: 'categories' as const,
+                    label: `🗂️ Categories (${activeCategories.length - 1})`,
+                    sub: `${hiddenCategoriesCount} Currently Hidden`
+                  },
+                  {
+                    id: 'tools' as const,
+                    label: `🛠️ Tools & Payments`,
+                    sub: `${hiddenToolsCount} Tools Hidden`
+                  }
+                ].map((tab) => {
+                  const isAct = visibilitySubTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => {
+                        playPopSound(640);
+                        setVisibilitySubTab(tab.id);
+                      }}
+                      className={`p-3 rounded-2xl border text-left transition cursor-pointer ${
+                        isAct
+                          ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white border-white shadow-md scale-[1.01]'
+                          : 'bg-white/90 hover:bg-white text-slate-800 border-pink-200'
+                      }`}
+                    >
+                      <div className="text-xs font-extrabold truncate">{tab.label}</div>
+                      <div
+                        className={`text-[10px] font-semibold truncate mt-0.5 ${
+                          isAct ? 'text-pink-100' : 'text-slate-500'
+                        }`}
+                      >
+                        {tab.sub}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* TAB 1: WEBSITE SECTIONS, BUTTONS & NAVIGATION TABS */}
+              {visibilitySubTab === 'sections' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Column A: Storefront Sections & Hero Elements */}
+                  <div className="rounded-2xl bg-white/95 border border-pink-200 divide-y divide-slate-200/70 overflow-hidden shadow-xs">
+                    <div className="px-4 py-2.5 bg-pink-50/80 text-[11px] font-extrabold uppercase tracking-wider text-pink-800">
+                      🖼️ Hero Banner &amp; Storefront Sections
+                    </div>
+
+                    <div className="p-3.5 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                          Main 3D Hero Banner &amp; Portrait Card
+                        </div>
+                        <div className="text-[11px] font-semibold text-slate-600">
+                          Show or hide the large circular portrait &amp; bio card on the Storefront
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.banner.showHeroBanner,
+                        () => {
+                          const next = !siteConfig.banner.showHeroBanner;
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: { ...prev.banner, showHeroBanner: next }
+                          }));
+                          showToast(next ? '👁️ Hero Banner Shown!' : '🙈 Hero Banner Hidden!');
+                        },
+                        'Show Hero Banner'
+                      )}
+                    </div>
+
+                    <div className="p-3.5 flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                          Top Headline Strip &amp; WhatsApp Pill
+                        </div>
+                        <div className="text-[11px] font-semibold text-slate-600">
+                          {siteConfig.banner.topStripTitle}
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.banner.showTopStrip,
+                        () => {
+                          const next = !siteConfig.banner.showTopStrip;
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: { ...prev.banner, showTopStrip: next }
+                          }));
+                          showToast(next ? '👁️ Top Strip Shown!' : '🙈 Top Strip Hidden!');
+                        },
+                        'Show Top Strip'
+                      )}
+                    </div>
+
+                    {[
+                      {
+                        key: 'showPortraitOrbitBadges' as const,
+                        title: '4 Floating Badges Around Portfolio Portrait',
+                        desc: 'CapCut & Lovable, AI Suite, TikTok UK/USA & SIM/NADRA badges'
+                      },
+                      {
+                        key: 'showHeroFeaturePills' as const,
+                        title: 'Hero Bio Quick Filter Buttons',
+                        desc: 'AI & Pro Apps, TikTok UK, Franchise, NADRA & Live Web Tools buttons inside Hero card'
+                      },
+                      {
+                        key: 'showMarqueeBanner' as const,
+                        title: 'Scrolling Brand Marquee & Live Server Pulse Strip',
+                        desc: 'Animated brand strip above the storefront'
+                      },
+                      {
+                        key: 'showStoreWalletBar' as const,
+                        title: 'Storefront Live Wallet Balance & +Add Payment Bar',
+                        desc: 'Dark wallet balance bar with +Add Payment button on Storefront'
+                      },
+                      {
+                        key: 'showSearchAndCategoryBar' as const,
+                        title: 'Store Search Box & Category Filter Tabs Bar',
+                        desc: 'Search input and category filter buttons above the product grid'
+                      },
+                      {
+                        key: 'showWebToolsOnStore' as const,
+                        title: 'Live Web Tools Section on Storefront',
+                        desc: 'Show or hide the Live Web Tools showcase block below Store products'
+                      },
+                      {
+                        key: 'showReviewsSection' as const,
+                        title: 'Customer Reviews & Trust Badges Showcase',
+                        desc: 'Verified buyer reviews and statistics section'
+                      }
+                    ].map((row) => (
+                      <div key={row.key} className="p-3.5 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            {row.title}
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600">{row.desc}</div>
+                        </div>
+                        {renderToggleSwitch(
+                          activeVisibility[row.key],
+                          () => toggleSiteVisibilityKey(row.key, row.title),
+                          row.title
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Column B: Navigation Tabs, Header Buttons & Floating Widgets */}
+                  <div className="rounded-2xl bg-white/95 border border-indigo-200 divide-y divide-slate-200/70 overflow-hidden shadow-xs">
+                    <div className="px-4 py-2.5 bg-indigo-50/80 text-[11px] font-extrabold uppercase tracking-wider text-indigo-800">
+                      🧭 Navigation Tabs, Header Pills &amp; Floating Buttons
+                    </div>
+
+                    {[
+                      {
+                        key: 'showToolsTab' as const,
+                        title: 'Navigation Tab: Web Tools',
+                        desc: 'Show or hide Web Tools tab in Header & Mobile menu'
+                      },
+                      {
+                        key: 'showAboutTab' as const,
+                        title: 'Navigation Tab: About Saqib',
+                        desc: 'Show or hide About tab in Header & Mobile menu'
+                      },
+                      {
+                        key: 'showFaqsTab' as const,
+                        title: 'Navigation Tab: FAQs & Help',
+                        desc: 'Show or hide FAQs tab in Header & Mobile menu'
+                      },
+                      {
+                        key: 'showContactTab' as const,
+                        title: 'Navigation Tab: Contact Support',
+                        desc: 'Show or hide Contact tab in Header & Mobile menu'
+                      },
+                      {
+                        key: 'showLoginTab' as const,
+                        title: 'Navigation Tab: VIP Login / Wallet',
+                        desc: 'Show or hide VIP Login tab in Header & Mobile menu'
+                      },
+                      {
+                        key: 'showSimDatabaseTracker' as const,
+                        title: 'Pakistan SIM & CNIC Live Database Tracker',
+                        desc: 'Built-in SIM/CNIC search box inside the Web Tools tab'
+                      },
+                      {
+                        key: 'showHeaderWalletPill' as const,
+                        title: 'Header Bar: Live Wallet Balance (+Add) Pill',
+                        desc: 'Green Rs. Balance button in the top navigation bar'
+                      },
+                      {
+                        key: 'showHeaderCartButton' as const,
+                        title: 'Header Bar: Shopping Bag / Multi-Order Button',
+                        desc: 'Pink shopping bag counter button in the top navigation bar'
+                      },
+                      {
+                        key: 'showHeaderRgbToggle' as const,
+                        title: 'Header Bar: RGB Light ON/OFF Toggle Button',
+                        desc: 'Allow visitors to toggle RGB borders ON/OFF from the header'
+                      },
+                      {
+                        key: 'showMobileQuickBar' as const,
+                        title: 'Mobile Upper Quick-Category Scroll Bar',
+                        desc: 'Horizontal quick-filter bar below the top navbar on mobile'
+                      },
+                      {
+                        key: 'showMobileBottomDock' as const,
+                        title: 'Mobile Bottom App Navigation Dock',
+                        desc: 'Fixed bottom 6-icon app bar on mobile phones'
+                      },
+                      {
+                        key: 'showFloatingWhatsApp' as const,
+                        title: 'Floating Bottom-Right WhatsApp Quick Chat Orb',
+                        desc: 'Green floating WhatsApp button in the bottom-right corner'
+                      },
+                      {
+                        key: 'showFloatingScrollTop' as const,
+                        title: 'Floating Rocket Scroll-to-Top Button',
+                        desc: 'Rocket button that appears when scrolling down'
+                      }
+                    ].map((row) => (
+                      <div key={row.key} className="p-3.5 flex items-center justify-between gap-3">
+                        <div>
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            {row.title}
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600">{row.desc}</div>
+                        </div>
+                        {renderToggleSwitch(
+                          activeVisibility[row.key],
+                          () => toggleSiteVisibilityKey(row.key, row.title),
+                          row.title
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 2: HIDE / SHOW INDIVIDUAL STORE PRODUCTS */}
+              {visibilitySubTab === 'products' && (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 bg-white/90 p-3 rounded-2xl border border-pink-200">
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      {activeCategories.map((cat) => (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setVisibilityCatFilter(cat.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer transition ${
+                            visibilityCatFilter === cat.id
+                              ? 'bg-slate-900 text-white shadow-xs'
+                              : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          }`}
+                        >
+                          {cat.shortLabel}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="text"
+                        value={visibilitySearch}
+                        onChange={(e) => setVisibilitySearch(e.target.value)}
+                        placeholder="Search service to hide/show..."
+                        className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 text-xs font-bold text-slate-900"
+                      />
+                      {setAllServicesHidden && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => setAllServicesHidden(false, visibilityCatFilter)}
+                            className="px-3 py-1.5 rounded-xl bg-emerald-500 text-white text-xs font-extrabold cursor-pointer"
+                          >
+                            👁️ Show All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAllServicesHidden(true, visibilityCatFilter)}
+                            className="px-3 py-1.5 rounded-xl bg-rose-500 text-white text-xs font-extrabold cursor-pointer"
+                          >
+                            🙈 Hide All
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5 max-h-[520px] overflow-y-auto pr-1">
+                    {servicesCatalog
+                      .filter((s) =>
+                        visibilityCatFilter === 'all' ? true : s.category === visibilityCatFilter
+                      )
+                      .filter((s) =>
+                        !visibilitySearch.trim()
+                          ? true
+                          : s.title.toLowerCase().includes(visibilitySearch.toLowerCase()) ||
+                            s.badge.toLowerCase().includes(visibilitySearch.toLowerCase())
+                      )
+                      .map((srv) => {
+                        const isHidden = Boolean(srv.hidden);
+                        return (
+                          <div
+                            key={srv.id}
+                            onClick={() => toggleServiceHidden && toggleServiceHidden(srv.id)}
+                            className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition ${
+                              isHidden
+                                ? 'bg-slate-100/90 border-slate-300 opacity-75'
+                                : 'bg-white/95 border-pink-100 hover:border-pink-400 shadow-2xs'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div
+                                className={`w-10 h-10 rounded-xl bg-gradient-to-br ${srv.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
+                              >
+                                {renderOrbVisual(srv.iconType, srv.customIconUrl, srv.title)}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
+                                    {srv.title}
+                                  </span>
+                                  {isHidden ? (
+                                    <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[9px] font-extrabold">
+                                      🙈 HIDDEN
+                                    </span>
+                                  ) : (
+                                    <span className="px-2 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
+                                      👁️ LIVE
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[10px] font-semibold text-slate-500 truncate">
+                                  {srv.badge} • {srv.tiers[0]}
+                                </div>
+                              </div>
+                            </div>
+
+                            {renderToggleSwitch(
+                              !isHidden,
+                              () => toggleServiceHidden && toggleServiceHidden(srv.id),
+                              `Toggle ${srv.title}`
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
+              {/* TAB 3: HIDE / SHOW STORE CATEGORIES */}
+              {visibilitySubTab === 'categories' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {activeCategories
+                    .filter((c) => c.id !== 'all')
+                    .map((cat) => {
+                      const isHidden = Boolean(cat.hidden);
+                      const count = servicesCatalog.filter((s) => s.category === cat.id).length;
+                      return (
+                        <div
+                          key={cat.id}
+                          onClick={() => toggleCategoryHidden(cat.id, cat.shortLabel)}
+                          className={`p-4 rounded-2xl border flex items-center justify-between gap-3 cursor-pointer transition ${
+                            isHidden
+                              ? 'bg-slate-100/90 border-slate-300 opacity-75'
+                              : 'bg-white/95 border-pink-200 hover:border-pink-400 shadow-xs'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                              {renderCategoryIcon(cat.id, `w-5 h-5 ${cat.iconColor}`, cat)}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="text-sm font-extrabold text-slate-900 truncate">
+                                  {cat.shortLabel}
+                                </span>
+                                <span className="px-2 py-0.2 rounded-full bg-pink-50 text-pink-700 text-[9px] font-extrabold">
+                                  {count} Services
+                                </span>
+                                {isHidden && (
+                                  <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[9px] font-extrabold">
+                                    🙈 HIDDEN
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs font-semibold text-slate-500 truncate">
+                                {cat.label} (Hiding this hides its tab &amp; {count} services)
+                              </div>
+                            </div>
+                          </div>
+
+                          {renderToggleSwitch(
+                            !isHidden,
+                            () => toggleCategoryHidden(cat.id, cat.shortLabel),
+                            `Toggle ${cat.shortLabel}`
+                          )}
+                        </div>
+                      );
+                    })}
+                </div>
+              )}
+
+              {/* TAB 4: HIDE / SHOW WEB TOOLS & PAYMENT METHODS */}
+              {visibilitySubTab === 'tools' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Web Tools */}
+                  <div className="rounded-2xl bg-white/95 border border-indigo-200 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-800">
+                        🛠️ Live Web Tools ({webToolsCatalog.length})
+                      </span>
+                      {setAllToolsHidden && (
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => setAllToolsHidden(false)}
+                            className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[10px] font-extrabold cursor-pointer"
+                          >
+                            Show All
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setAllToolsHidden(true)}
+                            className="px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 text-[10px] font-extrabold cursor-pointer"
+                          >
+                            Hide All
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2 max-h-96 overflow-y-auto pr-1">
+                      {webToolsCatalog.map((tool) => {
+                        const isHidden = Boolean(tool.hidden);
+                        return (
+                          <div
+                            key={tool.id}
+                            onClick={() => toggleToolHidden && toggleToolHidden(tool.id)}
+                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer ${
+                              isHidden
+                                ? 'bg-slate-100 border-slate-300 opacity-75'
+                                : 'bg-white border-indigo-100 hover:border-indigo-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div
+                                className={`w-9 h-9 rounded-xl bg-gradient-to-br ${tool.orbGrad} text-white flex items-center justify-center flex-shrink-0 overflow-hidden`}
+                              >
+                                {renderOrbVisual(tool.iconType, tool.iconUrl, tool.title)}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="text-xs font-extrabold text-slate-900 truncate">
+                                  {tool.title}
+                                </div>
+                                <div className="text-[10px] font-mono-code text-slate-500 truncate">
+                                  {tool.toolUrl}
+                                </div>
+                              </div>
+                            </div>
+                            {renderToggleSwitch(
+                              !isHidden,
+                              () => toggleToolHidden && toggleToolHidden(tool.id),
+                              tool.title
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Payment Methods */}
+                  <div className="rounded-2xl bg-white/95 border border-emerald-200 p-4 space-y-3">
+                    <div className="text-xs font-extrabold uppercase tracking-wider text-emerald-800">
+                      🏦 Payment Methods ({siteConfig.paymentMethods.length})
+                    </div>
+                    <div className="space-y-2">
+                      {siteConfig.paymentMethods.map((m, idx) => {
+                        const isEnabled = m.enabled !== false;
+                        return (
+                          <div
+                            key={m.id}
+                            onClick={() =>
+                              updatePaymentMethodField(idx, 'enabled', !isEnabled)
+                            }
+                            className={`p-3 rounded-xl border flex items-center justify-between gap-3 cursor-pointer ${
+                              !isEnabled
+                                ? 'bg-slate-100 border-slate-300 opacity-75'
+                                : 'bg-white border-emerald-100 hover:border-emerald-300'
+                            }`}
+                          >
+                            <div>
+                              <div className="text-xs font-extrabold text-slate-900">
+                                {m.label} ({m.id})
+                              </div>
+                              <div className="text-[10px] font-mono-code font-bold text-emerald-700">
+                                {m.accountTitle} • {m.accountNumber}
+                              </div>
+                            </div>
+                            {renderToggleSwitch(
+                              isEnabled,
+                              () => updatePaymentMethodField(idx, 'enabled', !isEnabled),
+                              m.label
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

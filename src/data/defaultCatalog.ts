@@ -79,6 +79,7 @@ export interface StoreService {
   inputLabel: string;
   placeholder: string;
   tiers: string[];
+  hidden?: boolean;
 }
 
 export interface WebToolItem {
@@ -93,6 +94,7 @@ export interface WebToolItem {
   plush: string;
   orbGrad: string;
   openMode: 'new_tab' | 'embed_modal' | 'sim_tab';
+  hidden?: boolean;
 }
 
 export type FaqCategoryId = 'all' | 'smm' | 'tools' | 'sim' | 'payment';
@@ -111,6 +113,7 @@ export interface StoreCategoryMeta {
   iconColor: string;
   iconType?: IconType;
   customIconUrl?: string;
+  hidden?: boolean;
 }
 
 export const CATEGORY_META: StoreCategoryMeta[] = [
