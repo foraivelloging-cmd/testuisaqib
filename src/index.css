@@ -1,0 +1,1588 @@
+@import "tailwindcss";
+
+:root {
+  --glass-border: rgba(255, 255, 255, 0.88);
+  --glass-highlight: rgba(255, 255, 255, 0.96);
+  --glass-shadow: rgba(45, 55, 95, 0.18);
+  --pink-accent: #f472b6;
+  --rose-grad: linear-gradient(135deg, #f472b6 0%, #ec4899 50%, #db2777 100%);
+  /* Default Store Font Pack 1: Tech Modern (Space Grotesk + Plus Jakarta Sans + JetBrains Mono) */
+  --store-font-display: 'Space Grotesk', sans-serif;
+  --store-font-body: 'Plus Jakarta Sans', sans-serif;
+  --store-font-mono: 'JetBrains Mono', monospace;
+  --store-heading-tracking: -0.015em;
+}
+
+/* ============================================================================ */
+/* 6 CURATED STORE FONT PACKS (INDEPENDENT OF THE 4 UI COLOR THEMES)            */
+/* ============================================================================ */
+body.font-pack-tech-modern {
+  --store-font-display: 'Space Grotesk', sans-serif;
+  --store-font-body: 'Plus Jakarta Sans', sans-serif;
+  --store-font-mono: 'JetBrains Mono', monospace;
+  --store-heading-tracking: -0.02em;
+}
+
+body.font-pack-cute-plush {
+  --store-font-display: 'Fredoka', sans-serif;
+  --store-font-body: 'Quicksand', sans-serif;
+  --store-font-mono: 'JetBrains Mono', monospace;
+  --store-heading-tracking: 0.01em;
+}
+
+body.font-pack-luxury-serif {
+  --store-font-display: 'Playfair Display', Georgia, serif;
+  --store-font-body: 'Plus Jakarta Sans', sans-serif;
+  --store-font-mono: 'JetBrains Mono', monospace;
+  --store-heading-tracking: -0.01em;
+}
+
+body.font-pack-bold-syne {
+  --store-font-display: 'Syne', sans-serif;
+  --store-font-body: 'Outfit', sans-serif;
+  --store-font-mono: 'Space Mono', monospace;
+  --store-heading-tracking: -0.025em;
+}
+
+body.font-pack-cyber-orbitron {
+  --store-font-display: 'Orbitron', sans-serif;
+  --store-font-body: 'Rajdhani', sans-serif;
+  --store-font-mono: 'Share Tech Mono', monospace;
+  --store-heading-tracking: 0.03em;
+}
+
+body.font-pack-clean-poppins {
+  --store-font-display: 'Poppins', sans-serif;
+  --store-font-body: 'DM Sans', sans-serif;
+  --store-font-mono: 'JetBrains Mono', monospace;
+  --store-heading-tracking: -0.015em;
+}
+
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--store-font-body) !important;
+  margin: 0;
+  padding: 0;
+  background-color: #f8e8f4;
+  background-image: 
+    radial-gradient(at 10% 10%, #ffc8dd 0px, transparent 45%),
+    radial-gradient(at 85% 12%, #bde0fe 0px, transparent 48%),
+    radial-gradient(at 15% 45%, #d8f3dc 0px, transparent 50%),
+    radial-gradient(at 85% 50%, #ffdfba 0px, transparent 45%),
+    radial-gradient(at 25% 80%, #e0fbfc 0px, transparent 50%),
+    radial-gradient(at 80% 88%, #cdb4db 0px, transparent 50%),
+    linear-gradient(135deg, #ffd6e8 0%, #d8f3fc 35%, #fce1e4 70%, #dce4ff 100%);
+  background-attachment: fixed;
+  color: #1a1b26;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeSpeed;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--store-font-body);
+}
+
+/* Disable heavy fixed background repaint on mobile touch devices for 60fps scrolling */
+@media (max-width: 768px) {
+  body {
+    background-attachment: scroll;
+    background-image: linear-gradient(160deg, #ffd6e8 0%, #e2f5fc 35%, #fce1e4 70%, #e4e9ff 100%);
+  }
+}
+
+h1:not(.font-specimen-custom),
+h2:not(.font-specimen-custom),
+h3:not(.font-specimen-custom),
+h4:not(.font-specimen-custom),
+.font-display:not(.font-specimen-custom) {
+  font-family: var(--store-font-display) !important;
+  letter-spacing: var(--store-heading-tracking, -0.015em);
+}
+
+.font-mono-code:not(.font-specimen-custom) {
+  font-family: var(--store-font-mono) !important;
+}
+
+/* 3D Pastel Glossy Title ("MUHAMMAD SAQIB") */
+.title-3d-blue {
+  font-family: var(--store-font-display) !important;
+  color: #f0f6ff;
+  text-shadow: 
+    0 1px 0 #ffffff,
+    0 2px 0 #c6dafc,
+    0 3px 0 #9dbbf3,
+    0 4px 0 #7b9ee3,
+    0 6px 12px rgba(59, 89, 152, 0.35),
+    0 0 18px rgba(255, 255, 255, 0.8);
+  letter-spacing: var(--store-heading-tracking, 0.03em);
+}
+
+/* 3D Pastel Rose Title ("Saqib Visuals") */
+.title-3d-rose {
+  font-family: var(--store-font-display) !important;
+  background: linear-gradient(180deg, #fff5f8 0%, #ffc2d4 55%, #e88ca7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0px 3px 0px #b85d79) drop-shadow(0px 6px 10px rgba(168, 70, 100, 0.3));
+}
+
+/* Thick 3D Molded Clear Acrylic / Pink Glass Capsule Frame */
+.acrylic-frame {
+  position: relative;
+  background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.34) 50%, rgba(255,255,255,0.62) 100%);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 14px 28px -6px rgba(35, 48, 78, 0.16),
+    0 4px 10px -2px rgba(35, 48, 78, 0.08),
+    inset 0 3px 6px rgba(255, 255, 255, 0.95),
+    inset 0 -3px 6px rgba(180, 150, 190, 0.22);
+  transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
+  transform: translateZ(0);
+}
+
+.acrylic-frame::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  border: 1.5px solid rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  z-index: 20;
+}
+
+/* Specular top glass shine strip */
+.acrylic-frame::after {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 10%;
+  right: 10%;
+  height: 7px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.9), transparent);
+  pointer-events: none;
+  z-index: 21;
+}
+
+@media (hover: hover) {
+  .acrylic-interactive:hover {
+    transform: translateY(-4px) scale(1.012);
+    box-shadow: 
+      0 20px 32px -8px rgba(35, 48, 78, 0.22),
+      0 8px 16px -4px rgba(35, 48, 78, 0.12),
+      inset 0 4px 8px rgba(255, 255, 255, 1);
+    border-color: #ffffff;
+  }
+}
+
+.acrylic-interactive:active {
+  transform: scale(0.985);
+}
+
+/* Tactile Soft Plush Inner Pillow */
+.plush-pillow {
+  position: relative;
+  overflow: hidden;
+  box-shadow: 
+    inset 0 4px 10px rgba(255, 255, 255, 0.85),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.05);
+}
+
+.plush-hero {
+  background: radial-gradient(circle at 30% 25%, #fff0f5 0%, #ffd6e0 45%, #f7cad0 75%, #f4cbb8 100%);
+}
+.plush-sim-search {
+  background: radial-gradient(circle at 50% 20%, #ffffff 0%, #ffe4ec 45%, #ffd1df 85%, #fedbe8 100%);
+}
+.plush-whatsapp {
+  background: linear-gradient(135deg, #e8f8ed 0%, #d2f2dc 50%, #c2ebd0 100%);
+}
+.plush-website {
+  background: linear-gradient(135deg, #e6f2ff 0%, #d0e5ff 50%, #bfd9fc 100%);
+}
+.plush-ig {
+  background: radial-gradient(circle at 35% 30%, #fff7d6 0%, #ffe599 55%, #f7d070 100%);
+}
+.plush-tiktok {
+  background: radial-gradient(circle at 35% 30%, #ffe5ec 0%, #ffb3c6 55%, #f294b0 100%);
+}
+.plush-fb {
+  background: radial-gradient(circle at 35% 30%, #e6f4ff 0%, #b3dbff 55%, #8ec5fc 100%);
+}
+.plush-snap {
+  background: radial-gradient(circle at 35% 30%, #f3e8ff 0%, #d8b4fe 55%, #c098f7 100%);
+}
+.plush-capcut {
+  background: linear-gradient(135deg, #f0f4ff 0%, #d9e2ff 50%, #c4d1ff 100%);
+}
+.plush-ai {
+  background: linear-gradient(135deg, #e6fcf5 0%, #c3fae8 55%, #96f2d7 100%);
+}
+
+.plush-srv-1 { background: linear-gradient(135deg, #ffe5ec 0%, #ffc2d1 100%); }
+.plush-srv-2 { background: linear-gradient(135deg, #fff1e6 0%, #ffd8be 100%); }
+.plush-srv-3 { background: linear-gradient(135deg, #e8f8f0 0%, #bcebd3 100%); }
+.plush-srv-4 { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); }
+.plush-srv-5 { background: linear-gradient(135deg, #f3e5f5 0%, #e1bee7 100%); }
+.plush-srv-6 { background: linear-gradient(135deg, #e8eaf6 0%, #c5cae9 100%); }
+
+/* Fluffy 3D Pom-Pom Orb for Icons */
+.fluffy-orb {
+  position: relative;
+  border-radius: 9999px;
+  box-shadow: 
+    0 8px 16px -2px rgba(0, 0, 0, 0.16),
+    inset 0 6px 12px rgba(255, 255, 255, 0.8),
+    inset 0 -6px 12px rgba(0, 0, 0, 0.12);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.acrylic-interactive:hover .fluffy-orb {
+  transform: scale(1.08) rotate(-5deg);
+}
+
+/* Portrait Framing */
+.saqib-portrait-crop {
+  width: 100%;
+  height: 100%;
+  background-image: url('https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png');
+  background-size: cover;
+  background-position: center 15%;
+  background-repeat: no-repeat;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.portrait-lens:hover .saqib-portrait-crop {
+  transform: scale(1.06);
+}
+
+/* Floating Orbit Icon Badges around Portrait */
+.orbit-badge {
+  position: absolute;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 2.5px solid #ffffff;
+  box-shadow: 
+    0 10px 20px -4px rgba(35, 48, 78, 0.25),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+  transition: all 0.3s ease;
+}
+.orbit-badge:hover {
+  transform: scale(1.16) rotate(6deg) !important;
+}
+
+/* Floating 3D Plush Stars & Hearts */
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-7px) rotate(4deg); }
+}
+@keyframes floatReverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(6px) rotate(-5deg); }
+}
+@keyframes pulseGlow {
+  0%, 100% { opacity: 0.75; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+.float-slow { animation: floatSlow 4.2s ease-in-out infinite; }
+.float-reverse { animation: floatReverse 4.8s ease-in-out infinite; }
+.sparkle-anim { animation: pulseGlow 2.4s ease-in-out infinite; }
+
+/* Tactile Pink Glass Search & Button Components */
+.sim-input-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.9);
+  border: 2px solid rgba(244, 114, 182, 0.5);
+  border-radius: 20px;
+  padding: 4px 8px 4px 16px;
+  box-shadow: 
+    inset 0 2px 6px rgba(0, 0, 0, 0.05),
+    0 4px 14px rgba(244, 114, 182, 0.15);
+  transition: all 0.25s ease;
+}
+
+.sim-input-box:focus-within {
+  border-color: #ec4899;
+  background: #ffffff;
+  box-shadow: 
+    0 0 0 4px rgba(244, 114, 182, 0.25),
+    0 8px 24px rgba(236, 72, 153, 0.25);
+  transform: translateY(-1px);
+}
+
+.sim-btn-glow {
+  position: relative;
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 45%, #8b5cf6 100%);
+  border: 2px solid #ffffff;
+  border-radius: 20px;
+  color: #ffffff;
+  box-shadow: 
+    0 8px 22px rgba(236, 72, 153, 0.4),
+    0 2px 6px rgba(139, 92, 246, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.6);
+  overflow: hidden;
+  transition: all 0.22s ease;
+}
+
+.sim-btn-glow:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 28px rgba(236, 72, 153, 0.5),
+    0 4px 10px rgba(139, 92, 246, 0.35);
+}
+
+.sim-btn-glow:active {
+  transform: translateY(1px) scale(0.98);
+}
+
+.sim-btn-glow::after {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%; width: 50%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.7), transparent);
+  transform: skewX(-20deg);
+  animation: btnShine 3.5s infinite;
+}
+@keyframes btnShine { 0% { left: -100%; } 40%, 100% { left: 140%; } }
+
+/* Tactile Pink Glass Radar Loader */
+.radar-scan-box {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  display: grid;
+  place-items: center;
+}
+.radar-scan-box::before {
+  content: '';
+  position: absolute;
+  inset: -10px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.35), transparent 70%);
+  animation: radarPulse 1.8s ease-in-out infinite;
+}
+@keyframes radarPulse {
+  0%, 100% { transform: scale(0.88); opacity: 0.5; }
+  50% { transform: scale(1.15); opacity: 1; }
+}
+.radar-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px dashed rgba(236, 72, 153, 0.7);
+  animation: spinRing 2.4s linear infinite;
+}
+.radar-ring.r2 {
+  inset: 12px;
+  border: 2px solid transparent;
+  border-top-color: #8b5cf6;
+  border-bottom-color: #ec4899;
+  animation: spinRing 1.6s linear infinite reverse;
+}
+@keyframes spinRing { to { transform: rotate(360deg); } }
+
+.plush-login {
+  background: radial-gradient(circle at 20% 20%, #ffffff 0%, #ffe8f2 45%, #e8eaff 85%, #f5d0fe 100%);
+}
+.plush-about {
+  background: linear-gradient(135deg, #fff5f7 0%, #fce7f3 45%, #e0e7ff 100%);
+}
+.plush-faq {
+  background: linear-gradient(135deg, #fdf4ff 0%, #fae8ff 50%, #f3e8ff 100%);
+}
+.plush-contact {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 45%, #e0f2fe 100%);
+}
+
+/* FAQ Smooth Accordion */
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+  opacity: 0;
+}
+.faq-item.open .faq-answer {
+  max-height: 320px;
+  opacity: 1;
+}
+.faq-item.open .faq-chevron {
+  transform: rotate(180deg);
+  background: #ec4899;
+  color: #ffffff;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.3); }
+::-webkit-scrollbar-thumb { background: rgba(244, 114, 182, 0.5); border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #ec4899; }
+
+/* Infinite 3D Brand Marquee & Animated Panel Tools (GPU Accelerated) */
+@keyframes marqueeLeft {
+  0% { transform: translate3d(0%, 0, 0); }
+  100% { transform: translate3d(-50%, 0, 0); }
+}
+@keyframes marqueeRight {
+  0% { transform: translate3d(-50%, 0, 0); }
+  100% { transform: translate3d(0%, 0, 0); }
+}
+.marquee-track-left {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marqueeLeft 34s linear infinite;
+}
+.marquee-track-right {
+  display: flex;
+  width: max-content;
+  will-change: transform;
+  animation: marqueeRight 38s linear infinite;
+}
+.marquee-wrapper:hover .marquee-track-left,
+.marquee-wrapper:hover .marquee-track-right {
+  animation-play-state: paused;
+}
+
+@keyframes pulseGlowGreen {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.55); }
+  50% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+}
+.server-pulse-dot {
+  animation: pulseGlowGreen 1.8s infinite;
+}
+
+/* Mobile Responsive & Native App 60FPS Turbo Engine */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.mobile-bottom-dock {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 232, 245, 0.88) 100%);
+  backdrop-filter: blur(18px) saturate(180%);
+  -webkit-backdrop-filter: blur(18px) saturate(180%);
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  box-shadow:
+    0 12px 28px -6px rgba(45, 35, 85, 0.26),
+    0 4px 10px rgba(236, 72, 153, 0.16),
+    inset 0 2px 3px rgba(255, 255, 255, 0.98);
+  padding-bottom: max(0.35rem, env(safe-area-inset-bottom));
+  transform: translateZ(0);
+}
+
+/* On mobile phones (<768px), replace 40+ heavy backdrop-filter blurs with fast GPU-composited high-gloss acrylic so 2-column grid scrolls at 60-120 FPS */
+@media (max-width: 768px) {
+  .acrylic-frame:not(nav) {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 242, 249, 0.85) 100%);
+    border-width: 2px;
+    box-shadow:
+      0 6px 16px -4px rgba(45, 55, 95, 0.12),
+      inset 0 2px 3px rgba(255, 255, 255, 0.96);
+  }
+  .acrylic-frame::before {
+    display: none;
+  }
+  .orbit-badge {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    background: rgba(255, 255, 255, 0.95);
+  }
+  input, select, textarea {
+    font-size: 13px;
+  }
+}
+
+/* ==================== 60FPS HARDWARE-ACCELERATED SCROLL REVEAL ENGINE ==================== */
+[data-scroll] {
+  opacity: 0;
+  will-change: transform, opacity;
+  transition:
+    opacity 0.62s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.68s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+[data-scroll="up"] {
+  transform: translate3d(0, 34px, 0) scale(0.96);
+}
+
+[data-scroll="left"] {
+  transform: translate3d(-38px, 12px, 0) scale(0.97);
+}
+
+[data-scroll="right"] {
+  transform: translate3d(38px, 12px, 0) scale(0.97);
+}
+
+[data-scroll="zoom"] {
+  transform: translate3d(0, 20px, 0) scale(0.91);
+}
+
+[data-scroll].scroll-in-view {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.scroll-delay-1 { transition-delay: 65ms; }
+.scroll-delay-2 { transition-delay: 130ms; }
+.scroll-delay-3 { transition-delay: 195ms; }
+
+/* Neon Top Scroll Progress Bar */
+.scroll-progress-bar {
+  background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 45%, #10b981 100%);
+  box-shadow: 0 0 12px rgba(236, 72, 153, 0.75), 0 0 6px rgba(16, 185, 129, 0.6);
+  transform-origin: 0% 50%;
+  will-change: transform;
+}
+
+/* ===================================================================== */
+/* ASTRO-NEUMORPHIC OS DESIGN SYSTEM & GLOBAL NO-PINK UI THEME ENGINE    */
+/* ===================================================================== */
+
+:root {
+  --neu-bg: #e4e7ec;
+  --neu-surface: #e8ebf0;
+  --neu-shadow-dark: #c2c6ce;
+  --neu-shadow-light: #ffffff;
+  --space-navy: #0e1220;
+  --space-deep: #080b14;
+  --neon-cyan: #38bdf8;
+  --neon-blue: #2563eb;
+  --ink-slate: #2b303c;
+}
+
+/* Raised Matte Neumorphic Surface (Exact Reference Soft White/Grey Shadow) */
+.neu-card {
+  background: linear-gradient(145deg, #f0f3f8 0%, #e3e6ec 100%);
+  box-shadow:
+    10px 12px 24px rgba(182, 188, 198, 0.75),
+    -10px -10px 22px rgba(255, 255, 255, 0.95),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.9);
+  border: 1.5px solid rgba(255, 255, 255, 0.78);
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease;
+}
+
+.neu-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    13px 15px 28px rgba(175, 182, 194, 0.82),
+    -10px -10px 24px rgba(255, 255, 255, 0.98),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.95);
+}
+
+/* Small Raised Neumorphic Day Pill & Mini Button */
+.neu-pill-sm {
+  background: linear-gradient(145deg, #f4f6fa 0%, #e1e5ec 100%);
+  box-shadow:
+    4px 5px 10px rgba(180, 186, 196, 0.75),
+    -4px -4px 10px rgba(255, 255, 255, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transition: all 0.2s ease;
+}
+
+.neu-pill-sm:hover {
+  transform: translateY(-1.5px);
+}
+
+.neu-pill-sm:active, .neu-btn:active {
+  transform: scale(0.95);
+  box-shadow:
+    inset 4px 4px 8px rgba(180, 186, 196, 0.7),
+    inset -4px -4px 8px rgba(255, 255, 255, 0.9);
+}
+
+/* Recessed / Inset Neumorphic Well */
+.neu-inset {
+  background: linear-gradient(145deg, #d8dce4 0%, #eaedf2 100%);
+  box-shadow:
+    inset 6px 6px 12px rgba(182, 188, 198, 0.78),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+/* Deep Space Navy Card with Cyan Neon Glow (Rocket, Analog Clock, Active Day) */
+.space-navy-box {
+  background: radial-gradient(circle at 30% 25%, #19213a 0%, #0d1222 65%, #070a14 100%) !important;
+  box-shadow:
+    10px 14px 26px rgba(14, 18, 34, 0.35),
+    -6px -6px 18px rgba(255, 255, 255, 0.8),
+    inset 0 1px 2px rgba(56, 189, 248, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.space-navy-box::before {
+  content: '';
+  position: absolute;
+  top: -35%;
+  left: -35%;
+  width: 90%;
+  height: 90%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0) 60%);
+  transform: rotate(-15deg);
+  pointer-events: none;
+}
+
+.cyan-glow-text {
+  color: #67e8f9;
+  text-shadow: 0 0 10px rgba(56, 189, 248, 0.75), 0 0 20px rgba(37, 99, 235, 0.45);
+}
+
+.cyan-neon-border {
+  border: 1.8px solid rgba(56, 189, 248, 0.75);
+  box-shadow:
+    0 0 12px rgba(56, 189, 248, 0.45),
+    inset 0 0 10px rgba(56, 189, 248, 0.3);
+}
+
+.clock-digits {
+  font-family: 'Space Grotesk', sans-serif;
+  letter-spacing: -0.04em;
+  line-height: 0.88;
+  color: #1f2430;
+}
+
+.handwritten-sub {
+  font-family: 'Caveat', cursive;
+}
+
+.saqib-avatar-crop {
+  position: relative;
+  overflow: hidden;
+  border-radius: 9999px;
+  background: #0d1222;
+}
+
+.saqib-avatar-crop img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 20%;
+  display: block;
+  pointer-events: none;
+}
+
+@keyframes astroFloat {
+  0%, 100% { transform: translateY(0px) rotate(-2deg); }
+  50% { transform: translateY(-7px) rotate(2deg); }
+}
+
+.astronaut-float {
+  animation: astroFloat 4.2s ease-in-out infinite;
+  filter: drop-shadow(8px 12px 16px rgba(150, 158, 172, 0.75));
+}
+
+@keyframes waveSlide {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(-22%); }
+  100% { transform: translateX(0); }
+}
+
+.liquid-wave-svg {
+  animation: waveSlide 5s ease-in-out infinite;
+}
+
+@keyframes rocketHover {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-3px, -2px); }
+}
+
+.rocket-ship {
+  animation: rocketHover 2.4s ease-in-out infinite;
+}
+
+/* ============================================================================ */
+/* GLOBAL FULL-WEBSITE REPLACEMENT WHEN ASTRO-NEUMORPHIC UI MODE IS ACTIVE      */
+/* Removes all Pink/Rose across the entire site & applies Matte Neumorphic OS   */
+/* ============================================================================ */
+body.theme-astro-neu {
+  background-color: #e4e7ec !important;
+  background-image: linear-gradient(145deg, #eaedf2 0%, #e2e5ec 50%, #dadfe7 100%) !important;
+  color: #2b303c !important;
+}
+
+body.theme-astro-neu .scroll-progress-bar {
+  background: linear-gradient(90deg, #0e1220 0%, #0284c7 45%, #38bdf8 100%) !important;
+  box-shadow: 0 0 12px rgba(56, 189, 248, 0.8), 0 0 6px rgba(37, 99, 235, 0.6) !important;
+}
+
+body.theme-astro-neu::-webkit-scrollbar-track {
+  background: #e2e5ec;
+}
+body.theme-astro-neu::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 999px;
+}
+body.theme-astro-neu::-webkit-scrollbar-thumb:hover {
+  background: #0e1220;
+}
+
+/* Replace 3D Pink/Acrylic Frames with Raised Matte Neumorphic Surface (.neu-card) */
+body.theme-astro-neu .acrylic-frame {
+  background: linear-gradient(145deg, #f0f3f8 0%, #e3e6ec 100%) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.82) !important;
+  box-shadow:
+    10px 12px 24px rgba(182, 188, 198, 0.78),
+    -10px -10px 22px rgba(255, 255, 255, 0.96),
+    inset 1px 1px 2px rgba(255, 255, 255, 0.92) !important;
+}
+
+body.theme-astro-neu .acrylic-frame::before,
+body.theme-astro-neu .acrylic-frame::after {
+  display: none !important;
+}
+
+/* Replace all Pastel Pink Plush Pillows with Tactile Matte Neumorphic Surfaces */
+body.theme-astro-neu .plush-pillow,
+body.theme-astro-neu .plush-hero,
+body.theme-astro-neu .plush-sim-search,
+body.theme-astro-neu .plush-login,
+body.theme-astro-neu .plush-about,
+body.theme-astro-neu .plush-faq,
+body.theme-astro-neu .plush-contact,
+body.theme-astro-neu .plush-whatsapp,
+body.theme-astro-neu .plush-website,
+body.theme-astro-neu .plush-ig,
+body.theme-astro-neu .plush-tiktok,
+body.theme-astro-neu .plush-fb,
+body.theme-astro-neu .plush-snap,
+body.theme-astro-neu .plush-capcut,
+body.theme-astro-neu .plush-ai,
+body.theme-astro-neu .plush-srv-1,
+body.theme-astro-neu .plush-srv-2,
+body.theme-astro-neu .plush-srv-3,
+body.theme-astro-neu .plush-srv-4,
+body.theme-astro-neu .plush-srv-5,
+body.theme-astro-neu .plush-srv-6 {
+  background: linear-gradient(145deg, #eef1f6 0%, #e2e6ee 100%) !important;
+  box-shadow:
+    inset 2px 2px 5px rgba(255, 255, 255, 0.9),
+    inset -3px -3px 7px rgba(182, 188, 198, 0.45) !important;
+}
+
+/* Replace 3D Rose/Blue Titles with Astro-Neumorphic Slate & Sky Gradient */
+body.theme-astro-neu .title-3d-blue {
+  font-family: var(--store-font-display) !important;
+  color: #0f172a !important;
+  text-shadow: 2px 3px 6px rgba(180, 186, 196, 0.65), -2px -2px 4px rgba(255, 255, 255, 0.9) !important;
+}
+
+body.theme-astro-neu .title-3d-rose {
+  font-family: var(--store-font-display) !important;
+  background: linear-gradient(90deg, #0f172a 0%, #0369a1 55%, #0284c7 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: none !important;
+}
+
+/* Replace Pink Search Input Box with Recessed Neumorphic Well (.neu-inset) */
+body.theme-astro-neu .sim-input-box {
+  background: linear-gradient(145deg, #d8dce4 0%, #eaedf2 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.7) !important;
+  box-shadow:
+    inset 6px 6px 12px rgba(182, 188, 198, 0.78),
+    inset -6px -6px 12px rgba(255, 255, 255, 0.92) !important;
+}
+
+body.theme-astro-neu .sim-input-box:focus-within {
+  border-color: #38bdf8 !important;
+  box-shadow:
+    inset 4px 4px 10px rgba(182, 188, 198, 0.7),
+    0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+}
+
+/* Replace Pink Glow Buttons (.sim-btn-glow) with Deep-Space Navy + Cyan Neon (.space-navy-box) */
+body.theme-astro-neu .sim-btn-glow {
+  background: radial-gradient(circle at 30% 25%, #19213a 0%, #0d1222 65%, #070a14 100%) !important;
+  border: 1.5px solid rgba(56, 189, 248, 0.65) !important;
+  color: #ffffff !important;
+  box-shadow:
+    8px 12px 22px rgba(14, 18, 34, 0.32),
+    -4px -4px 12px rgba(255, 255, 255, 0.8),
+    inset 0 1px 2px rgba(56, 189, 248, 0.4) !important;
+}
+
+body.theme-astro-neu .sim-btn-glow:hover {
+  box-shadow:
+    10px 14px 26px rgba(14, 18, 34, 0.42),
+    0 0 14px rgba(56, 189, 248, 0.45) !important;
+}
+
+/* Replace Mobile Bottom Dock with Matte Neumorphic Dock */
+body.theme-astro-neu .mobile-bottom-dock {
+  background: linear-gradient(145deg, #f0f3f8 0%, #e3e6ec 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    8px 10px 24px rgba(160, 168, 180, 0.8),
+    -6px -6px 16px rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-astro-neu .faq-item.open .faq-chevron {
+  background: #0e1220 !important;
+  color: #38bdf8 !important;
+}
+
+/* Remap all Pink/Rose/Fuchsia Tailwind utility classes in Astro-Neumorphic mode with EXACT class selectors */
+body.theme-astro-neu .orbit-badge {
+  background: linear-gradient(145deg, #f4f6fa 0%, #e1e5ec 100%) !important;
+  border: 1.5px solid rgba(255, 255, 255, 0.9) !important;
+  color: #0f172a !important;
+  box-shadow:
+    6px 8px 16px rgba(175, 182, 194, 0.8),
+    -5px -5px 14px rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-astro-neu .portrait-lens {
+  background: linear-gradient(145deg, #f0f3f8 0%, #e3e6ec 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.9) !important;
+  box-shadow:
+    12px 16px 30px rgba(168, 176, 190, 0.85),
+    -10px -10px 24px rgba(255, 255, 255, 0.98),
+    inset 2px 2px 5px rgba(255, 255, 255, 0.9) !important;
+}
+
+/* Light pastel badge/chip backgrounds -> Light Neumorphic surface with Dark Slate opposite text */
+body.theme-astro-neu .bg-pink-50,
+body.theme-astro-neu .bg-rose-50,
+body.theme-astro-neu .bg-fuchsia-50,
+body.theme-astro-neu .bg-pink-100,
+body.theme-astro-neu .bg-rose-100,
+body.theme-astro-neu .bg-fuchsia-100 {
+  background: linear-gradient(145deg, #f4f6fa 0%, #e1e5ec 100%) !important;
+  color: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.45) !important;
+  box-shadow:
+    3px 4px 8px rgba(180, 186, 196, 0.55),
+    -3px -3px 8px rgba(255, 255, 255, 0.9) !important;
+}
+
+body.theme-astro-neu .from-pink-50,
+body.theme-astro-neu .from-pink-100,
+body.theme-astro-neu .from-rose-50,
+body.theme-astro-neu .from-rose-100,
+body.theme-astro-neu .via-pink-50,
+body.theme-astro-neu .to-pink-50,
+body.theme-astro-neu .to-rose-50 {
+  background: linear-gradient(145deg, #eef1f6 0%, #e2e6ee 100%) !important;
+  color: #0f172a !important;
+}
+
+/* Vibrant/Dark action buttons & badges -> Deep-Space Navy with crisp Pure White / Cyan opposite text */
+body.theme-astro-neu .bg-pink-500:not(.fluffy-orb),
+body.theme-astro-neu .bg-pink-600:not(.fluffy-orb),
+body.theme-astro-neu .bg-rose-500:not(.fluffy-orb),
+body.theme-astro-neu .bg-rose-600:not(.fluffy-orb),
+body.theme-astro-neu .from-pink-500:not(.fluffy-orb),
+body.theme-astro-neu .from-pink-600:not(.fluffy-orb),
+body.theme-astro-neu .from-rose-500:not(.fluffy-orb),
+body.theme-astro-neu .from-rose-600:not(.fluffy-orb),
+body.theme-astro-neu .via-pink-500:not(.fluffy-orb),
+body.theme-astro-neu .via-rose-500:not(.fluffy-orb),
+body.theme-astro-neu .to-pink-500:not(.fluffy-orb),
+body.theme-astro-neu .to-pink-600:not(.fluffy-orb),
+body.theme-astro-neu .to-rose-500:not(.fluffy-orb),
+body.theme-astro-neu .to-rose-600:not(.fluffy-orb) {
+  background: radial-gradient(circle at 30% 25%, #1e293b 0%, #0f172a 65%, #070a14 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(56, 189, 248, 0.55) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+  box-shadow:
+    6px 10px 20px rgba(14, 18, 34, 0.3),
+    -3px -3px 10px rgba(255, 255, 255, 0.75),
+    inset 0 1px 2px rgba(56, 189, 248, 0.4) !important;
+}
+
+body.theme-astro-neu .bg-pink-500:not(.fluffy-orb) *,
+body.theme-astro-neu .bg-pink-600:not(.fluffy-orb) *,
+body.theme-astro-neu .bg-rose-500:not(.fluffy-orb) *,
+body.theme-astro-neu .bg-rose-600:not(.fluffy-orb) *,
+body.theme-astro-neu .from-pink-500:not(.fluffy-orb) *,
+body.theme-astro-neu .from-pink-600:not(.fluffy-orb) *,
+body.theme-astro-neu .from-rose-500:not(.fluffy-orb) *,
+body.theme-astro-neu .to-pink-500:not(.fluffy-orb) *,
+body.theme-astro-neu .to-pink-600:not(.fluffy-orb) *,
+body.theme-astro-neu .to-rose-500:not(.fluffy-orb) *,
+body.theme-astro-neu .sim-btn-glow * {
+  color: #ffffff !important;
+}
+
+/* Accent text on light surfaces -> High-contrast Deep Sky Blue */
+body.theme-astro-neu .text-pink-500,
+body.theme-astro-neu .text-pink-600,
+body.theme-astro-neu .text-pink-700,
+body.theme-astro-neu .text-pink-800,
+body.theme-astro-neu .text-rose-500,
+body.theme-astro-neu .text-rose-600,
+body.theme-astro-neu .text-rose-700,
+body.theme-astro-neu .text-rose-800,
+body.theme-astro-neu .text-fuchsia-500,
+body.theme-astro-neu .text-fuchsia-600,
+body.theme-astro-neu .text-fuchsia-700 {
+  color: #0369a1 !important;
+}
+
+/* Light accent text inside dark cards/banners -> Bright Ice Cyan so it stays 100% visible on dark backgrounds */
+body.theme-astro-neu .text-pink-100,
+body.theme-astro-neu .text-pink-200,
+body.theme-astro-neu .text-pink-300,
+body.theme-astro-neu .text-pink-400,
+body.theme-astro-neu .text-rose-100,
+body.theme-astro-neu .text-rose-200,
+body.theme-astro-neu .text-rose-300 {
+  color: #7dd3fc !important;
+}
+
+body.theme-astro-neu [class*="border-pink-"],
+body.theme-astro-neu [class*="border-rose-"],
+body.theme-astro-neu [class*="border-fuchsia-"] {
+  border-color: rgba(148, 163, 184, 0.45) !important;
+}
+
+body.theme-astro-neu [class*="ring-pink-"],
+body.theme-astro-neu [class*="ring-rose-"] {
+  --tw-ring-color: rgba(56, 189, 248, 0.45) !important;
+}
+
+/* ============================================================================ */
+/* THEME 3: 3D LIQUID GLASS CHAMPAGNE, PEARL & ROYAL GOLD CONTROL CENTER THEME  */
+/* Keeps 100% of Store Features, Hero, Services, Tools & Wallet identical       */
+/* ============================================================================ */
+body.theme-liquid-champagne {
+  background-color: #f4f1ea !important;
+  background-image:
+    radial-gradient(at 12% 12%, rgba(253, 230, 138, 0.65) 0px, transparent 48%),
+    radial-gradient(at 88% 14%, rgba(167, 243, 208, 0.55) 0px, transparent 48%),
+    radial-gradient(at 18% 52%, rgba(186, 230, 253, 0.55) 0px, transparent 50%),
+    radial-gradient(at 85% 58%, rgba(254, 215, 170, 0.6) 0px, transparent 48%),
+    radial-gradient(at 35% 88%, rgba(209, 250, 229, 0.55) 0px, transparent 52%),
+    linear-gradient(135deg, #faf6f0 0%, #eef6f6 38%, #fef9ef 72%, #eef2ff 100%) !important;
+  color: #1c1917 !important;
+}
+
+@media (max-width: 768px) {
+  body.theme-liquid-champagne {
+    background-attachment: scroll !important;
+    background-image: linear-gradient(160deg, #faf5eb 0%, #ebf6f5 40%, #fef6e8 75%, #eef2fc 100%) !important;
+  }
+}
+
+body.theme-liquid-champagne .scroll-progress-bar {
+  background: linear-gradient(90deg, #b45309 0%, #d97706 45%, #059669 100%) !important;
+  box-shadow: 0 0 14px rgba(217, 119, 6, 0.8), 0 0 6px rgba(16, 185, 129, 0.65) !important;
+}
+
+body.theme-liquid-champagne::-webkit-scrollbar-track {
+  background: rgba(254, 243, 199, 0.35);
+}
+body.theme-liquid-champagne::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #d97706, #059669);
+  border-radius: 999px;
+}
+body.theme-liquid-champagne::-webkit-scrollbar-thumb:hover {
+  background: #b45309;
+}
+
+/* 3D Liquid Glass Capsule Frame with Iridescent Specular Rim */
+body.theme-liquid-champagne .acrylic-frame {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.86) 0%,
+    rgba(255, 251, 242, 0.62) 50%,
+    rgba(244, 251, 249, 0.82) 100%
+  ) !important;
+  backdrop-filter: blur(20px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(190%) !important;
+  border: 2.5px solid rgba(255, 255, 255, 0.96) !important;
+  box-shadow:
+    0 18px 34px -8px rgba(120, 88, 35, 0.16),
+    0 6px 14px -3px rgba(20, 83, 45, 0.08),
+    inset 0 3px 6px rgba(255, 255, 255, 0.98),
+    inset 0 -3px 8px rgba(217, 119, 6, 0.14) !important;
+}
+
+@media (max-width: 768px) {
+  body.theme-liquid-champagne .acrylic-frame:not(nav) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.96) 0%, rgba(254, 249, 238, 0.92) 100%) !important;
+  }
+}
+
+/* Warm Pearl, Champagne Gold & Mint Crystal Inner Cushions with Deep Dark Text */
+body.theme-liquid-champagne .plush-pillow,
+body.theme-liquid-champagne .plush-hero {
+  background: radial-gradient(circle at 28% 22%, #ffffff 0%, #fef7e6 45%, #f5ebd6 80%, #e6f4f1 100%) !important;
+  color: #1c1917 !important;
+  box-shadow:
+    inset 0 4px 10px rgba(255, 255, 255, 0.95),
+    inset 0 -6px 14px rgba(180, 130, 50, 0.08) !important;
+}
+
+body.theme-liquid-champagne .plush-sim-search,
+body.theme-liquid-champagne .plush-login,
+body.theme-liquid-champagne .plush-about,
+body.theme-liquid-champagne .plush-faq,
+body.theme-liquid-champagne .plush-contact {
+  background: linear-gradient(135deg, #fffdf9 0%, #fef5e4 50%, #ecfdf5 100%) !important;
+  color: #1c1917 !important;
+}
+
+body.theme-liquid-champagne .plush-srv-1,
+body.theme-liquid-champagne .plush-tiktok {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 55%, #fde68a 100%) !important;
+  color: #1c1917 !important;
+}
+body.theme-liquid-champagne .plush-srv-2,
+body.theme-liquid-champagne .plush-ig {
+  background: linear-gradient(135deg, #fff7ed 0%, #ffedd5 55%, #fed7aa 100%) !important;
+  color: #1c1917 !important;
+}
+body.theme-liquid-champagne .plush-srv-3,
+body.theme-liquid-champagne .plush-whatsapp,
+body.theme-liquid-champagne .plush-ai {
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 55%, #a7f3d0 100%) !important;
+  color: #1c1917 !important;
+}
+body.theme-liquid-champagne .plush-srv-4,
+body.theme-liquid-champagne .plush-website,
+body.theme-liquid-champagne .plush-fb {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 55%, #bae6fd 100%) !important;
+  color: #1c1917 !important;
+}
+body.theme-liquid-champagne .plush-srv-5,
+body.theme-liquid-champagne .plush-snap,
+body.theme-liquid-champagne .plush-capcut,
+body.theme-liquid-champagne .plush-srv-6 {
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%) !important;
+  color: #1c1917 !important;
+}
+
+/* 3D Extruded Liquid Gold & Obsidian-Bronze Titles */
+body.theme-liquid-champagne .title-3d-blue {
+  font-family: var(--store-font-display) !important;
+  color: #1c1917 !important;
+  text-shadow:
+    0 1px 0 #ffffff,
+    0 2px 0 #fde68a,
+    0 3px 0 #f59e0b,
+    0 5px 12px rgba(180, 83, 9, 0.25) !important;
+}
+
+body.theme-liquid-champagne .title-3d-rose {
+  font-family: var(--store-font-display) !important;
+  background: linear-gradient(180deg, #92400e 0%, #b45309 48%, #047857 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0px 2px 0px rgba(255, 255, 255, 0.95)) drop-shadow(0px 5px 10px rgba(180, 83, 9, 0.22)) !important;
+}
+
+/* 3D Liquid Glass Search Box & High-Contrast Royal Bronze-Gold-Emerald Action Buttons */
+body.theme-liquid-champagne .sim-input-box {
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 2px solid rgba(180, 83, 9, 0.45) !important;
+  color: #1c1917 !important;
+  box-shadow:
+    inset 0 2px 6px rgba(180, 83, 9, 0.06),
+    0 6px 16px rgba(217, 119, 6, 0.14) !important;
+}
+
+body.theme-liquid-champagne .sim-input-box:focus-within {
+  border-color: #b45309 !important;
+  box-shadow:
+    0 0 0 4px rgba(245, 158, 11, 0.25),
+    0 8px 24px rgba(180, 83, 9, 0.22) !important;
+}
+
+body.theme-liquid-champagne .sim-btn-glow {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 48%, #047857 100%) !important;
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45) !important;
+  box-shadow:
+    0 10px 24px rgba(146, 64, 14, 0.36),
+    0 3px 8px rgba(4, 120, 87, 0.28),
+    inset 0 2px 4px rgba(255, 255, 255, 0.45) !important;
+}
+
+body.theme-liquid-champagne .orbit-badge {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.97) 0%, rgba(254, 243, 199, 0.94) 100%) !important;
+  border: 2.5px solid #ffffff !important;
+  color: #1c1917 !important;
+  box-shadow:
+    0 10px 22px -4px rgba(180, 83, 9, 0.24),
+    inset 0 2px 4px rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-liquid-champagne .portrait-lens {
+  background: linear-gradient(135deg, #fef3c7 0%, #ffffff 50%, #d1fae5 100%) !important;
+  border: 3px solid #ffffff !important;
+  box-shadow:
+    0 16px 32px rgba(180, 83, 9, 0.22),
+    inset 0 3px 6px rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-liquid-champagne .mobile-bottom-dock {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(254, 245, 228, 0.95) 100%) !important;
+  border: 2px solid #ffffff !important;
+  box-shadow:
+    0 12px 28px -6px rgba(120, 88, 35, 0.26),
+    inset 0 2px 4px rgba(255, 255, 255, 0.98) !important;
+}
+
+body.theme-liquid-champagne .faq-item.open .faq-chevron {
+  background: linear-gradient(135deg, #92400e, #047857) !important;
+  color: #ffffff !important;
+}
+
+/* Light pastel badge/chip backgrounds -> Warm Champagne surface with Deep Espresso-Gold opposite text */
+body.theme-liquid-champagne .bg-pink-50,
+body.theme-liquid-champagne .bg-rose-50,
+body.theme-liquid-champagne .bg-fuchsia-50,
+body.theme-liquid-champagne .bg-pink-100,
+body.theme-liquid-champagne .bg-rose-100,
+body.theme-liquid-champagne .bg-fuchsia-100 {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%) !important;
+  color: #78350f !important;
+  border-color: rgba(217, 119, 6, 0.45) !important;
+}
+
+body.theme-liquid-champagne .from-pink-50,
+body.theme-liquid-champagne .from-pink-100,
+body.theme-liquid-champagne .from-rose-50,
+body.theme-liquid-champagne .from-rose-100,
+body.theme-liquid-champagne .via-pink-50,
+body.theme-liquid-champagne .to-pink-50,
+body.theme-liquid-champagne .to-rose-50 {
+  background: linear-gradient(135deg, #fffdf7 0%, #fef3c7 100%) !important;
+  color: #1c1917 !important;
+}
+
+/* Vibrant/Dark action buttons & badges ("Buy Now", Rocket Top Button, Active Pills, Cart) -> Deep Royal Bronze-Gold & Emerald with Pure White opposite text */
+body.theme-liquid-champagne .bg-pink-500:not(.fluffy-orb),
+body.theme-liquid-champagne .bg-pink-600:not(.fluffy-orb),
+body.theme-liquid-champagne .bg-rose-500:not(.fluffy-orb),
+body.theme-liquid-champagne .bg-rose-600:not(.fluffy-orb),
+body.theme-liquid-champagne .from-pink-500:not(.fluffy-orb),
+body.theme-liquid-champagne .from-pink-600:not(.fluffy-orb),
+body.theme-liquid-champagne .from-rose-500:not(.fluffy-orb),
+body.theme-liquid-champagne .from-rose-600:not(.fluffy-orb),
+body.theme-liquid-champagne .via-pink-500:not(.fluffy-orb),
+body.theme-liquid-champagne .via-rose-500:not(.fluffy-orb),
+body.theme-liquid-champagne .to-pink-500:not(.fluffy-orb),
+body.theme-liquid-champagne .to-pink-600:not(.fluffy-orb),
+body.theme-liquid-champagne .to-rose-500:not(.fluffy-orb),
+body.theme-liquid-champagne .to-rose-600:not(.fluffy-orb) {
+  background: linear-gradient(135deg, #78350f 0%, #b45309 48%, #047857 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.42) !important;
+  box-shadow:
+    0 8px 20px rgba(120, 53, 15, 0.32),
+    inset 0 1px 2px rgba(255, 255, 255, 0.45) !important;
+}
+
+body.theme-liquid-champagne .bg-pink-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .bg-pink-600:not(.fluffy-orb) *,
+body.theme-liquid-champagne .bg-rose-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .bg-rose-600:not(.fluffy-orb) *,
+body.theme-liquid-champagne .from-pink-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .from-pink-600:not(.fluffy-orb) *,
+body.theme-liquid-champagne .from-rose-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .to-pink-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .to-pink-600:not(.fluffy-orb) *,
+body.theme-liquid-champagne .to-rose-500:not(.fluffy-orb) *,
+body.theme-liquid-champagne .sim-btn-glow * {
+  color: #ffffff !important;
+}
+
+/* Accent text on light surfaces -> High-contrast Deep Royal Bronze */
+body.theme-liquid-champagne .text-pink-500,
+body.theme-liquid-champagne .text-pink-600,
+body.theme-liquid-champagne .text-pink-700,
+body.theme-liquid-champagne .text-pink-800,
+body.theme-liquid-champagne .text-rose-500,
+body.theme-liquid-champagne .text-rose-600,
+body.theme-liquid-champagne .text-rose-700,
+body.theme-liquid-champagne .text-rose-800,
+body.theme-liquid-champagne .text-fuchsia-500,
+body.theme-liquid-champagne .text-fuchsia-600,
+body.theme-liquid-champagne .text-fuchsia-700 {
+  color: #92400e !important;
+}
+
+/* Light accent text inside dark cards/banners -> Bright Warm Gold so it stays 100% readable on dark backgrounds */
+body.theme-liquid-champagne .text-pink-100,
+body.theme-liquid-champagne .text-pink-200,
+body.theme-liquid-champagne .text-pink-300,
+body.theme-liquid-champagne .text-pink-400,
+body.theme-liquid-champagne .text-rose-100,
+body.theme-liquid-champagne .text-rose-200,
+body.theme-liquid-champagne .text-rose-300 {
+  color: #fde68a !important;
+}
+
+body.theme-liquid-champagne [class*="border-pink-"],
+body.theme-liquid-champagne [class*="border-rose-"],
+body.theme-liquid-champagne [class*="border-fuchsia-"] {
+  border-color: rgba(217, 119, 6, 0.42) !important;
+}
+
+body.theme-liquid-champagne [class*="ring-pink-"],
+body.theme-liquid-champagne [class*="ring-rose-"] {
+  --tw-ring-color: rgba(217, 119, 6, 0.45) !important;
+}
+
+/* ============================================================================ */
+/* THEME 4: 3D PASTEL JELLY DROPLET OS THEME (JELLY-OS v6.0 WATER-DROPLET UI)   */
+/* Keeps 100% of Store Features, Hero, Services, Tools & Wallet identical       */
+/* ============================================================================ */
+body.theme-pastel-jelly {
+  font-family: var(--store-font-body) !important;
+  background-color: #e4f2fe !important;
+  background-image:
+    radial-gradient(circle at 12% 10%, rgba(198, 236, 255, 0.88) 0%, transparent 45%),
+    radial-gradient(circle at 88% 22%, rgba(252, 220, 242, 0.88) 0%, transparent 48%),
+    radial-gradient(circle at 50% 60%, rgba(226, 236, 255, 0.78) 0%, transparent 55%),
+    linear-gradient(160deg, #dff1fd 0%, #f7e6f4 48%, #e8f1fb 100%) !important;
+  color: #0f172a !important;
+}
+
+@media (max-width: 768px) {
+  body.theme-pastel-jelly {
+    background-attachment: scroll !important;
+    background-image: linear-gradient(160deg, #dff1fd 0%, #f7e6f4 48%, #e8f1fb 100%) !important;
+  }
+}
+
+body.theme-pastel-jelly .scroll-progress-bar {
+  background: linear-gradient(90deg, #0284c7 0%, #4f46e5 50%, #db2777 100%) !important;
+  box-shadow: 0 0 14px rgba(56, 189, 248, 0.8), 0 0 8px rgba(244, 114, 182, 0.7) !important;
+}
+
+body.theme-pastel-jelly::-webkit-scrollbar-track {
+  background: rgba(223, 241, 253, 0.6);
+}
+body.theme-pastel-jelly::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #3b82f6, #ec4899);
+  border-radius: 999px;
+}
+
+/* 3D Pastel Water-Droplet / Jelly Blob Surface (.jelly-blob + .jelly-shine) */
+body.theme-pastel-jelly .acrylic-frame {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(255, 255, 255, 0.96) 100%
+  ) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 2px solid rgba(255, 255, 255, 0.96) !important;
+  border-radius: 36px 42px 38px 40px / 40px 36px 42px 38px !important;
+  box-shadow:
+    10px 14px 26px rgba(152, 168, 198, 0.28),
+    -8px -8px 22px rgba(255, 255, 255, 0.96),
+    inset 3px 4px 10px rgba(255, 255, 255, 0.96),
+    inset -4px -6px 14px rgba(173, 194, 235, 0.36) !important;
+}
+
+/* Subtle 3D Glossy Water-Droplet Specular Shine Dots (kept behind content so text is never obscured) */
+body.theme-pastel-jelly .acrylic-frame::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute !important;
+  inset: auto !important;
+  top: 8px !important;
+  left: 16px !important;
+  width: 14px !important;
+  height: 6px !important;
+  border: none !important;
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.75) !important;
+  transform: rotate(-28deg) !important;
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+body.theme-pastel-jelly .acrylic-frame::after {
+  display: none !important;
+}
+
+@media (max-width: 768px) {
+  body.theme-pastel-jelly .acrylic-frame:not(nav) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    background: linear-gradient(145deg, rgba(255, 255, 255, 0.95) 0%, rgba(240, 248, 255, 0.97) 100%) !important;
+    border-radius: 26px 30px 28px 28px / 28px 26px 30px 28px !important;
+  }
+}
+
+/* 5 Pastel Tinted Water-Droplet Inner Cushions with Deep Slate Text */
+body.theme-pastel-jelly .plush-pillow,
+body.theme-pastel-jelly .plush-hero,
+body.theme-pastel-jelly .plush-srv-4,
+body.theme-pastel-jelly .plush-website,
+body.theme-pastel-jelly .plush-fb {
+  background: radial-gradient(
+    circle at 22% 22%,
+    rgba(147, 197, 253, 0.42) 0%,
+    rgba(219, 234, 254, 0.35) 52%,
+    rgba(255, 255, 255, 0.96) 92%
+  ) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 4px 5px 12px rgba(255, 255, 255, 0.94),
+    inset -5px -6px 14px rgba(125, 169, 240, 0.28) !important;
+  border-radius: 24px 28px 26px 26px / 26px 24px 28px 26px !important;
+}
+
+body.theme-pastel-jelly .plush-srv-3,
+body.theme-pastel-jelly .plush-whatsapp,
+body.theme-pastel-jelly .plush-ai,
+body.theme-pastel-jelly .plush-contact {
+  background: radial-gradient(
+    circle at 25% 25%,
+    rgba(110, 231, 183, 0.42) 0%,
+    rgba(251, 207, 232, 0.28) 55%,
+    rgba(255, 255, 255, 0.96) 92%
+  ) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 4px 5px 12px rgba(255, 255, 255, 0.94),
+    inset -4px -5px 14px rgba(122, 218, 176, 0.28) !important;
+}
+
+body.theme-pastel-jelly .plush-srv-2,
+body.theme-pastel-jelly .plush-ig {
+  background: radial-gradient(
+    circle at 22% 20%,
+    rgba(253, 186, 116, 0.42) 0%,
+    rgba(254, 215, 170, 0.28) 55%,
+    rgba(255, 255, 255, 0.96) 92%
+  ) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 4px 5px 12px rgba(255, 255, 255, 0.94),
+    inset -4px -5px 14px rgba(250, 170, 140, 0.28) !important;
+}
+
+body.theme-pastel-jelly .plush-srv-1,
+body.theme-pastel-jelly .plush-tiktok,
+body.theme-pastel-jelly .plush-sim-search,
+body.theme-pastel-jelly .plush-login {
+  background: radial-gradient(
+    circle at 22% 24%,
+    rgba(249, 168, 212, 0.42) 0%,
+    rgba(252, 231, 243, 0.32) 58%,
+    rgba(255, 255, 255, 0.96) 94%
+  ) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 4px 5px 12px rgba(255, 255, 255, 0.94),
+    inset -4px -5px 14px rgba(246, 164, 198, 0.28) !important;
+}
+
+body.theme-pastel-jelly .plush-srv-5,
+body.theme-pastel-jelly .plush-srv-6,
+body.theme-pastel-jelly .plush-snap,
+body.theme-pastel-jelly .plush-capcut,
+body.theme-pastel-jelly .plush-faq,
+body.theme-pastel-jelly .plush-about {
+  background: radial-gradient(
+    circle at 22% 25%,
+    rgba(196, 181, 253, 0.44) 0%,
+    rgba(237, 233, 254, 0.32) 56%,
+    rgba(255, 255, 255, 0.96) 92%
+  ) !important;
+  color: #0f172a !important;
+  box-shadow:
+    inset 4px 5px 12px rgba(255, 255, 255, 0.94),
+    inset -4px -5px 14px rgba(168, 150, 242, 0.28) !important;
+}
+
+/* Kawaii 3D Water-Droplet Titles */
+body.theme-pastel-jelly .title-3d-blue {
+  font-family: var(--store-font-display) !important;
+  color: #1e293b !important;
+  text-shadow:
+    0 1px 0 #ffffff,
+    0 2px 0 #bae6fd,
+    0 4px 10px rgba(97, 144, 232, 0.28) !important;
+}
+
+body.theme-pastel-jelly .title-3d-rose {
+  font-family: var(--store-font-display) !important;
+  background: linear-gradient(90deg, #0284c7 0%, #4f46e5 50%, #db2777 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  filter: drop-shadow(0px 2px 0px #ffffff) drop-shadow(0px 5px 10px rgba(79, 70, 229, 0.22)) !important;
+}
+
+/* Jelly Droplet Search Box & High-Contrast Deep Sapphire-Indigo-Berry Pill Buttons */
+body.theme-pastel-jelly .sim-input-box {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border: 2px solid rgba(255, 255, 255, 0.98) !important;
+  border-radius: 999px !important;
+  color: #0f172a !important;
+  box-shadow:
+    6px 10px 20px rgba(135, 164, 212, 0.24),
+    -4px -4px 14px rgba(255, 255, 255, 0.95),
+    inset 2px 3px 8px rgba(173, 194, 235, 0.28) !important;
+}
+
+body.theme-pastel-jelly .sim-input-box:focus-within {
+  border-color: #3b82f6 !important;
+  box-shadow:
+    0 0 0 4px rgba(59, 130, 246, 0.22),
+    8px 12px 24px rgba(59, 130, 246, 0.28) !important;
+}
+
+body.theme-pastel-jelly .sim-btn-glow {
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 50%, #db2777 100%) !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+  color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.4) !important;
+  box-shadow:
+    8px 12px 24px rgba(79, 70, 229, 0.34),
+    -4px -4px 12px rgba(255, 255, 255, 0.9),
+    inset 0 2px 5px rgba(255, 255, 255, 0.55) !important;
+}
+
+body.theme-pastel-jelly .orbit-badge {
+  background: radial-gradient(
+    circle at 25% 25%,
+    rgba(191, 219, 254, 0.55) 0%,
+    rgba(255, 255, 255, 0.97) 85%
+  ) !important;
+  border: 2px solid #ffffff !important;
+  color: #0f172a !important;
+  border-radius: 26px 32px 28px 30px / 30px 26px 32px 28px !important;
+  box-shadow:
+    8px 12px 20px rgba(135, 164, 212, 0.32),
+    -4px -4px 12px rgba(255, 255, 255, 0.95),
+    inset 3px 4px 8px rgba(255, 255, 255, 0.92) !important;
+}
+
+body.theme-pastel-jelly .portrait-lens {
+  background: radial-gradient(
+    circle at 22% 22%,
+    rgba(122, 172, 248, 0.52) 0%,
+    rgba(248, 174, 204, 0.32) 55%,
+    rgba(255, 255, 255, 0.96) 95%
+  ) !important;
+  border: 3px solid #ffffff !important;
+  box-shadow:
+    12px 16px 30px rgba(135, 164, 212, 0.36),
+    -8px -8px 20px rgba(255, 255, 255, 0.98),
+    inset 4px 5px 12px rgba(255, 255, 255, 0.95) !important;
+}
+
+body.theme-pastel-jelly .mobile-bottom-dock {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.94) 0%, rgba(223, 241, 253, 0.96) 100%) !important;
+  border: 2px solid #ffffff !important;
+  border-radius: 999px !important;
+  box-shadow:
+    10px 14px 28px rgba(135, 164, 212, 0.35),
+    inset 3px 4px 10px rgba(255, 255, 255, 0.96) !important;
+}
+
+body.theme-pastel-jelly .bg-pink-50,
+body.theme-pastel-jelly .bg-rose-50,
+body.theme-pastel-jelly .bg-fuchsia-50,
+body.theme-pastel-jelly .bg-pink-100,
+body.theme-pastel-jelly .bg-rose-100,
+body.theme-pastel-jelly .bg-fuchsia-100 {
+  background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%) !important;
+  color: #1e1b4b !important;
+  border-color: rgba(147, 197, 253, 0.6) !important;
+}
+
+body.theme-pastel-jelly .bg-pink-500:not(.fluffy-orb),
+body.theme-pastel-jelly .bg-pink-600:not(.fluffy-orb),
+body.theme-pastel-jelly .bg-rose-500:not(.fluffy-orb),
+body.theme-pastel-jelly .bg-rose-600:not(.fluffy-orb),
+body.theme-pastel-jelly .from-pink-500:not(.fluffy-orb),
+body.theme-pastel-jelly .from-pink-600:not(.fluffy-orb),
+body.theme-pastel-jelly .from-rose-500:not(.fluffy-orb),
+body.theme-pastel-jelly .from-rose-600:not(.fluffy-orb),
+body.theme-pastel-jelly .via-pink-500:not(.fluffy-orb),
+body.theme-pastel-jelly .via-rose-500:not(.fluffy-orb),
+body.theme-pastel-jelly .to-pink-500:not(.fluffy-orb),
+body.theme-pastel-jelly .to-pink-600:not(.fluffy-orb),
+body.theme-pastel-jelly .to-rose-500:not(.fluffy-orb),
+body.theme-pastel-jelly .to-rose-600:not(.fluffy-orb) {
+  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 50%, #db2777 100%) !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.42) !important;
+  box-shadow:
+    6px 10px 20px rgba(79, 70, 229, 0.34),
+    inset 0 2px 4px rgba(255, 255, 255, 0.55) !important;
+}
+
+body.theme-pastel-jelly .bg-pink-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .bg-pink-600:not(.fluffy-orb) *,
+body.theme-pastel-jelly .bg-rose-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .bg-rose-600:not(.fluffy-orb) *,
+body.theme-pastel-jelly .from-pink-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .from-pink-600:not(.fluffy-orb) *,
+body.theme-pastel-jelly .from-rose-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .to-pink-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .to-pink-600:not(.fluffy-orb) *,
+body.theme-pastel-jelly .to-rose-500:not(.fluffy-orb) *,
+body.theme-pastel-jelly .sim-btn-glow * {
+  color: #ffffff !important;
+}
+
+/* Ensure all form controls (select, input, option) in every theme have crisp dark text on light backgrounds */
+body select,
+body select option,
+body input:not([type="range"]),
+body textarea {
+  color: #0f172a;
+}
+
+/* Ensure Fluffy 3D Service & Tool Icon Orbs always have crisp white icons across all themes */
+.fluffy-orb,
+.fluffy-orb i,
+.fluffy-orb span {
+  color: #ffffff;
+}
+
+
+

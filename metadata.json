@@ -1,0 +1,6 @@
+{
+  "name": "Muhammad Saqib — Saqib Visuals Hub",
+  "description": "SMM Store, CapCut Pro, AI Tools & SIM Info Hub by Muhammad Saqib.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
