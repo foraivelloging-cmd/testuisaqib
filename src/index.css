@@ -144,6 +144,8 @@ h4:not(.font-specimen-custom),
 /* Thick 3D Molded Clear Acrylic / Pink Glass Capsule Frame */
 .acrylic-frame {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   background: linear-gradient(135deg, rgba(255,255,255,0.72) 0%, rgba(255,255,255,0.34) 50%, rgba(255,255,255,0.62) 100%);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -155,6 +157,16 @@ h4:not(.font-specimen-custom),
     inset 0 -3px 6px rgba(180, 150, 190, 0.22);
   transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.22s ease;
   transform: translateZ(0);
+}
+
+@media (max-width: 640px) {
+  .acrylic-frame {
+    border-width: 2px;
+  }
+  .acrylic-frame::before {
+    inset: 2px;
+    border-width: 1px;
+  }
 }
 
 .acrylic-frame::before {
@@ -199,6 +211,8 @@ h4:not(.font-specimen-custom),
 /* Tactile Soft Plush Inner Pillow */
 .plush-pillow {
   position: relative;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
   box-shadow: 
     inset 0 4px 10px rgba(255, 255, 255, 0.85),

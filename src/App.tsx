@@ -50,7 +50,9 @@ import {
   FaArrowUpRightFromSquare,
   FaTrashCan,
   FaPenToSquare,
-  FaScrewdriverWrench
+  FaScrewdriverWrench,
+  FaBagShopping,
+  FaEye
 } from './components/BrandIcons';
 
 type TabId = 'store' | 'siminfo' | 'about' | 'faqs' | 'contact' | 'login' | 'saqibadmb';
@@ -262,19 +264,32 @@ export default function App() {
         if (Array.isArray(parsed) && parsed.length > 0) {
           const cleaned = parsed
             .filter(
-              (t: WebToolItem) => t.id !== 'tool-sim-tracker' && t.toolUrl !== '#siminfo'
+              (t: WebToolItem) =>
+                t.id !== 'tool-sim-tracker' &&
+                t.id !== 'tool-sim-engine' &&
+                t.toolUrl !== '#siminfo' &&
+                t.openMode !== 'sim_tab' &&
+                !(t.title || '').toLowerCase().includes('live sim')
             )
             .map((t: WebToolItem) => {
-              const isDefaultToolWithOldFavicon =
-                t.id.startsWith('tool-') &&
-                (t.iconUrl || '').includes('google.com/s2/favicons?sz=128&domain=');
+              const hasLegacyFavicon =
+                (t.iconUrl || '').includes('google.com/s2/favicons') ||
+                (t.iconUrl || '').includes('wikimedia.org') ||
+                (t.iconUrl || '').includes('gstatic.com');
               return {
                 ...t,
-                iconUrl: isDefaultToolWithOldFavicon ? '' : t.iconUrl,
+                iconUrl: hasLegacyFavicon ? '' : t.iconUrl,
                 iconType: resolveSmartIconType(t.iconType, `${t.id} ${t.title}`)
               };
             });
-          if (cleaned.length > 0) return cleaned;
+          if (cleaned.length > 0) {
+            const hasCapcutTool = cleaned.some((t: WebToolItem) => t.id === 'tool-capcut-cloud' || (t.title || '').toLowerCase().includes('capcut'));
+            const capcutDefault = DEFAULT_WEB_TOOLS.find((d) => d.id === 'tool-capcut-cloud');
+            if (!hasCapcutTool && capcutDefault && cleaned.length === 5) {
+              return [...cleaned, capcutDefault];
+            }
+            return cleaned;
+          }
         }
       }
     } catch {
@@ -2408,7 +2423,7 @@ export default function App() {
               <div
                 className={`grid ${
                   mobileGridCols === 2 ? 'grid-cols-2' : 'grid-cols-1'
-                } sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4`}
+                } sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4`}
               >
                 {filteredServices.map((srv, idx) => {
                   const activeTierIdx = selectedTiers[srv.id] ?? 0;
@@ -2422,30 +2437,30 @@ export default function App() {
                     <div
                       key={srv.id}
                       data-scroll="up"
-                      className={`acrylic-frame acrylic-interactive rounded-[22px] sm:rounded-[30px] p-1.5 sm:p-2.5 flex flex-col justify-between ${staggerClass}`}
+                      className={`min-w-0 overflow-hidden acrylic-frame acrylic-interactive rounded-[20px] sm:rounded-[30px] p-1 sm:p-2.5 flex flex-col justify-between ${staggerClass}`}
                     >
                       <div
-                        className={`plush-pillow ${srv.plush} rounded-[17px] sm:rounded-[23px] p-2.5 sm:p-4 flex flex-col h-full justify-between space-y-2 sm:space-y-3.5`}
+                        className={`min-w-0 plush-pillow ${srv.plush} rounded-[15px] sm:rounded-[23px] p-2.5 sm:p-4 flex flex-col h-full justify-between space-y-2 sm:space-y-3.5`}
                       >
-                        <div>
+                        <div className="min-w-0">
                           {/* Top Row: Fluffy 3D Icon + Badge */}
-                          <div className="flex items-start justify-between gap-1.5 sm:gap-2">
+                          <div className="flex items-center justify-between gap-1.5 sm:gap-2 min-w-0">
                             <div
-                              className={`fluffy-orb w-9 h-9 sm:w-12 sm:h-12 bg-gradient-to-br ${srv.orbGrad} flex items-center justify-center border-2 border-white shadow-md flex-shrink-0 overflow-hidden`}
+                              className={`fluffy-orb w-8 h-8 sm:w-12 sm:h-12 bg-gradient-to-br ${srv.orbGrad} flex items-center justify-center border-2 border-white shadow-md flex-shrink-0 overflow-hidden`}
                             >
                               {renderOrbVisual(srv.iconType, srv.customIconUrl, `${srv.id} ${srv.title}`)}
                             </div>
-                            <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white border border-slate-200/90 text-[8px] sm:text-[10px] font-extrabold text-slate-900 shadow-xs truncate max-w-[108px] sm:max-w-none">
+                            <span className="min-w-0 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-white/95 border border-slate-200/90 text-[7.5px] sm:text-[10px] font-extrabold text-slate-900 shadow-xs truncate">
                               {srv.badge}
                             </span>
                           </div>
 
                           {/* Title & Desc */}
-                          <h3 className="mt-2 sm:mt-3 text-[12px] sm:text-[17px] font-extrabold text-slate-900 leading-tight sm:leading-snug line-clamp-2">
+                          <h3 className="mt-2 sm:mt-3 text-[11.5px] sm:text-[17px] font-extrabold text-slate-900 leading-snug line-clamp-2">
                             {srv.title}
                           </h3>
                           <p
-                            className={`mt-1 text-[10px] sm:text-xs font-medium text-slate-700 leading-snug sm:leading-relaxed ${
+                            className={`mt-1 text-[9.5px] sm:text-xs font-medium text-slate-700 leading-snug sm:leading-relaxed ${
                               mobileGridCols === 2 ? 'line-clamp-2 sm:line-clamp-none' : ''
                             }`}
                           >
@@ -2454,13 +2469,13 @@ export default function App() {
                         </div>
 
                         {/* Package Selector & Order Buttons */}
-                        <div className="space-y-1.5 sm:space-y-2.5 pt-1.5 sm:pt-2 border-t border-slate-900/10">
-                          <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="text-[9px] sm:text-[10px] font-extrabold uppercase text-slate-700 truncate">
+                        <div className="min-w-0 w-full space-y-1.5 sm:space-y-2.5 pt-1.5 sm:pt-2 border-t border-slate-900/10">
+                          <div className="min-w-0">
+                            <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
+                              <label className="text-[8.5px] sm:text-[10px] font-extrabold uppercase text-slate-700 truncate">
                                 Package:
                               </label>
-                              <span className="text-[10px] sm:text-[11px] font-display font-bold text-pink-700 bg-white/80 px-1.5 py-0.2 rounded-md border border-pink-200/80">
+                              <span className="text-[9.5px] sm:text-[11px] font-display font-bold text-pink-700 bg-white/85 px-1.5 py-0.2 rounded-md border border-pink-200/80 whitespace-nowrap flex-shrink-0">
                                 {quickPriceLabel}
                               </span>
                             </div>
@@ -2472,7 +2487,7 @@ export default function App() {
                                   [srv.id]: Number(e.target.value)
                                 }))
                               }
-                              className="w-full px-2 py-1.5 sm:px-2.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/95 border border-white text-[10px] sm:text-xs font-extrabold text-slate-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-pink-400 cursor-pointer truncate"
+                              className="w-full min-w-0 px-1.5 py-1.5 sm:px-2.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/95 border border-white text-[9.5px] sm:text-xs font-extrabold text-slate-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-pink-400 cursor-pointer truncate"
                             >
                               {srv.tiers.map((t, i) => (
                                 <option key={i} value={i}>
@@ -2482,13 +2497,13 @@ export default function App() {
                             </select>
                           </div>
 
-                          <div className="flex items-center gap-1.5 sm:gap-2">
+                          <div className="flex items-center gap-1 sm:gap-2 w-full min-w-0">
                             <button
                               onClick={() => openOrderModal(srv)}
-                              className="flex-1 py-2 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-[11px] sm:text-xs shadow-md flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer whitespace-nowrap"
+                              className="flex-1 min-w-0 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer overflow-hidden"
                             >
-                              <SiWhatsapp className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
-                              <span>Buy Now</span>
+                              <SiWhatsapp className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                              <span className="truncate">Buy Now</span>
                             </button>
                             {srv.directToolUrl && (
                               <a
@@ -2496,17 +2511,17 @@ export default function App() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 title="Open Direct Tool Link"
-                                className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white border border-white shadow-xs flex items-center justify-center transition flex-shrink-0"
+                                className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white border border-white shadow-xs flex items-center justify-center transition flex-shrink-0"
                               >
-                                <FaArrowUpRightFromSquare className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                                <FaArrowUpRightFromSquare className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                               </a>
                             )}
                             <button
                               onClick={() => quickAddToCart(srv)}
                               title="Add to Order Bag"
-                              className="w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white/90 hover:bg-white text-slate-800 hover:text-pink-600 border border-white shadow-xs flex items-center justify-center transition cursor-pointer flex-shrink-0"
+                              className="w-6 h-6 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl bg-white/95 hover:bg-white text-slate-800 hover:text-pink-600 border border-white shadow-xs flex items-center justify-center transition cursor-pointer flex-shrink-0"
                             >
-                              <i className="fa-solid fa-cart-plus text-[10px] sm:text-xs"></i>
+                              <FaBagShopping className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
                             </button>
                           </div>
                         </div>
@@ -2519,27 +2534,28 @@ export default function App() {
 
             {/* ==================== LIVE WEB TOOLS & AI UTILITIES HUB (2-COLUMN MOBILE GRID) ==================== */}
             {webToolsCatalog.length > 0 && (
-              <section data-scroll="up" className="acrylic-frame rounded-[30px] sm:rounded-[34px] p-2.5 sm:p-5 space-y-3.5">
-                <div className="plush-pillow plush-capcut rounded-[22px] sm:rounded-[26px] p-3.5 sm:p-6 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 border-b border-indigo-200/80 pb-3 text-center sm:text-left">
+              <section data-scroll="up" className="acrylic-frame rounded-[24px] sm:rounded-[34px] p-1.5 sm:p-5 space-y-3">
+                <div className="plush-pillow plush-capcut rounded-[18px] sm:rounded-[26px] p-2.5 sm:p-6 space-y-3.5 sm:space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-indigo-200/80 pb-2.5 sm:pb-3 text-center sm:text-left">
                     <div>
-                      <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/90 border border-indigo-200 text-[10px] font-extrabold text-indigo-700 shadow-xs">
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/90 border border-indigo-200 text-[9.5px] sm:text-[10px] font-extrabold text-indigo-700 shadow-xs">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                         <span>LIVE WEB TOOLS &amp; AI LAUNCHER HUB</span>
                       </div>
-                      <h2 className="text-lg sm:text-2xl font-extrabold text-slate-900 mt-1">
+                      <h2 className="text-base sm:text-2xl font-extrabold text-slate-900 mt-1">
                         Instant Online Tools &amp; Web Utilities 🛠️
                       </h2>
-                      <p className="text-[11px] sm:text-xs font-semibold text-slate-700">
+                      <p className="text-[10.5px] sm:text-xs font-semibold text-slate-700">
                         Launch free &amp; official web tools directly from Saqib Visuals with 1 tap.
                       </p>
                     </div>
                     <button
                       type="button"
                       onClick={() => switchTab('siminfo')}
-                      className="self-center sm:self-auto px-3.5 py-2 rounded-full bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-extrabold text-[11px] sm:text-xs shadow-md hover:scale-105 transition whitespace-nowrap cursor-pointer"
+                      className="self-center sm:self-auto px-3.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-extrabold text-[10.5px] sm:text-xs shadow-md hover:scale-105 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
                     >
-                      <i className="fa-solid fa-screwdriver-wrench mr-1.5"></i>Open All Web Tools
+                      <FaScrewdriverWrench className="w-3 h-3" />
+                      <span>Open All Web Tools</span>
                     </button>
                   </div>
 
@@ -2547,72 +2563,78 @@ export default function App() {
                   <div
                     className={`grid ${
                       mobileGridCols === 2 ? 'grid-cols-2' : 'grid-cols-1'
-                    } sm:grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-3.5`}
+                    } sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3.5`}
                   >
-                    {webToolsCatalog.map((tool, idx) => (
-                      <div
-                        key={tool.id}
-                        data-scroll="zoom"
-                        className={`acrylic-frame acrylic-interactive rounded-[20px] sm:rounded-[26px] p-1.5 sm:p-2 flex flex-col justify-between bg-white/75 ${
-                          idx % 3 === 1 ? 'scroll-delay-1' : idx % 3 === 2 ? 'scroll-delay-2' : ''
-                        }`}
-                      >
+                    {webToolsCatalog.map((tool, idx) => {
+                      const cleanDomain =
+                        tool.toolUrl === '#siminfo'
+                          ? 'Built-in Live SIM Engine'
+                          : tool.toolUrl.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+                      return (
                         <div
-                          className={`plush-pillow ${tool.plush} rounded-[16px] sm:rounded-[20px] p-2.5 sm:p-4 flex flex-col h-full justify-between space-y-2.5`}
+                          key={tool.id}
+                          data-scroll="zoom"
+                          className={`min-w-0 overflow-hidden acrylic-frame acrylic-interactive rounded-[18px] sm:rounded-[26px] p-1 sm:p-2 flex flex-col justify-between bg-white/75 ${
+                            idx % 3 === 1 ? 'scroll-delay-1' : idx % 3 === 2 ? 'scroll-delay-2' : ''
+                          }`}
                         >
-                          <div className="space-y-1.5 sm:space-y-2">
-                            <div className="flex items-start justify-between gap-1.5">
-                              <div
-                                className={`fluffy-orb w-9 h-9 sm:w-11 sm:h-11 bg-gradient-to-br ${tool.orbGrad} flex items-center justify-center border-2 border-white shadow-md flex-shrink-0 overflow-hidden`}
-                              >
-                                {renderOrbVisual(tool.iconType, tool.iconUrl, `${tool.id} ${tool.title}`)}
+                          <div
+                            className={`min-w-0 plush-pillow ${tool.plush} rounded-[14px] sm:rounded-[20px] p-2.5 sm:p-4 flex flex-col h-full justify-between space-y-2 sm:space-y-2.5`}
+                          >
+                            <div className="min-w-0 space-y-1.5 sm:space-y-2">
+                              <div className="flex items-center justify-between gap-1.5 min-w-0">
+                                <div
+                                  className={`fluffy-orb w-8 h-8 sm:w-11 sm:h-11 bg-gradient-to-br ${tool.orbGrad} flex items-center justify-center border-2 border-white shadow-md flex-shrink-0 overflow-hidden`}
+                                >
+                                  {renderOrbVisual(tool.iconType, tool.iconUrl, `${tool.id} ${tool.title}`)}
+                                </div>
+                                <span className="min-w-0 px-1.5 py-0.5 sm:px-2.5 rounded-full bg-white/95 border border-white text-[7.5px] sm:text-[9px] font-extrabold text-slate-900 shadow-xs truncate">
+                                  {tool.badge}
+                                </span>
                               </div>
-                              <span className="px-2 py-0.5 rounded-full bg-white/90 border border-white text-[8px] sm:text-[9px] font-extrabold text-slate-900 shadow-xs truncate max-w-[92px] sm:max-w-none">
-                                {tool.badge}
-                              </span>
+
+                              <h3 className="text-[11.5px] sm:text-base font-extrabold text-slate-900 leading-snug line-clamp-2">
+                                {tool.title}
+                              </h3>
+                              <p className="text-[9.5px] sm:text-xs font-medium text-slate-700 leading-snug line-clamp-2">
+                                {tool.desc}
+                              </p>
                             </div>
 
-                            <h3 className="text-[12px] sm:text-base font-extrabold text-slate-900 leading-tight sm:leading-snug line-clamp-2">
-                              {tool.title}
-                            </h3>
-                            <p className="text-[10px] sm:text-xs font-medium text-slate-700 leading-snug line-clamp-2">
-                              {tool.desc}
-                            </p>
-                          </div>
+                            <div className="min-w-0 w-full pt-1.5 sm:pt-2 border-t border-slate-900/10 space-y-1.5">
+                              <div className="w-full min-w-0 flex items-center gap-1 text-[8.5px] sm:text-[10px] font-mono-code font-bold text-indigo-700 bg-white/80 px-2 py-0.5 rounded-md border border-white/90 overflow-hidden">
+                                <FaArrowUpRightFromSquare className="w-2 h-2 sm:w-2.5 sm:h-2.5 text-pink-500 flex-shrink-0" />
+                                <span className="truncate">{cleanDomain}</span>
+                              </div>
 
-                          <div className="pt-1.5 sm:pt-2 border-t border-slate-900/10 space-y-1.5">
-                            <div className="text-[9px] sm:text-[10px] font-mono-code font-bold text-indigo-700 truncate bg-white/70 px-2 py-0.5 rounded-md border border-white">
-                              <i className="fa-solid fa-link mr-1 text-pink-500"></i>
-                              {tool.toolUrl === '#siminfo' ? 'Built-in Live SIM Engine' : tool.toolUrl.replace(/^https?:\/\//, '')}
-                            </div>
-
-                            <div className="flex items-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => launchWebTool(tool)}
-                                className="flex-1 py-2 px-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:to-pink-600 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center justify-center gap-1 transition cursor-pointer whitespace-nowrap"
-                              >
-                                <FaRocket className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
-                                <span className="truncate">{tool.buttonLabel}</span>
-                              </button>
-                              {tool.toolUrl !== '#siminfo' && (
+                              <div className="flex items-center gap-1 sm:gap-1.5 w-full min-w-0">
                                 <button
                                   type="button"
-                                  onClick={() => {
-                                    playPopSound(640);
-                                    setActiveEmbeddedTool(tool);
-                                  }}
-                                  title="Preview Tool Inside Website"
-                                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white/90 hover:bg-white text-indigo-700 border border-white shadow-xs flex items-center justify-center transition cursor-pointer flex-shrink-0"
+                                  onClick={() => launchWebTool(tool)}
+                                  className="flex-1 min-w-0 py-1.5 sm:py-2 px-2 sm:px-2.5 rounded-lg sm:rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 hover:from-indigo-700 hover:to-pink-600 text-white font-extrabold text-[9.5px] sm:text-xs shadow-md flex items-center justify-center gap-1 transition cursor-pointer overflow-hidden"
                                 >
-                                  <i className="fa-solid fa-expand text-[10px] sm:text-xs"></i>
+                                  <FaRocket className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 flex-shrink-0" />
+                                  <span className="truncate">{tool.buttonLabel}</span>
                                 </button>
-                              )}
+                                {tool.toolUrl !== '#siminfo' && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      playPopSound(640);
+                                      setActiveEmbeddedTool(tool);
+                                    }}
+                                    title="Preview Tool Inside Website"
+                                    className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white/95 hover:bg-white text-indigo-700 border border-white shadow-xs flex items-center justify-center transition cursor-pointer flex-shrink-0"
+                                  >
+                                    <FaEye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </div>
               </section>
@@ -2701,8 +2723,8 @@ export default function App() {
             </div>
 
             {webToolsCatalog.length > 0 && (
-              <div data-scroll="up" className="acrylic-frame rounded-[30px] p-3 sm:p-5 space-y-3.5">
-                <div className="plush-pillow plush-about rounded-[24px] p-4 sm:p-5 space-y-3.5">
+              <div data-scroll="up" className="acrylic-frame rounded-[24px] sm:rounded-[30px] p-2 sm:p-5 space-y-3.5">
+                <div className="plush-pillow plush-about rounded-[18px] sm:rounded-[24px] p-3 sm:p-5 space-y-3.5">
                   <div className="flex items-center justify-between border-b border-pink-200 pb-2.5">
                     <div>
                       <span className="text-[10px] font-extrabold uppercase text-purple-700">
@@ -2713,41 +2735,56 @@ export default function App() {
                       </h3>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 sm:gap-3.5">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3.5">
                     {webToolsCatalog.map((tool, idx) => (
                       <div
                         key={tool.id}
                         data-scroll="zoom"
-                        className={`p-3 rounded-2xl bg-white/90 border border-pink-100 shadow-xs flex flex-col justify-between space-y-2.5 ${
+                        className={`min-w-0 overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/90 border border-pink-100 shadow-xs flex flex-col justify-between space-y-2.5 ${
                           idx % 3 === 1 ? 'scroll-delay-1' : idx % 3 === 2 ? 'scroll-delay-2' : ''
                         }`}
                       >
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between gap-1.5">
+                        <div className="min-w-0 space-y-1.5">
+                          <div className="flex items-center justify-between gap-1.5 min-w-0">
                             <div
                               className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br ${tool.orbGrad} flex items-center justify-center text-white shadow-xs overflow-hidden flex-shrink-0`}
                             >
                               {renderOrbVisual(tool.iconType, tool.iconUrl, `${tool.id} ${tool.title}`)}
                             </div>
-                            <span className="px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[8px] sm:text-[9px] font-extrabold border border-pink-200 truncate">
+                            <span className="min-w-0 px-1.5 py-0.5 rounded-full bg-pink-50 text-pink-700 text-[7.5px] sm:text-[9px] font-extrabold border border-pink-200 truncate">
                               {tool.badge}
                             </span>
                           </div>
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 line-clamp-1">
+                          <div className="text-[11.5px] sm:text-sm font-extrabold text-slate-900 line-clamp-2 leading-snug">
                             {tool.title}
                           </div>
-                          <div className="text-[10px] sm:text-xs font-medium text-slate-600 line-clamp-2">
+                          <div className="text-[9.5px] sm:text-xs font-medium text-slate-600 line-clamp-2 leading-snug">
                             {tool.desc}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => launchWebTool(tool)}
-                          className="w-full py-2 px-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-[10px] sm:text-xs shadow-xs cursor-pointer truncate flex items-center justify-center gap-1"
-                        >
-                          <FaArrowUpRightFromSquare className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{tool.buttonLabel}</span>
-                        </button>
+                        <div className="flex items-center gap-1 w-full min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => launchWebTool(tool)}
+                            className="flex-1 min-w-0 py-1.5 sm:py-2 px-2 sm:px-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-[9.5px] sm:text-xs shadow-xs cursor-pointer overflow-hidden flex items-center justify-center gap-1"
+                          >
+                            <FaArrowUpRightFromSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
+                            <span className="truncate">{tool.buttonLabel}</span>
+                          </button>
+                          {tool.toolUrl !== '#siminfo' && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                playPopSound(640);
+                                setActiveEmbeddedTool(tool);
+                              }}
+                              title="Preview Tool Inside Website"
+                              className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-pink-50 hover:bg-pink-100 text-purple-700 border border-pink-200 shadow-xs flex items-center justify-center transition cursor-pointer flex-shrink-0"
+                            >
+                              <FaEye className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
+                            </button>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

@@ -157,14 +157,42 @@ export const BRAND_ICON_OPTIONS: { value: IconType; label: string }[] = [
   { value: 'thumbs-up', label: '👍 Likes & Engagement' }
 ];
 
-export function resolveSmartIconType(iconType: IconType, _contextText?: string): IconType {
+export function resolveSmartIconType(iconType: IconType, contextText?: string): IconType {
+  const ctx = (contextText || '').toLowerCase();
+  if (ctx.includes('chatgpt') || ctx.includes('openai') || ctx.includes('gpt-4')) return 'openai';
+  if (ctx.includes('gemini') || ctx.includes('google one') || ctx.includes('veo')) return 'gemini';
+  if (ctx.includes('claude') || ctx.includes('anthropic') || ctx.includes('sonnet')) return 'claude';
+  if (ctx.includes('elevenlabs') || ctx.includes('voice studio') || ctx.includes('voice ai')) return 'elevenlabs';
+  if (ctx.includes('lovable')) return 'lovable';
+  if (ctx.includes('canva')) return 'canva';
+  if (ctx.includes('capcut')) return 'capcut';
+  if (ctx.includes('proton') || ctx.includes('vpn')) return 'protonvpn';
+  if (ctx.includes('hostinger') || ctx.includes('hosting')) return 'hostinger';
+  if (ctx.includes('adobe') || ctx.includes('premiere') || ctx.includes('photoshop')) return 'adobe';
+  if (ctx.includes('netflix')) return 'netflix';
+  if (ctx.includes('prime video') || ctx.includes('amazon')) return 'amazon';
+  if (ctx.includes('microsoft') || ctx.includes('office 365')) return 'microsoft';
+  if (ctx.includes('tiktok')) return 'tiktok';
+  if (ctx.includes('meta') || ctx.includes('ad agency')) return 'meta';
+  if (ctx.includes('facebook') || ctx.includes('fb ')) return 'facebook';
+  if (ctx.includes('instagram')) return 'instagram';
+  if (ctx.includes('youtube')) return 'youtube';
+  if (ctx.includes('whatsapp')) return 'whatsapp';
+  if (ctx.includes('telegram')) return 'telegram';
+  if (ctx.includes('binance') || ctx.includes('usdt') || ctx.includes('crypto')) return 'binance';
+  if (ctx.includes('bitcoin') || ctx.includes('btc')) return 'bitcoin';
+  if (ctx.includes('cdr') || ctx.includes('location') || ctx.includes('imei')) return 'satellite';
+  if (ctx.includes('sim') || ctx.includes('telecom')) return 'sim';
+  if (ctx.includes('nadra') || ctx.includes('frc') || ctx.includes('cnic') || ctx.includes('certificate')) return 'id-card';
+  if (ctx.includes('passport') || ctx.includes('travel')) return 'passport';
+  if (ctx.includes('vehicle') || ctx.includes('car ') || ctx.includes('excise')) return 'car';
   return iconType || 'wand';
 }
 
 export function renderServiceIcon(
   iconType: IconType,
   contextText?: string,
-  sizeClass = 'w-5 h-5 sm:w-6 sm:h-6 text-white drop-shadow-xs'
+  sizeClass = 'w-4 h-4 sm:w-6 sm:h-6 text-white drop-shadow-xs'
 ) {
   const resolved = resolveSmartIconType(iconType, contextText);
 
@@ -282,11 +310,12 @@ export function renderOrbVisual(
   contextText?: string
 ) {
   const trimmedUrl = (customIconUrl || '').trim();
-  const isLegacyDefaultSvg =
+  const isLegacyOrFaviconUrl =
+    trimmedUrl.includes('google.com/s2/favicons') ||
     trimmedUrl.includes('wikimedia.org/wikipedia/commons/0/04/ChatGPT_logo.svg') ||
     trimmedUrl.includes('gstatic.com/lamda/images/gemini_sparkle');
 
-  if (trimmedUrl && !isLegacyDefaultSvg) {
+  if (trimmedUrl && !isLegacyOrFaviconUrl) {
     return (
       <img
         src={trimmedUrl}
