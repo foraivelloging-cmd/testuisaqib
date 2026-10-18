@@ -341,6 +341,8 @@ export default function App() {
     } catch {
       // Ignore storage quota errors
     }
+    const isRgbOn = siteConfig.banner.rgbBorderEnabled !== false;
+    document.body.classList.toggle('rgb-light-on', isRgbOn);
   }, [siteConfig]);
 
   const activeWaNumberClean =
@@ -405,6 +407,7 @@ export default function App() {
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [vipUser, setVipUser] = useState<{ name: string; identifier: string } | null>(null);
   const [vipDashSubTab, setVipDashSubTab] = useState<'overview' | 'admin'>('admin');
+  const [loginPortalSection, setLoginPortalSection] = useState<'auth' | 'wallet'>('auth');
 
   // Live User Wallet Balance & Submitted Payment Proofs State (persisted in localStorage)
   const [walletBalance, setWalletBalance] = useState<number>(() => {
@@ -621,6 +624,22 @@ export default function App() {
     if (next) playPopSound(660);
   };
 
+  const rgbBorderEnabled = siteConfig.banner.rgbBorderEnabled !== false;
+
+  const toggleRgbBorderLight = () => {
+    const next = !rgbBorderEnabled;
+    playPopSound(next ? 740 : 500);
+    setSiteConfig((prev) => ({
+      ...prev,
+      banner: { ...prev.banner, rgbBorderEnabled: next }
+    }));
+    showToast(
+      next
+        ? '🌈 Soft Light RGB Borders ON! (Portfolio & Cards)'
+        : '⚪ Soft Light RGB Borders OFF!'
+    );
+  };
+
   const triggerConfettiBurst = () => {
     playPopSound(880);
     showToast(`🚀 Muhammad Saqib — ${servicesCatalog.length} Digital & Franchise Services`);
@@ -667,6 +686,9 @@ export default function App() {
   const switchTab = (tab: TabId, scroll = true) => {
     playPopSound(600);
     setMobileMenuOpen(false);
+    if (tab === 'login') {
+      setLoginPortalSection('auth');
+    }
     if (tab !== 'saqibadmb' && window.location.pathname.toLowerCase().includes('saqibadmb')) {
       try {
         window.history.pushState({}, '', '/');
@@ -1292,12 +1314,10 @@ export default function App() {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
-          const target = entry.target as HTMLElement;
           if (entry.isIntersecting) {
+            const target = entry.target as HTMLElement;
             target.classList.add('scroll-in-view');
-          } else if (entry.boundingClientRect.top > window.innerHeight * 0.98) {
-            // Reset when element goes below viewport so scrolling down again replays the smooth 3D reveal
-            target.classList.remove('scroll-in-view');
+            observer.unobserve(target);
           }
         });
       },
@@ -1648,6 +1668,32 @@ export default function App() {
               <span>{shoppingCart.length}</span>
             </button>
 
+            {/* SOFT LIGHT RGB BORDER ON/OFF TOGGLE (HEADER) */}
+            <button
+              type="button"
+              onClick={toggleRgbBorderLight}
+              title={
+                rgbBorderEnabled
+                  ? 'Soft Light RGB Borders ON — Click to turn OFF'
+                  : 'Soft Light RGB Borders OFF — Click to turn ON'
+              }
+              className={`px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[10px] sm:text-[11px] flex items-center gap-1 transition cursor-pointer ${
+                rgbBorderEnabled
+                  ? 'rgb-pill-active text-slate-900'
+                  : 'bg-white/90 text-slate-500 border border-slate-300/80 shadow-2xs'
+              }`}
+            >
+              <span
+                className={`w-2 h-2 rounded-full ${
+                  rgbBorderEnabled
+                    ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                    : 'bg-slate-400'
+                }`}
+              ></span>
+              <span>RGB</span>
+              <span className="hidden lg:inline">{rgbBorderEnabled ? 'ON' : 'OFF'}</span>
+            </button>
+
             <button
               onClick={toggleSound}
               title="Toggle UI Sounds"
@@ -1698,6 +1744,25 @@ export default function App() {
           >
             <i className="fa-solid fa-bars text-[10px]"></i>
             <span>All Menu</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={toggleRgbBorderLight}
+            className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold whitespace-nowrap flex items-center gap-1 cursor-pointer flex-shrink-0 ${
+              rgbBorderEnabled
+                ? 'rgb-pill-active text-slate-900'
+                : 'bg-white/90 text-slate-600 border border-slate-200'
+            }`}
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                rgbBorderEnabled
+                  ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                  : 'bg-slate-400'
+              }`}
+            ></span>
+            <span>RGB {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
           </button>
 
           {(siteConfig.categories && siteConfig.categories.length > 0
@@ -1939,15 +2004,34 @@ export default function App() {
 
                 <button
                   type="button"
+                  onClick={toggleRgbBorderLight}
+                  className={`px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold flex items-center gap-1.5 cursor-pointer ${
+                    rgbBorderEnabled
+                      ? 'rgb-pill-active text-slate-900'
+                      : 'bg-white/90 border border-slate-200 text-slate-600'
+                  }`}
+                >
+                  <span
+                    className={`w-2 h-2 rounded-full ${
+                      rgbBorderEnabled
+                        ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                        : 'bg-slate-400'
+                    }`}
+                  ></span>
+                  <span>RGB {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
+                </button>
+
+                <button
+                  type="button"
                   onClick={toggleSound}
-                  className="px-3 py-1.5 rounded-xl bg-white/90 border border-pink-200 text-[10px] font-extrabold text-slate-800 flex items-center gap-1.5 cursor-pointer"
+                  className="px-2.5 py-1.5 rounded-xl bg-white/90 border border-pink-200 text-[10px] font-extrabold text-slate-800 flex items-center gap-1 cursor-pointer"
                 >
                   <i
                     className={`fa-solid ${
                       soundEnabled ? 'fa-volume-high text-emerald-600' : 'fa-volume-xmark text-slate-400'
                     }`}
                   ></i>
-                  <span>{soundEnabled ? 'Sound ON' : 'Muted'}</span>
+                  <span>{soundEnabled ? 'Sound' : 'Muted'}</span>
                 </button>
 
                 <a
@@ -1956,10 +2040,10 @@ export default function App() {
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[10px] font-extrabold flex items-center gap-1 shadow-sm"
+                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[10px] font-extrabold flex items-center gap-1 shadow-sm"
                 >
                   <i className="fa-brands fa-whatsapp"></i>
-                  <span>WhatsApp</span>
+                  <span>WA</span>
                 </a>
               </div>
             </div>
@@ -1968,8 +2052,10 @@ export default function App() {
       </header>
 
       <main className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-2.5 sm:pt-5 pb-12 flex-grow">
-        {/* ==================== HERO SECTION (CONTROLLED FROM ADMIN SETTINGS) ==================== */}
-        {(siteConfig.banner.showTopStrip || siteConfig.banner.showHeroBanner) && (
+        {/* ==================== HERO SECTION (HIDDEN ON LOGIN & ADMIN TABS SO THEY STAY FIXED AT TOP) ==================== */}
+        {activeTab !== 'login' &&
+          activeTab !== 'saqibadmb' &&
+          (siteConfig.banner.showTopStrip || siteConfig.banner.showHeroBanner) && (
           <section className="mb-4 sm:mb-8">
             {/* Top Title Strip */}
             {siteConfig.banner.showTopStrip && (
@@ -1986,6 +2072,26 @@ export default function App() {
                   </h1>
                 </div>
                 <div className="flex items-center gap-1.5 flex-shrink-0">
+                  <button
+                    type="button"
+                    onClick={toggleRgbBorderLight}
+                    title="Turn Soft Light RGB Borders ON or OFF"
+                    className={`rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold whitespace-nowrap cursor-pointer transition ${
+                      rgbBorderEnabled
+                        ? 'rgb-pill-active text-slate-900'
+                        : 'bg-white/90 text-slate-600 border border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        rgbBorderEnabled
+                          ? 'bg-gradient-to-r from-sky-400 via-pink-500 to-emerald-400 animate-spin'
+                          : 'bg-slate-400'
+                      }`}
+                    ></span>
+                    <span>RGB Light: {rgbBorderEnabled ? 'ON' : 'OFF'}</span>
+                  </button>
+
                   <a
                     href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
                       siteConfig.contact.whatsappDefaultMessage
@@ -1996,7 +2102,7 @@ export default function App() {
                   >
                     <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
                     <i className="fa-brands fa-whatsapp text-emerald-600 text-xs sm:text-sm"></i>
-                    <span>{activeWaNumberDisplay}</span>
+                    <span className="hidden xs:inline sm:inline">{activeWaNumberDisplay}</span>
                   </a>
                 </div>
               </div>
@@ -2117,7 +2223,7 @@ export default function App() {
                 </div>
 
                 {/* Right: Soft Pink/Peach Plush Hero Bio & Feature Pills */}
-                <div data-scroll="right" className="relative z-10 w-full md:-ml-10 mt-4 md:mt-0 acrylic-frame rounded-[28px] sm:rounded-[38px] p-2 sm:p-3.5">
+                <div data-scroll="right" className="hero-rgb-card relative z-10 w-full md:-ml-10 mt-4 md:mt-0 acrylic-frame rounded-[28px] sm:rounded-[38px] p-2 sm:p-3.5">
                   <div className="plush-pillow plush-hero rounded-[22px] sm:rounded-[30px] px-3.5 py-4 sm:pl-14 sm:pr-7 sm:py-6 text-center md:text-left">
                     <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/80 border border-white text-[9px] sm:text-[10px] font-extrabold text-pink-600 shadow-sm mb-2">
                       <i className="fa-solid fa-circle-check text-emerald-500"></i>{' '}
@@ -3556,425 +3662,624 @@ export default function App() {
           </div>
         )}
 
-        {/* ==================== VIEW 6: CUSTOMER VIP LOGIN & WALLET PORTAL (WITH ADD PAYMENT & PROOF SUBMISSION) ==================== */}
+        {/* ==================== VIEW 6: CUSTOMER VIP LOGIN & WALLET PORTAL (FIXED TOP POSITION + RESPONSIVE ANIMATION UX) ==================== */}
         {activeTab === 'login' && (
-          <div className="space-y-6 transition-all duration-300">
-            {/* ALWAYS VISIBLE: USER ADD FUNDS / PAYMENT PROOF SUBMISSION & LIVE WALLET BALANCE */}
-            <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
-              <div className="plush-pillow plush-login rounded-[26px] p-3.5 sm:p-5">
-                <UserAddFundsExperience
-                  walletBalance={walletBalance}
-                  paymentProofs={paymentProofs}
-                  onSubmitProof={handleSubmitPaymentProof}
-                  onCopyText={copyText}
-                  onPlayPop={playPopSound}
-                  onPreviewScreenshot={(proof) => setPreviewScreenshotProof(proof)}
-                  depositMethods={siteConfig.paymentMethods}
-                />
+          <div className="space-y-4 sm:space-y-5 transition-all duration-300">
+            {/* TOP PORTAL NAVIGATION & LIVE WALLET BAR (CLEAN TOP POSITION, NO OVERLAP) */}
+            <div className="relative z-10 acrylic-frame rounded-[24px] sm:rounded-[30px] p-1.5 sm:p-2 shadow-lg auth-portal-enter">
+              <div className="plush-pillow plush-login rounded-[20px] sm:rounded-[24px] px-2.5 py-2 sm:px-4 sm:py-2.5 flex flex-wrap items-center justify-between gap-2">
+                {/* Left: Segmented Switcher (VIP Login FIRST vs Add Balance) */}
+                <div className="flex items-center gap-1.5 bg-white/85 p-1 rounded-2xl border border-pink-200/80 shadow-inner w-full sm:w-auto">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(640);
+                      setLoginPortalSection('auth');
+                    }}
+                    className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                      loginPortalSection === 'auth'
+                        ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
+                        : 'text-slate-700 hover:text-slate-950 hover:bg-white/70'
+                    }`}
+                  >
+                    <i className={`fa-solid ${vipUser ? 'fa-crown text-amber-300' : 'fa-right-to-bracket'}`}></i>
+                    <span>{vipUser ? 'VIP Account Hub' : 'VIP Login / Sign Up'}</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(680);
+                      setLoginPortalSection('wallet');
+                    }}
+                    className={`flex-1 sm:flex-initial px-3.5 py-2 rounded-xl text-xs font-extrabold flex items-center justify-center gap-1.5 transition-all duration-200 cursor-pointer ${
+                      loginPortalSection === 'wallet'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-md scale-[1.01]'
+                        : 'text-slate-700 hover:text-slate-950 hover:bg-white/70'
+                    }`}
+                  >
+                    <i className="fa-solid fa-wallet text-emerald-500"></i>
+                    <span>Add Balance &amp; Proof</span>
+                    {pendingProofsCount > 0 && (
+                      <span className="px-1.5 py-0.2 rounded-full bg-amber-400 text-slate-950 text-[9px] font-extrabold">
+                        {pendingProofsCount}
+                      </span>
+                    )}
+                  </button>
+                </div>
+
+                {/* Right: Live Balance Pill + Instant Demo VIP / Back to Store */}
+                <div className="flex items-center justify-between sm:justify-end gap-2 w-full sm:w-auto">
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-extrabold shadow-sm">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                    <span className="text-slate-300">Balance:</span>
+                    <span className="text-emerald-300 font-display">Rs. {walletBalance.toLocaleString()}</span>
+                  </div>
+
+                  {!vipUser ? (
+                    <button
+                      type="button"
+                      onClick={() => triggerDemoVipLogin()}
+                      className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 via-orange-500 to-pink-500 text-white text-[11px] font-extrabold shadow-sm flex items-center gap-1 hover:scale-105 active:scale-95 transition cursor-pointer"
+                    >
+                      <i className="fa-solid fa-bolt"></i>
+                      <span>1-Tap Demo Login</span>
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={logoutVipUser}
+                      className="px-3 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-[11px] font-extrabold transition cursor-pointer"
+                    >
+                      <i className="fa-solid fa-right-from-bracket mr-1"></i>Sign Out
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
-            {!vipUser ? (
-              /* CUSTOMER VIP AUTHENTICATION CONTAINER */
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-                {/* Left Column (5 Cols): VIP Member Perks */}
-                <div className="lg:col-span-5 acrylic-frame rounded-[34px] p-3 flex flex-col justify-between">
-                  <div className="plush-pillow plush-hero rounded-[26px] p-5 sm:p-6 flex flex-col justify-between h-full space-y-5">
-                    <div className="space-y-3">
-                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 border border-white text-[10px] font-extrabold text-pink-600 shadow-sm">
-                        <i className="fa-solid fa-crown text-amber-500"></i> SAQIB VISUALS VIP MEMBER CLUB
-                      </div>
-                      <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-tight">
-                        Unlock Wholesale Reseller Rates, Instant AI Renewals &amp; Priority Support
-                      </h2>
-                      <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                        Sign in to your <strong>Saqib Visuals VIP Account</strong> to track your active AI subscriptions, view order history, and get up to 20% reseller discounts.
-                      </p>
-                    </div>
-
-                    {/* VIP Benefits List */}
-                    <div className="space-y-2.5">
-                      <div className="bg-white/75 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
-                        <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 text-white flex items-center justify-center flex-shrink-0 shadow">
-                          <i className="fa-solid fa-tags text-xs"></i>
-                        </span>
-                        <div>
-                          <div className="text-xs font-extrabold text-slate-900">20% Wholesale Reseller Discount</div>
-                          <div className="text-[10px] font-semibold text-slate-600">
-                            Special bulk pricing on SMM, AI tools &amp; UK accounts
+            {/* ==================== SECTION A: TOP-POSITIONED VIP LOGIN / ACCOUNT PORTAL ==================== */}
+            {loginPortalSection === 'auth' && (
+              <>
+                {!vipUser ? (
+                  /* CUSTOMER VIP AUTHENTICATION CONTAINER — LOGIN CARD FIRST (ORDER-1) & ALIGNED SIDE-BY-SIDE */
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5 items-stretch">
+                    {/* FIRST COLUMN (7 Cols, Order 1 on Mobile & Desktop): 3D Glass Login / Sign Up Form */}
+                    <div className="lg:col-span-7 order-1 hero-rgb-card acrylic-frame rounded-[30px] sm:rounded-[34px] p-2.5 sm:p-4 flex flex-col justify-between auth-portal-enter">
+                      <div className="plush-pillow plush-login rounded-[24px] sm:rounded-[26px] p-4 sm:p-6 space-y-4 h-full flex flex-col justify-between">
+                        {/* Top Security & Instant Status Micro-Strip */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-pink-200/70">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/90 border border-pink-200 text-[10px] font-extrabold text-pink-700 shadow-2xs auth-float-badge">
+                            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                            <i className="fa-solid fa-shield-halved text-emerald-600"></i>
+                            <span>SECURE VIP MEMBER &amp; RESELLER PORTAL</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                playPopSound(740);
+                                setAuthIdentifier('03478936242');
+                                setAuthPassword('vip2026');
+                                if (authMode === 'signup') setAuthName('Muhammad Saqib VIP');
+                                showToast('✨ Auto-filled Demo Credentials! Click Sign In below.');
+                              }}
+                              className="px-2.5 py-1 rounded-full bg-white/85 hover:bg-white text-purple-700 border border-purple-200 text-[10px] font-extrabold shadow-2xs transition hover:scale-105 cursor-pointer"
+                            >
+                              <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>Auto-Fill
+                            </button>
+                            <button
+                              type="button"
+                              onClick={openSecretAdminPortal}
+                              title="Open Admin Command Center (/saqibadmb)"
+                              className="px-2.5 py-1 rounded-full bg-slate-900/90 hover:bg-slate-900 text-amber-300 text-[10px] font-extrabold shadow-2xs transition hover:scale-105 cursor-pointer"
+                            >
+                              <i className="fa-solid fa-sliders mr-1"></i>Admin
+                            </button>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="bg-white/75 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
-                        <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow">
-                          <i className="fa-solid fa-wand-magic-sparkles text-xs"></i>
-                        </span>
-                        <div>
-                          <div className="text-xs font-extrabold text-slate-900">1-Click AI &amp; Pro Renewals</div>
-                          <div className="text-[10px] font-semibold text-slate-600">
-                            CapCut Pro, Lovable Pro, Gemini 18M &amp; ChatGPT Plus
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="bg-white/75 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
-                        <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center flex-shrink-0 shadow">
-                          <i className="fa-solid fa-sim-card text-xs"></i>
-                        </span>
-                        <div>
-                          <div className="text-xs font-extrabold text-slate-900">Priority Franchise &amp; NADRA Desk</div>
-                          <div className="text-[10px] font-semibold text-slate-600">
-                            Fast-track SIM Owner, CDR, IMEI &amp; FRC reports
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Instant Demo VIP Login */}
-                    <div className="pt-2 border-t border-pink-200/80 flex items-center justify-between gap-2">
-                      <span className="text-[11px] font-bold text-slate-700">Want to preview VIP Wallet?</span>
-                      <button
-                        type="button"
-                        onClick={() => triggerDemoVipLogin()}
-                        className="px-3.5 py-1.5 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[11px] font-extrabold shadow transition hover:scale-105 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-bolt text-amber-300 mr-1"></i>1-Click Demo VIP Login
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column (7 Cols): 3D Glass Login / Sign Up Form */}
-                <div className="lg:col-span-7 acrylic-frame rounded-[34px] p-3 sm:p-4">
-                  <div className="plush-pillow plush-login rounded-[26px] p-5 sm:p-7 space-y-5 h-full flex flex-col justify-between">
-                    <div className="flex items-center justify-between gap-2 bg-white/70 p-1.5 rounded-2xl border border-white shadow-inner">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          playPopSound(640);
-                          setAuthMode('signin');
-                        }}
-                        className={`flex-1 py-2 rounded-xl text-xs transition cursor-pointer ${
-                          authMode === 'signin'
-                            ? 'font-extrabold bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                            : 'font-bold text-slate-700 hover:text-slate-900'
-                        }`}
-                      >
-                        <i className="fa-solid fa-right-to-bracket mr-1"></i>Sign In to Account
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          playPopSound(640);
-                          setAuthMode('signup');
-                        }}
-                        className={`flex-1 py-2 rounded-xl text-xs transition cursor-pointer ${
-                          authMode === 'signup'
-                            ? 'font-extrabold bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                            : 'font-bold text-slate-700 hover:text-slate-900'
-                        }`}
-                      >
-                        <i className="fa-solid fa-user-plus mr-1"></i>Create VIP Account
-                      </button>
-                    </div>
-
-                    <div className="text-center sm:text-left">
-                      <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                        {authMode === 'signup' ? 'Create Your VIP Account 🚀' : 'Welcome Back, Creator! 👋'}
-                      </h3>
-                      <p className="text-xs font-semibold text-slate-600 mt-0.5">
-                        {authMode === 'signup'
-                          ? 'Join Saqib Visuals for reseller SMM rates, AI tools & priority SIM lookups.'
-                          : 'Enter your WhatsApp number or email to access your VIP Member Dashboard.'}
-                      </p>
-                    </div>
-
-                    <form onSubmit={handleAuthSubmit} className="space-y-3.5">
-                      {authMode === 'signup' && (
-                        <div>
-                          <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                            Your Full Name *
-                          </label>
-                          <div className="sim-input-box !py-2 !px-3.5 !rounded-2xl">
-                            <i className="fa-solid fa-user text-pink-500 text-sm mr-2.5"></i>
-                            <input
-                              type="text"
-                              value={authName}
-                              onChange={(e) => setAuthName(e.target.value)}
-                              placeholder="e.g. Ali Raza"
-                              className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                            />
-                          </div>
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                          WhatsApp Number or Email Address *
-                        </label>
-                        <div className="sim-input-box !py-2 !px-3.5 !rounded-2xl">
-                          <i className="fa-solid fa-envelope text-pink-500 text-sm mr-2.5"></i>
-                          <input
-                            type="text"
-                            value={authIdentifier}
-                            onChange={(e) => setAuthIdentifier(e.target.value)}
-                            required
-                            placeholder="03001234567 or name@email.com"
-                            className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-1">
-                          <label className="text-[11px] font-extrabold text-slate-800">Password / PIN *</label>
+                        {/* Animated Mode Switcher: Sign In vs Create VIP Account */}
+                        <div className="flex items-center justify-between gap-2 bg-white/80 p-1.5 rounded-2xl border border-white shadow-inner">
                           <button
                             type="button"
                             onClick={() => {
-                              playPopSound(600);
-                              const id = authIdentifier.trim() || 'My VIP Account';
-                              openExternalWhatsApp(
-                                `🔑 *VIP Password Reset — Saqib Visuals*\nHello Muhammad Saqib, please reset the VIP Portal PIN/Password for: *${id}*`
-                              );
+                              playPopSound(640);
+                              setAuthMode('signin');
                             }}
-                            className="text-[11px] font-extrabold text-pink-600 hover:underline cursor-pointer"
+                            className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
+                              authMode === 'signin'
+                                ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
+                                : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                            }`}
                           >
-                            Forgot Password?
+                            <i className="fa-solid fa-right-to-bracket"></i>
+                            <span>Sign In to Account</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(640);
+                              setAuthMode('signup');
+                            }}
+                            className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
+                              authMode === 'signup'
+                                ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
+                                : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                            }`}
+                          >
+                            <i className="fa-solid fa-user-plus"></i>
+                            <span>Create VIP Account</span>
                           </button>
                         </div>
-                        <div className="sim-input-box !py-2 !px-3.5 !rounded-2xl">
-                          <i className="fa-solid fa-lock text-pink-500 text-sm mr-2.5"></i>
-                          <input
-                            type={showPassword ? 'text' : 'password'}
-                            value={authPassword}
-                            onChange={(e) => setAuthPassword(e.target.value)}
-                            required
-                            placeholder="••••••••"
-                            className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                          />
-                          <button
-                            type="button"
-                            onClick={() => {
-                              playPopSound(520);
-                              setShowPassword((prev) => !prev);
-                            }}
-                            className="text-slate-400 hover:text-pink-600 px-2 cursor-pointer"
-                          >
-                            <i
-                              className={
-                                showPassword
-                                  ? 'fa-solid fa-eye-slash text-xs text-pink-600'
-                                  : 'fa-solid fa-eye text-xs'
+
+                        {/* Dynamic Header */}
+                        <div className="flex items-center gap-3">
+                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md border-2 border-white flex-shrink-0">
+                            <i className={`fa-solid ${authMode === 'signup' ? 'fa-rocket' : 'fa-crown text-amber-200'}`}></i>
+                          </div>
+                          <div>
+                            <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
+                              {authMode === 'signup' ? 'Create Your VIP Account 🚀' : 'Welcome Back, Creator! 👋'}
+                            </h3>
+                            <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
+                              {authMode === 'signup'
+                                ? 'Join Saqib Visuals for 20% reseller SMM rates, AI tools & priority SIM lookups.'
+                                : 'Sign in right here at the top to access your VIP Wallet & instant AI renewals.'}
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Interactive Animated Auth Form */}
+                        <form key={authMode} onSubmit={handleAuthSubmit} className="space-y-3">
+                          {authMode === 'signup' && (
+                            <div className="auth-field-stagger-1">
+                              <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                Your Full Name *
+                              </label>
+                              <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                <i className="fa-solid fa-user auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                <input
+                                  type="text"
+                                  value={authName}
+                                  onChange={(e) => setAuthName(e.target.value)}
+                                  placeholder="e.g. Ali Raza"
+                                  className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                />
+                                {authName && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setAuthName('')}
+                                    className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
+                                  >
+                                    <i className="fa-solid fa-circle-xmark"></i>
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          )}
+
+                          <div className="auth-field-stagger-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] font-extrabold text-slate-800">
+                                WhatsApp Number or Email Address *
+                              </label>
+                              <span className="text-[10px] font-bold text-emerald-700">
+                                <i className="fa-solid fa-bolt mr-0.5"></i>Instant Verify
+                              </span>
+                            </div>
+                            <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                              <i className="fa-solid fa-envelope auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                              <input
+                                type="text"
+                                value={authIdentifier}
+                                onChange={(e) => setAuthIdentifier(e.target.value)}
+                                required
+                                placeholder="03001234567 or name@email.com"
+                                className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                              />
+                              {authIdentifier && (
+                                <button
+                                  type="button"
+                                  onClick={() => setAuthIdentifier('')}
+                                  className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
+                                >
+                                  <i className="fa-solid fa-circle-xmark"></i>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="auth-field-stagger-2">
+                            <div className="flex items-center justify-between mb-1">
+                              <label className="text-[11px] font-extrabold text-slate-800">Password / Security PIN *</label>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(600);
+                                  const id = authIdentifier.trim() || 'My VIP Account';
+                                  openExternalWhatsApp(
+                                    `🔑 *VIP Password Reset — Saqib Visuals*\nHello Muhammad Saqib, please reset the VIP Portal PIN/Password for: *${id}*`
+                                  );
+                                }}
+                                className="text-[11px] font-extrabold text-pink-600 hover:underline cursor-pointer"
+                              >
+                                Forgot Password?
+                              </button>
+                            </div>
+                            <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                              <i className="fa-solid fa-lock auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                              <input
+                                type={showPassword ? 'text' : 'password'}
+                                value={authPassword}
+                                onChange={(e) => setAuthPassword(e.target.value)}
+                                required
+                                placeholder="••••••••"
+                                className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(520);
+                                  setShowPassword((prev) => !prev);
+                                }}
+                                className="text-slate-500 hover:text-pink-600 px-2 py-0.5 rounded-lg bg-slate-100/80 hover:bg-pink-50 text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer"
+                              >
+                                <i
+                                  className={
+                                    showPassword
+                                      ? 'fa-solid fa-eye-slash text-pink-600'
+                                      : 'fa-solid fa-eye'
+                                  }
+                                ></i>
+                                <span>{showPassword ? 'Hide' : 'Show'}</span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {authMode === 'signup' && (
+                            <div className="auth-field-stagger-3">
+                              <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                Select Membership Tier
+                              </label>
+                              <select
+                                value={authRole}
+                                onChange={(e) => setAuthRole(e.target.value)}
+                                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/95 border-2 border-pink-300 font-bold text-xs text-slate-900 focus:outline-none focus:border-pink-500 transition"
+                              >
+                                <option value="SMM & AI Reseller Panel (20% Off)">🚀 SMM &amp; AI Reseller Panel (20% Off)</option>
+                                <option value="Franchise SIM & NADRA VIP Agent">🪪 Franchise SIM &amp; NADRA VIP Agent</option>
+                                <option value="Regular Customer (Free)">✨ Regular Customer (Free)</option>
+                              </select>
+                            </div>
+                          )}
+
+                          <div className="pt-1 auth-field-stagger-3">
+                            <button
+                              type="submit"
+                              className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform"
+                            >
+                              <i className="fa-solid fa-key text-amber-300"></i>
+                              <span>
+                                {authMode === 'signup' ? 'CREATE VIP ACCOUNT NOW' : 'SIGN IN TO VIP PORTAL'}
+                              </span>
+                              <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                            </button>
+                          </div>
+                        </form>
+
+                        {/* Quick WhatsApp OTP & 1-Tap Wallet Actions */}
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex items-center gap-2">
+                            <div className="h-px bg-pink-200 flex-grow"></div>
+                            <span className="text-[10px] font-extrabold uppercase text-slate-500">
+                              Or 1-Tap Instant Access
+                            </span>
+                            <div className="h-px bg-pink-200 flex-grow"></div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openExternalWhatsApp(
+                                  'Assalam-o-Alaikum Saqib Bhai! Please send me my VIP Reseller Portal OTP / Login credentials.'
+                                )
                               }
-                            ></i>
-                          </button>
+                              className="py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+                            >
+                              <i className="fa-brands fa-whatsapp text-sm"></i> Get WA OTP
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => triggerDemoVipLogin()}
+                              className="py-2.5 px-3 rounded-2xl bg-white/95 hover:bg-white text-slate-900 border border-pink-200 font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+                            >
+                              <i className="fa-solid fa-bolt text-amber-500"></i> Demo VIP Login
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                playPopSound(680);
+                                setLoginPortalSection('wallet');
+                              }}
+                              className="py-2.5 px-3 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition hover:scale-[1.02] active:scale-95 cursor-pointer"
+                            >
+                              <i className="fa-solid fa-wallet text-amber-300"></i> +Add Balance
+                            </button>
+                          </div>
                         </div>
-                      </div>
-
-                      {authMode === 'signup' && (
-                        <div>
-                          <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                            Select Membership Type
-                          </label>
-                          <select
-                            value={authRole}
-                            onChange={(e) => setAuthRole(e.target.value)}
-                            className="w-full px-3.5 py-2.5 rounded-2xl bg-white/90 border-2 border-pink-300 font-bold text-xs text-slate-900 focus:outline-none"
-                          >
-                            <option value="SMM & AI Reseller Panel (20% Off)">🚀 SMM &amp; AI Reseller Panel (20% Off)</option>
-                            <option value="Franchise SIM & NADRA VIP Agent">🪪 Franchise SIM &amp; NADRA VIP Agent</option>
-                            <option value="Regular Customer (Free)">✨ Regular Customer (Free)</option>
-                          </select>
-                        </div>
-                      )}
-
-                      <button
-                        type="submit"
-                        className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <i className="fa-solid fa-key text-amber-300"></i>
-                        <span>
-                          {authMode === 'signup' ? 'CREATE VIP ACCOUNT NOW' : 'SIGN IN TO VIP PORTAL'}
-                        </span>
-                      </button>
-                    </form>
-
-                    {/* Quick WhatsApp OTP Login Divider */}
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-px bg-pink-200 flex-grow"></div>
-                        <span className="text-[10px] font-extrabold uppercase text-slate-500">
-                          Or Instant Access Via
-                        </span>
-                        <div className="h-px bg-pink-200 flex-grow"></div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openExternalWhatsApp(
-                              'Assalam-o-Alaikum Saqib Bhai! Please send me my VIP Reseller Portal OTP / Login credentials.'
-                            )
-                          }
-                          className="py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
-                        >
-                          <i className="fa-brands fa-whatsapp text-sm"></i> Get WhatsApp OTP
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => triggerDemoVipLogin()}
-                          className="py-2.5 px-3 rounded-2xl bg-white/90 hover:bg-white text-slate-800 border border-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
-                        >
-                          <i className="fa-solid fa-wallet text-pink-500"></i> VIP Wallet Preview
-                        </button>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              /* LOGGED-IN CUSTOMER VIP WALLET DASHBOARD */
-              <div className="space-y-5">
-                <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
-                  <div className="plush-pillow plush-login rounded-[26px] p-4 sm:p-6 space-y-5">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-pink-200">
-                      <div className="flex items-center gap-3">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-2xl font-display font-bold shadow-md border-2 border-white">
-                          <span>{vipUser.name.charAt(0).toUpperCase()}</span>
-                        </div>
-                        <div>
-                          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
-                            <i className="fa-solid fa-crown text-amber-500"></i> VERIFIED VIP MEMBER
+
+                    {/* SECOND COLUMN (5 Cols, Order 2): VIP Member Perks & Quick Deposit Card */}
+                    <div className="lg:col-span-5 order-2 acrylic-frame rounded-[30px] sm:rounded-[34px] p-2.5 sm:p-3.5 flex flex-col justify-between auth-portal-enter">
+                      <div className="plush-pillow plush-hero rounded-[24px] sm:rounded-[26px] p-4 sm:p-6 flex flex-col justify-between h-full space-y-4">
+                        <div className="space-y-2.5">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 border border-white text-[10px] font-extrabold text-pink-600 shadow-sm">
+                            <i className="fa-solid fa-crown text-amber-500"></i> SAQIB VISUALS VIP MEMBER CLUB
                           </div>
-                          <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
-                            {vipUser.name}
-                          </h3>
-                          <p className="text-xs font-mono-code font-semibold text-slate-600">
-                            WhatsApp: {vipUser.identifier} • 20% Reseller Discount Active
+                          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
+                            Unlock Wholesale Reseller Rates, Instant AI Renewals &amp; Priority Support
+                          </h2>
+                          <p className="text-xs font-medium text-slate-700 leading-relaxed">
+                            Sign in to your <strong>Saqib Visuals VIP Account</strong> to track active AI subscriptions, view order history, and get up to 20% reseller discounts.
                           </p>
                         </div>
-                      </div>
 
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          onClick={() => switchTab('store')}
-                          className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
-                        >
-                          <i className="fa-solid fa-bag-shopping mr-1.5"></i>Browse Store
-                        </button>
-                        <button
-                          onClick={logoutVipUser}
-                          className="px-3.5 py-2 rounded-full bg-white/85 hover:bg-rose-50 text-rose-600 border border-rose-200 font-extrabold text-xs shadow-sm transition cursor-pointer"
-                        >
-                          <i className="fa-solid fa-right-from-bracket mr-1"></i>Sign Out
-                        </button>
-                      </div>
-                    </div>
+                        {/* Interactive Animated VIP Benefits List */}
+                        <div className="space-y-2.5">
+                          <div className="auth-perk-card bg-white/85 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-pink-500 to-rose-500 text-white flex items-center justify-center flex-shrink-0 shadow">
+                              <i className="fa-solid fa-tags text-xs"></i>
+                            </span>
+                            <div>
+                              <div className="text-xs font-extrabold text-slate-900">20% Wholesale Reseller Discount</div>
+                              <div className="text-[10px] font-semibold text-slate-600">
+                                Special bulk pricing on SMM, AI tools &amp; UK accounts
+                              </div>
+                            </div>
+                          </div>
 
-                    {/* 3 VIP Wallet & Status Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                      <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] font-extrabold uppercase text-slate-500">
-                            VIP Wallet Balance
+                          <div className="auth-perk-card bg-white/85 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center flex-shrink-0 shadow">
+                              <i className="fa-solid fa-wand-magic-sparkles text-xs"></i>
+                            </span>
+                            <div>
+                              <div className="text-xs font-extrabold text-slate-900">1-Click AI &amp; Pro Renewals</div>
+                              <div className="text-[10px] font-semibold text-slate-600">
+                                CapCut Pro, Lovable Pro, Gemini 18M &amp; ChatGPT Plus
+                              </div>
+                            </div>
                           </div>
-                          <div className="font-display font-bold text-2xl text-emerald-600 mt-0.5">
-                            Rs. {walletBalance.toLocaleString()}
-                          </div>
-                          <div className="text-[10px] font-bold text-slate-600 mt-0.5">
-                            Ready for instant orders
+
+                          <div className="auth-perk-card bg-white/85 p-3 rounded-2xl border border-white flex items-center gap-3 shadow-sm">
+                            <span className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center flex-shrink-0 shadow">
+                              <i className="fa-solid fa-sim-card text-xs"></i>
+                            </span>
+                            <div>
+                              <div className="text-xs font-extrabold text-slate-900">Priority Franchise &amp; NADRA Desk</div>
+                              <div className="text-[10px] font-semibold text-slate-600">
+                                Fast-track SIM Owner, CDR, IMEI &amp; FRC reports
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setAddFundsModalOpen(true)}
-                          className="w-11 h-11 rounded-2xl bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center text-lg cursor-pointer"
-                          title="Add Funds to Wallet"
-                        >
-                          <i className="fa-solid fa-plus"></i>
-                        </button>
-                      </div>
 
-                      <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] font-extrabold uppercase text-slate-500">
-                            Active Subscriptions
+                        {/* Quick Jump to Add Wallet Balance & Payment Proof */}
+                        <div className="pt-3 border-t border-pink-200/80 space-y-2">
+                          <div className="flex items-center justify-between text-[11px] font-extrabold text-slate-800">
+                            <span>Need to Top-Up Wallet Balance?</span>
+                            <span className="text-emerald-700">EasyPaisa • JazzCash • Bank</span>
                           </div>
-                          <div className="font-display font-bold text-lg text-purple-700 mt-0.5">
-                            CapCut + Lovable + Gemini
-                          </div>
-                          <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                            ● Full Warranty Active
-                          </div>
-                        </div>
-                        <span className="w-11 h-11 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
-                          <i className="fa-solid fa-wand-magic-sparkles"></i>
-                        </span>
-                      </div>
-
-                      <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
-                        <div>
-                          <div className="text-[10px] font-extrabold uppercase text-slate-500">
-                            Franchise &amp; SIM Quota
-                          </div>
-                          <div className="font-display font-bold text-2xl text-pink-600 mt-0.5">Unlimited</div>
-                          <div className="text-[10px] font-bold text-slate-600 mt-0.5">
-                            Priority CDR &amp; NADRA Desk
-                          </div>
-                        </div>
-                        <span className="w-11 h-11 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg">
-                          <i className="fa-solid fa-sim-card"></i>
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Recent VIP Orders Table */}
-                    <div className="bg-white/80 rounded-2xl p-4 border border-white space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
-                          <i className="fa-solid fa-clock-rotate-left text-pink-500 mr-1"></i>Recent Account Activity
-                        </h4>
-                        <button
-                          onClick={() =>
-                            openExternalWhatsApp(
-                              'Assalam-o-Alaikum Saqib Bhai! I want to top up my VIP Wallet balance via EasyPaisa / JazzCash.'
-                            )
-                          }
-                          className="text-[11px] font-extrabold text-emerald-700 hover:underline cursor-pointer"
-                        >
-                          + Add Funds via WhatsApp
-                        </button>
-                      </div>
-                      <div className="space-y-2 text-xs">
-                        <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-bold text-slate-900">
-                            <i className="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1.5"></i>Google Gemini 18-Month Pro + ElevenLabs 300k
-                          </div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                            Active License ✓
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-bold text-slate-900">
-                            <i className="fa-brands fa-tiktok text-rose-500 mr-1.5"></i>TikTok UK Monetizable Account + Ad Agency Setup
-                          </div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                            Completed ✓
-                          </span>
-                        </div>
-                        <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                          <div className="font-bold text-slate-900">
-                            <i className="fa-solid fa-satellite-dish text-blue-600 mr-1.5"></i>Fresh 2026 SIM Owner &amp; CDR Report
-                          </div>
-                          <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-extrabold">
-                            Delivered on WA ✓
-                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(680);
+                              setLoginPortalSection('wallet');
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }}
+                            className="w-full py-2.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white text-xs font-extrabold shadow-md flex items-center justify-center gap-2 transition hover:scale-[1.02] cursor-pointer"
+                          >
+                            <i className="fa-solid fa-circle-plus text-amber-200"></i>
+                            <span>Open Add Funds &amp; Payment Proof Studio</span>
+                          </button>
                         </div>
                       </div>
                     </div>
                   </div>
+                ) : (
+                  /* LOGGED-IN CUSTOMER VIP WALLET DASHBOARD (AT TOP) */
+                  <div className="space-y-5 auth-portal-enter">
+                    <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
+                      <div className="plush-pillow plush-login rounded-[26px] p-4 sm:p-6 space-y-5">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-pink-200">
+                          <div className="flex items-center gap-3">
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-2xl font-display font-bold shadow-md border-2 border-white">
+                              <span>{vipUser.name.charAt(0).toUpperCase()}</span>
+                            </div>
+                            <div>
+                              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
+                                <i className="fa-solid fa-crown text-amber-500"></i> VERIFIED VIP MEMBER
+                              </div>
+                              <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-0.5">
+                                {vipUser.name}
+                              </h3>
+                              <p className="text-xs font-mono-code font-semibold text-slate-600">
+                                WhatsApp: {vipUser.identifier} • 20% Reseller Discount Active
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-2">
+                            <button
+                              onClick={() => {
+                                playPopSound(680);
+                                setLoginPortalSection('wallet');
+                              }}
+                              className="px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
+                            >
+                              <i className="fa-solid fa-circle-plus mr-1.5"></i>+ Add Balance
+                            </button>
+                            <button
+                              onClick={() => switchTab('store')}
+                              className="px-4 py-2 rounded-full bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
+                            >
+                              <i className="fa-solid fa-bag-shopping mr-1.5"></i>Browse Store
+                            </button>
+                            <button
+                              onClick={logoutVipUser}
+                              className="px-3.5 py-2 rounded-full bg-white/85 hover:bg-rose-50 text-rose-600 border border-rose-200 font-extrabold text-xs shadow-sm transition cursor-pointer"
+                            >
+                              <i className="fa-solid fa-right-from-bracket mr-1"></i>Sign Out
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* 3 VIP Wallet & Status Cards */}
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div className="auth-perk-card bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] font-extrabold uppercase text-slate-500">
+                                VIP Wallet Balance
+                              </div>
+                              <div className="font-display font-bold text-2xl text-emerald-600 mt-0.5">
+                                Rs. {walletBalance.toLocaleString()}
+                              </div>
+                              <div className="text-[10px] font-bold text-slate-600 mt-0.5">
+                                Ready for instant orders
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setLoginPortalSection('wallet')}
+                              className="w-11 h-11 rounded-2xl bg-emerald-100 hover:bg-emerald-200 text-emerald-600 flex items-center justify-center text-lg cursor-pointer"
+                              title="Add Funds to Wallet"
+                            >
+                              <i className="fa-solid fa-plus"></i>
+                            </button>
+                          </div>
+
+                          <div className="auth-perk-card bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] font-extrabold uppercase text-slate-500">
+                                Active Subscriptions
+                              </div>
+                              <div className="font-display font-bold text-lg text-purple-700 mt-0.5">
+                                CapCut + Lovable + Gemini
+                              </div>
+                              <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
+                                ● Full Warranty Active
+                              </div>
+                            </div>
+                            <span className="w-11 h-11 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
+                              <i className="fa-solid fa-wand-magic-sparkles"></i>
+                            </span>
+                          </div>
+
+                          <div className="auth-perk-card bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
+                            <div>
+                              <div className="text-[10px] font-extrabold uppercase text-slate-500">
+                                Franchise &amp; SIM Quota
+                              </div>
+                              <div className="font-display font-bold text-2xl text-pink-600 mt-0.5">Unlimited</div>
+                              <div className="text-[10px] font-bold text-slate-600 mt-0.5">
+                                Priority CDR &amp; NADRA Desk
+                              </div>
+                            </div>
+                            <span className="w-11 h-11 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg">
+                              <i className="fa-solid fa-sim-card"></i>
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Recent VIP Orders Table */}
+                        <div className="bg-white/80 rounded-2xl p-4 border border-white space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
+                              <i className="fa-solid fa-clock-rotate-left text-pink-500 mr-1"></i>Recent Account Activity
+                            </h4>
+                            <button
+                              onClick={() => setLoginPortalSection('wallet')}
+                              className="text-[11px] font-extrabold text-emerald-700 hover:underline cursor-pointer"
+                            >
+                              + Add Funds &amp; Submit Proof
+                            </button>
+                          </div>
+                          <div className="space-y-2 text-xs">
+                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
+                              <div className="font-bold text-slate-900">
+                                <i className="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1.5"></i>Google Gemini 18-Month Pro + ElevenLabs 300k
+                              </div>
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                                Active License ✓
+                              </span>
+                            </div>
+                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
+                              <div className="font-bold text-slate-900">
+                                <i className="fa-brands fa-tiktok text-rose-500 mr-1.5"></i>TikTok UK Monetizable Account + Ad Agency Setup
+                              </div>
+                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                                Completed ✓
+                              </span>
+                            </div>
+                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
+                              <div className="font-bold text-slate-900">
+                                <i className="fa-solid fa-satellite-dish text-blue-600 mr-1.5"></i>Fresh 2026 SIM Owner &amp; CDR Report
+                              </div>
+                              <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-extrabold">
+                                Delivered on WA ✓
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* ==================== SECTION B: ADD FUNDS / PAYMENT PROOF SUBMISSION STUDIO ==================== */}
+            {loginPortalSection === 'wallet' && (
+              <div className="acrylic-frame rounded-[30px] sm:rounded-[34px] p-2.5 sm:p-4 auth-portal-enter">
+                <div className="plush-pillow plush-login rounded-[24px] sm:rounded-[26px] p-3.5 sm:p-5 space-y-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-pink-200/80">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xs shadow">
+                        <i className="fa-solid fa-wallet"></i>
+                      </span>
+                      <div>
+                        <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+                          Instant Wallet Deposit &amp; Screenshot Verification
+                        </h3>
+                        <p className="text-[10px] font-semibold text-slate-600">
+                          Send payment via EasyPaisa / JazzCash / Bank and upload screenshot for instant balance
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playPopSound(640);
+                        setLoginPortalSection('auth');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-pink-50 text-pink-600 border border-pink-200 text-[11px] font-extrabold shadow-2xs transition cursor-pointer"
+                    >
+                      <i className="fa-solid fa-arrow-left mr-1"></i>Back to VIP Login
+                    </button>
+                  </div>
+
+                  <UserAddFundsExperience
+                    walletBalance={walletBalance}
+                    paymentProofs={paymentProofs}
+                    onSubmitProof={handleSubmitPaymentProof}
+                    onCopyText={copyText}
+                    onPlayPop={playPopSound}
+                    onPreviewScreenshot={(proof) => setPreviewScreenshotProof(proof)}
+                    depositMethods={siteConfig.paymentMethods}
+                  />
                 </div>
               </div>
             )}

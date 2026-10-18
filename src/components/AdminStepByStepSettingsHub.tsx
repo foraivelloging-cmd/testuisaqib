@@ -62,6 +62,7 @@ import {
 export interface SiteBannerConfig {
   showHeroBanner: boolean;
   showTopStrip: boolean;
+  rgbBorderEnabled: boolean;
   topStripTitle: string;
   badgeText: string;
   mainTitle: string;
@@ -111,6 +112,7 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
   banner: {
     showHeroBanner: true,
     showTopStrip: true,
+    rgbBorderEnabled: true,
     topStripTitle: 'MUHAMMAD SAQIB • VISUALS HUB',
     badgeText: 'ALL DIGITAL, AI, SMM, FRANCHISE & NADRA SERVICES AVAILABLE',
     mainTitle: 'Muhammad Saqib',
@@ -1351,6 +1353,57 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           'Toggle Top Strip'
                         )}
                         <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Row: Soft Light RGB Border Around Portfolio & Cards Toggle */}
+                    <div
+                      onClick={() => {
+                        const next = siteConfig.banner.rgbBorderEnabled === false;
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: { ...prev.banner, rgbBorderEnabled: next }
+                        }));
+                        showToast(
+                          next
+                            ? '🌈 Soft Light RGB Borders Turned ON!'
+                            : '⚪ Soft Light RGB Borders Turned OFF!'
+                        );
+                      }}
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-400 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaWandMagicSparkles className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            Soft Light RGB Border (Portfolio &amp; All Cards)
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            {siteConfig.banner.rgbBorderEnabled !== false
+                              ? '🌈 Active: Soft Pastel RGB Light Ring on Portfolio & Borders'
+                              : '⚪ Off: Standard Clean Card Borders'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        {renderToggleSwitch(
+                          siteConfig.banner.rgbBorderEnabled !== false,
+                          () => {
+                            const next = siteConfig.banner.rgbBorderEnabled === false;
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, rgbBorderEnabled: next }
+                            }));
+                            showToast(
+                              next
+                                ? '🌈 Soft Light RGB Borders Turned ON!'
+                                : '⚪ Soft Light RGB Borders Turned OFF!'
+                            );
+                          },
+                          'Toggle Soft Light RGB Borders'
+                        )}
                       </div>
                     </div>
 
@@ -3385,6 +3438,29 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           }
                         })),
                       'Show Top Strip'
+                    )}
+                  </div>
+
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">
+                        🌈 Soft Light RGB Border Around Portfolio &amp; All Cards (ON / OFF)
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Illuminates your circular portfolio portrait &amp; card borders with a soft, airy light-mode RGB flow (never dark!)
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.banner.rgbBorderEnabled !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            rgbBorderEnabled: prev.banner.rgbBorderEnabled === false
+                          }
+                        })),
+                      'Show Soft Light RGB Borders'
                     )}
                   </div>
                 </div>
