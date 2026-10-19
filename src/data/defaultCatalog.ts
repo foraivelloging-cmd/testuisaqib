@@ -188,6 +188,23 @@ export const DEFAULT_STORE_SERVICES: StoreService[] = [
     ]
   },
   {
+    id: 'remini-ai-pro',
+    category: 'capcut_ai',
+    badge: '📸 ULTRA HD 4K',
+    title: 'Remini AI Pro (Web / Android / iOS)',
+    desc: 'Enhance old, blurry, pixelated photos to crystal-clear 4K Ultra HD. AI Face Restoration, Video Unblur & Unlimited Exports.',
+    plush: 'plush-snap',
+    orbGrad: 'from-rose-500 via-red-600 to-amber-600',
+    iconType: 'wand',
+    inputLabel: 'Enter Your Email or WhatsApp Number:',
+    placeholder: '0300-1234567 or email@gmail.com',
+    tiers: [
+      'Remini Pro 1 Month Web/Mobile — Rs. 400',
+      'Remini Pro 3 Months Personal — Rs. 950',
+      'Remini Pro 12 Months Full Pro (Full Warranty) — Rs. 2,200'
+    ]
+  },
+  {
     id: 'lovable-pro',
     category: 'capcut_ai',
     badge: '💜 AI WEB BUILDER',
@@ -822,6 +839,19 @@ export const DEFAULT_WEB_TOOLS: WebToolItem[] = [
     buttonLabel: 'Open Voice Studio',
     plush: 'plush-ig',
     orbGrad: 'from-amber-500 via-orange-500 to-pink-600',
+    openMode: 'new_tab'
+  },
+  {
+    id: 'tool-remini-web',
+    title: 'Remini AI Ultra 4K Photo Enhancer',
+    desc: 'AI Photo enhancer, unblur faces and 4K upscale directly in web browser.',
+    toolUrl: 'https://remini.ai',
+    iconUrl: '',
+    iconType: 'wand',
+    badge: '⚡ ULTRA HD 4K',
+    buttonLabel: 'Open Remini Web',
+    plush: 'plush-snap',
+    orbGrad: 'from-rose-500 via-red-600 to-amber-600',
     openMode: 'new_tab'
   }
 ];

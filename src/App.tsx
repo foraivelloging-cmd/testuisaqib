@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @license
  * SPDX-License-Identifier: Apache-2.0
@@ -20,15 +22,13 @@ import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelTool
 import {
   PaymentProofRequest,
   DEFAULT_PAYMENT_PROOFS,
-  UserAddFundsExperience,
-  AdminPaymentApprovalStudio
+  UserAddFundsExperience
 } from './components/WalletAndAdminPayments';
 import {
   WebsiteUiThemeMode,
   WebsiteFontMode,
   STORE_FONT_PACKS,
-  STORE_THEMES_CATALOG,
-  AdminUiThemeSwitcherStudio
+  STORE_THEMES_CATALOG
 } from './components/AstroNeumorphicDeck';
 import {
   SiteSettingsConfig,
@@ -36,11 +36,16 @@ import {
   DEFAULT_SITE_VISIBILITY,
   DEFAULT_SITE_SEO,
   SITE_CONFIG_STORAGE_KEY,
-  AdminStepByStepSettingsHub,
   SitePromoBannerItem,
   DEFAULT_PROMO_BANNERS,
   getPromoBannerStyleClasses
 } from './components/AdminStepByStepSettingsHub';
+
+const AdminStepByStepSettingsHub = React.lazy(() =>
+  import('./components/AdminStepByStepSettingsHub').then((m) => ({
+    default: m.AdminStepByStepSettingsHub
+  }))
+);
 import {
   BRAND_ICON_OPTIONS as ICON_OPTIONS,
   renderServiceIcon,
@@ -233,27 +238,57 @@ async function queryEndpoint(rawUrl: string) {
   return null;
 }
 
-export default function App() {
-  // Dynamic Catalog State (persisted in localStorage for Admin Manager)
+export function formatTierToString(rawTier: unknown): string {
+  if (!rawTier) return '';
+  if (typeof rawTier === 'string') return rawTier;
+  if (typeof rawTier === 'object' && rawTier !== null) {
+    const obj = rawTier as { name?: string; title?: string; label?: string; price?: number | string };
+    const name = obj.name || obj.title || obj.label || '';
+    const price = obj.price !== undefined ? ` — Rs. ${Number(obj.price).toLocaleString()}` : '';
+    return (name + price).trim() || JSON.stringify(rawTier);
+  }
+  return String(rawTier);
+}
+
+export interface AppProps {
+  initialServices?: StoreService[];
+  initialTools?: WebToolItem[];
+  initialConfig?: SiteSettingsConfig;
+  initialReviews?: any[];
+  initialTab?: TabId;
+}
+
+export default function App({
+  initialServices,
+  initialTools,
+  initialConfig,
+  initialTab,
+}: AppProps = {}) {
+  // Admin Cryptographic Session Token (Server Verified)
+  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const isClientStorageReadyRef = useRef<boolean>(false);
+
+  const getAdminHeaders = (): Record<string, string> => {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (adminToken) {
+      headers['Authorization'] = `Bearer ${adminToken}`;
+    }
+    return headers;
+  };
+
+  // Dynamic Catalog State (seeded from SSR initialServices or defaults)
   const [servicesCatalog, setServicesCatalog] = useState<StoreService[]>(() => {
-    try {
-      const saved = localStorage.getItem(CATALOG_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed.map((srv: StoreService) => ({
-            ...srv,
-            iconType: resolveSmartIconType(srv.iconType, `${srv.id} ${srv.title}`)
-          }));
-        }
-      }
-    } catch {
-      // Fallback to default catalog
+    if (initialServices && initialServices.length > 0) {
+      return initialServices.map((srv: StoreService) => ({
+        ...srv,
+        iconType: resolveSmartIconType(srv.iconType, `${srv.id} ${srv.title}`)
+      }));
     }
     return DEFAULT_STORE_SERVICES;
   });
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem(CATALOG_STORAGE_KEY, JSON.stringify(servicesCatalog));
     } catch {
@@ -261,50 +296,16 @@ export default function App() {
     }
   }, [servicesCatalog]);
 
-  // Dynamic Web Tools Catalog State (persisted in localStorage for Admin Tool Manager)
+  // Dynamic Web Tools Catalog State (seeded from SSR initialTools or defaults)
   const [webToolsCatalog, setWebToolsCatalog] = useState<WebToolItem[]>(() => {
-    try {
-      const saved = localStorage.getItem(TOOLS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          const cleaned = parsed
-            .filter(
-              (t: WebToolItem) =>
-                t.id !== 'tool-sim-tracker' &&
-                t.id !== 'tool-sim-engine' &&
-                t.toolUrl !== '#siminfo' &&
-                t.openMode !== 'sim_tab' &&
-                !(t.title || '').toLowerCase().includes('live sim')
-            )
-            .map((t: WebToolItem) => {
-              const hasLegacyFavicon =
-                (t.iconUrl || '').includes('google.com/s2/favicons') ||
-                (t.iconUrl || '').includes('wikimedia.org') ||
-                (t.iconUrl || '').includes('gstatic.com');
-              return {
-                ...t,
-                iconUrl: hasLegacyFavicon ? '' : t.iconUrl,
-                iconType: resolveSmartIconType(t.iconType, `${t.id} ${t.title}`)
-              };
-            });
-          if (cleaned.length > 0) {
-            const hasCapcutTool = cleaned.some((t: WebToolItem) => t.id === 'tool-capcut-cloud' || (t.title || '').toLowerCase().includes('capcut'));
-            const capcutDefault = DEFAULT_WEB_TOOLS.find((d) => d.id === 'tool-capcut-cloud');
-            if (!hasCapcutTool && capcutDefault && cleaned.length === 5) {
-              return [...cleaned, capcutDefault];
-            }
-            return cleaned;
-          }
-        }
-      }
-    } catch {
-      // Fallback to default tools
+    if (initialTools && initialTools.length > 0) {
+      return initialTools;
     }
     return DEFAULT_WEB_TOOLS;
   });
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem(TOOLS_STORAGE_KEY, JSON.stringify(webToolsCatalog));
     } catch {
@@ -312,47 +313,10 @@ export default function App() {
     }
   }, [webToolsCatalog]);
 
-  // Global Site Settings Config (Banner, WhatsApp, Socials, Footer, Payment Methods, Categories)
+  // Global Site Settings Config (seeded from SSR initialConfig or defaults)
   const [siteConfig, setSiteConfig] = useState<SiteSettingsConfig>(() => {
-    try {
-      const saved = localStorage.getItem(SITE_CONFIG_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object') {
-          return {
-            banner: { ...DEFAULT_SITE_CONFIG.banner, ...(parsed.banner || {}) },
-            contact: { ...DEFAULT_SITE_CONFIG.contact, ...(parsed.contact || {}) },
-            socials: { ...DEFAULT_SITE_CONFIG.socials, ...(parsed.socials || {}) },
-            footer: { ...DEFAULT_SITE_CONFIG.footer, ...(parsed.footer || {}) },
-            paymentMethods:
-              Array.isArray(parsed.paymentMethods) && parsed.paymentMethods.length > 0
-                ? parsed.paymentMethods
-                : DEFAULT_SITE_CONFIG.paymentMethods,
-            categories:
-              Array.isArray(parsed.categories) && parsed.categories.length > 0
-                ? parsed.categories
-                : DEFAULT_SITE_CONFIG.categories,
-            visibility: {
-              ...DEFAULT_SITE_VISIBILITY,
-              ...(parsed.visibility || {})
-            },
-            promoBanners:
-              Array.isArray(parsed.promoBanners) && parsed.promoBanners.length > 0
-                ? parsed.promoBanners
-                : DEFAULT_PROMO_BANNERS,
-            storeBars: {
-              ...(DEFAULT_SITE_CONFIG.storeBars || {}),
-              ...(parsed.storeBars || {})
-            },
-            seo: {
-              ...DEFAULT_SITE_SEO,
-              ...(parsed.seo || {})
-            }
-          };
-        }
-      }
-    } catch {
-      // Fallback to default site config
+    if (initialConfig) {
+      return initialConfig;
     }
     return DEFAULT_SITE_CONFIG;
   });
@@ -467,15 +431,7 @@ export default function App() {
   const activeWaNumberDisplay =
     siteConfig.contact.whatsappNumberDisplay || '+92 347 8936242';
 
-  const [activeTab, setActiveTab] = useState<TabId>(() => {
-    const path = window.location.pathname.toLowerCase();
-    const hash = window.location.hash.toLowerCase();
-    const search = window.location.search.toLowerCase();
-    if (path.includes('saqibadmb') || hash.includes('saqibadmb') || search.includes('saqibadmb')) {
-      return 'saqibadmb';
-    }
-    return 'store';
-  });
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab || 'store');
   const [currentCategory, setCurrentCategory] = useState<CategoryId>('all');
   const [storeSearchQuery, setStoreSearchQuery] = useState<string>('');
   const [selectedTiers, setSelectedTiers] = useState<Record<string, number>>({});
@@ -527,31 +483,8 @@ export default function App() {
   const [loginPortalSection, setLoginPortalSection] = useState<'auth' | 'wallet'>('auth');
 
   // Live User Wallet Balance & Submitted Payment Proofs State (persisted in localStorage)
-  const [walletBalance, setWalletBalance] = useState<number>(() => {
-    try {
-      const saved = localStorage.getItem(WALLET_BALANCE_STORAGE_KEY);
-      if (saved !== null) {
-        const parsed = Number(saved);
-        if (!Number.isNaN(parsed) && parsed >= 0) return parsed;
-      }
-    } catch {
-      // Fallback
-    }
-    return 1800;
-  });
-
-  const [paymentProofs, setPaymentProofs] = useState<PaymentProofRequest[]>(() => {
-    try {
-      const saved = localStorage.getItem(PAYMENT_PROOFS_STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch {
-      // Fallback
-    }
-    return DEFAULT_PAYMENT_PROOFS;
-  });
+  const [walletBalance, setWalletBalance] = useState<number>(1800);
+  const [paymentProofs, setPaymentProofs] = useState<PaymentProofRequest[]>(DEFAULT_PAYMENT_PROOFS);
 
   const [addFundsModalOpen, setAddFundsModalOpen] = useState<boolean>(false);
   const [themeModalOpen, setThemeModalOpen] = useState<boolean>(false);
@@ -559,6 +492,7 @@ export default function App() {
     useState<PaymentProofRequest | null>(null);
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem(WALLET_BALANCE_STORAGE_KEY, String(walletBalance));
     } catch {
@@ -567,6 +501,7 @@ export default function App() {
   }, [walletBalance]);
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem(PAYMENT_PROOFS_STORAGE_KEY, JSON.stringify(paymentProofs));
     } catch {
@@ -574,38 +509,73 @@ export default function App() {
     }
   }, [paymentProofs]);
 
+  // Real-time Cloud Synchronization with Supabase
+  useEffect(() => {
+    // 1. Fetch Cloud Services
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.services) && data.services.length > 0) {
+          setServicesCatalog(
+            data.services.map((srv: StoreService) => ({
+              ...srv,
+              iconType: resolveSmartIconType(srv.iconType, `${srv.id} ${srv.title}`)
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+
+    // 2. Fetch Cloud Site Config
+    fetch('/api/site-config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.config) {
+          setSiteConfig(data.config);
+        }
+      })
+      .catch(() => {});
+
+    // 3. Fetch Cloud Payment Proofs
+    fetch('/api/payments')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.proofs) && data.proofs.length > 0) {
+          setPaymentProofs(data.proofs);
+        }
+      })
+      .catch(() => {});
+
+    // 4. Fetch Cloud Wallet Balance
+    const targetUserId = vipUser?.identifier || '+92 347 8936242';
+    fetch(`/api/wallet?userId=${encodeURIComponent(targetUserId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && typeof data.balance === 'number') {
+          setWalletBalance(data.balance);
+        }
+      })
+      .catch(() => {});
+
+    // 5. Fetch Cloud Web Tools
+    fetch('/api/tools')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && Array.isArray(data.tools) && data.tools.length > 0) {
+          setWebToolsCatalog(data.tools);
+        }
+      })
+      .catch(() => {});
+  }, [vipUser?.identifier]);
+
   // Admin Command Center Mode ('ui' | 'payments' | 'tools' | 'services')
   const [adminStudioMode, setAdminStudioMode] = useState<'ui' | 'payments' | 'tools' | 'services'>('ui');
 
   // Global Store UI Theme Mode ('astro-neu' | 'pink-acrylic' | 'liquid-champagne' | 'pastel-jelly' | 'neo-gray-dark' | 'neo-blue-dark')
-  const [websiteUiMode, setWebsiteUiMode] = useState<WebsiteUiThemeMode>(() => {
-    try {
-      const saved = localStorage.getItem('saqib_visuals_ui_theme_v1');
-      if (saved === 'pink-acrylic') {
-        return 'pink-acrylic';
-      }
-      if (saved === 'liquid-champagne') {
-        return 'liquid-champagne';
-      }
-      if (saved === 'pastel-jelly') {
-        return 'pastel-jelly';
-      }
-      if (saved === 'neo-gray-dark') {
-        return 'neo-gray-dark';
-      }
-      if (saved === 'neo-blue-dark') {
-        return 'neo-blue-dark';
-      }
-      if (saved === 'astro-neu' || saved === 'astro-hybrid' || saved === 'astro-pure') {
-        return 'astro-neu';
-      }
-    } catch {
-      // Fallback
-    }
-    return 'astro-neu';
-  });
+  const [websiteUiMode, setWebsiteUiMode] = useState<WebsiteUiThemeMode>('astro-neu');
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem('saqib_visuals_ui_theme_v1', websiteUiMode);
     } catch {
@@ -632,29 +602,10 @@ export default function App() {
   }, [websiteUiMode]);
 
   // Global Store Font & Typography Pack Mode (Independent of the 4 UI Themes)
-  const [websiteFontMode, setWebsiteFontMode] = useState<WebsiteFontMode>(() => {
-    try {
-      const saved = localStorage.getItem('saqib_website_font_mode_v1') as WebsiteFontMode | null;
-      if (
-        saved &&
-        [
-          'tech-modern',
-          'cute-plush',
-          'luxury-serif',
-          'bold-syne',
-          'cyber-orbitron',
-          'clean-poppins'
-        ].includes(saved)
-      ) {
-        return saved;
-      }
-    } catch {
-      // Fallback
-    }
-    return 'tech-modern';
-  });
+  const [websiteFontMode, setWebsiteFontMode] = useState<WebsiteFontMode>('tech-modern');
 
   useEffect(() => {
+    if (!isClientStorageReadyRef.current) return;
     try {
       localStorage.setItem('saqib_website_font_mode_v1', websiteFontMode);
     } catch {
@@ -670,6 +621,72 @@ export default function App() {
     );
     document.body.classList.add(`font-pack-${websiteFontMode}`);
   }, [websiteFontMode]);
+
+  // Client-Side Safe Hydration Mount: Synchronizes client localStorage after initial SSR mount
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const path = window.location.pathname.toLowerCase();
+        const hash = window.location.hash.toLowerCase();
+        const search = window.location.search.toLowerCase();
+        if (path.includes('saqibadmb') || hash.includes('saqibadmb') || search.includes('saqibadmb')) {
+          setActiveTab('saqibadmb');
+        }
+
+        const savedToken = localStorage.getItem('saqib_admin_token');
+        if (savedToken) setAdminToken(savedToken);
+
+        const savedBalance = localStorage.getItem(WALLET_BALANCE_STORAGE_KEY);
+        if (savedBalance !== null) {
+          const parsed = Number(savedBalance);
+          if (!Number.isNaN(parsed) && parsed >= 0) setWalletBalance(parsed);
+        }
+
+        const savedProofs = localStorage.getItem(PAYMENT_PROOFS_STORAGE_KEY);
+        if (savedProofs) {
+          const parsed = JSON.parse(savedProofs);
+          if (Array.isArray(parsed) && parsed.length > 0) setPaymentProofs(parsed);
+        }
+
+        const savedTheme = localStorage.getItem('saqib_visuals_ui_theme_v1') as WebsiteUiThemeMode;
+        if (
+          savedTheme &&
+          ['astro-neu', 'pink-acrylic', 'liquid-champagne', 'pastel-jelly', 'neo-gray-dark', 'neo-blue-dark'].includes(savedTheme)
+        ) {
+          setWebsiteUiMode(savedTheme);
+          document.body.classList.remove(
+            'theme-astro-neu',
+            'theme-liquid-champagne',
+            'theme-pastel-jelly',
+            'theme-neo-gray-dark',
+            'theme-neo-blue-dark'
+          );
+          document.body.classList.add(`theme-${savedTheme}`);
+        }
+
+        const savedFont = localStorage.getItem('saqib_website_font_mode_v1') as WebsiteFontMode;
+        if (
+          savedFont &&
+          ['tech-modern', 'cute-plush', 'luxury-serif', 'bold-syne', 'cyber-orbitron', 'clean-poppins', 'system'].includes(savedFont)
+        ) {
+          setWebsiteFontMode(savedFont);
+          document.body.classList.remove(
+            'font-pack-tech-modern',
+            'font-pack-cute-plush',
+            'font-pack-luxury-serif',
+            'font-pack-bold-syne',
+            'font-pack-cyber-orbitron',
+            'font-pack-clean-poppins'
+          );
+          document.body.classList.add(`font-pack-${savedFont}`);
+        }
+      }
+    } catch {
+      // Storage unavailable or blocked
+    } finally {
+      isClientStorageReadyRef.current = true;
+    }
+  }, []);
 
   // Admin Service Manager Form State
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
@@ -948,7 +965,8 @@ export default function App() {
     playPopSound(720);
     const tierIdx = selectedTiers[srv.id] ?? 0;
     setActiveOrderService(srv);
-    setModalTierValue(srv.tiers[tierIdx] || srv.tiers[0]);
+    const rawTier = srv.tiers?.[tierIdx] || srv.tiers?.[0] || '';
+    setModalTierValue(formatTierToString(rawTier));
     setModalTargetInput('');
     setTimeout(() => {
       modalInputRef.current?.focus();
@@ -962,7 +980,8 @@ export default function App() {
   const quickAddToCart = (srv: StoreService) => {
     playPopSound(760);
     const tierIdx = selectedTiers[srv.id] ?? 0;
-    const tierText = srv.tiers[tierIdx] || srv.tiers[0];
+    const rawTier = srv.tiers?.[tierIdx] || srv.tiers?.[0] || '';
+    const tierText = formatTierToString(rawTier);
     setShoppingCart((prev) => [
       ...prev,
       {
@@ -992,6 +1011,21 @@ export default function App() {
   const getWhatsAppOrderUrl = () => {
     if (!activeOrderService) return `https://wa.me/${activeWaNumberClean}`;
     const targetLink = modalTargetInput.trim() || 'Will send in chat';
+
+    // Cloud Order Record
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: vipUser?.identifier || '+92 347 8936242',
+        serviceId: activeOrderService.id,
+        serviceTitle: activeOrderService.title,
+        packageTier: modalTierValue,
+        price: 0,
+        userInput: targetLink
+      })
+    }).catch((err) => console.error('Cloud order save error:', err));
+
     const message =
       `🚀 *New Service Order — Saqib Visuals*\n\n` +
       `📦 *Service:* ${activeOrderService.title}\n` +
@@ -1150,20 +1184,90 @@ export default function App() {
       `🚨 *Priority:* ${contactPriority}\n\n` +
       `💬 *Message:* ${contactMsg.trim()}`;
 
-    showToast(`Ticket #${ticketId} Created! Opening WhatsApp...`);
+    // Cloud Save to Supabase
+    fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: contactName.trim(),
+        phone: contactPhone.trim(),
+        department: contactDept,
+        priority: contactPriority,
+        message: contactMsg.trim()
+      }),
+    }).catch((err) => console.error('Cloud ticket save error:', err));
+
+    showToast(`Ticket #${ticketId} Saved! Opening WhatsApp...`);
     openExternalWhatsApp(waText);
   };
 
-  // Auth Handlers
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  // Auth Handlers (Real Supabase Auth & Cloud Profiles)
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const id = authIdentifier.trim();
     if (id.toLowerCase() === '/saqibadmb' || id.toLowerCase() === 'saqibadmb') {
-      setAuthIdentifier('');
-      openSecretAdminPortal();
-      return;
+      const pass = authPassword.trim() || window.prompt('Enter Admin Password:') || '';
+      if (!pass) return;
+      try {
+        const authRes = await fetch('/api/admin/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass }),
+        });
+        const authData = await authRes.json();
+        if (authData.success && authData.token) {
+          setAdminToken(authData.token);
+          try {
+            localStorage.setItem('saqib_admin_token', authData.token);
+          } catch {}
+          setAuthIdentifier('');
+          setAuthPassword('');
+          openSecretAdminPortal();
+          showToast('🛡️ Admin Command Center Unlocked & Verified!');
+          return;
+        } else {
+          showToast(authData.error || 'Access Denied: Invalid Admin Password!');
+          return;
+        }
+      } catch {
+        showToast('Admin server verification failed.');
+        return;
+      }
     }
     playPopSound(860);
+
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: authMode,
+          identifier: id,
+          password: authPassword,
+          fullName: authName,
+          role: authRole
+        })
+      });
+      const data = await res.json();
+      if (data.success && data.profile) {
+        setVipUser({
+          name: data.profile.name || id.split('@')[0],
+          identifier: data.profile.id
+        });
+        if (typeof data.profile.balance === 'number') {
+          setWalletBalance(data.profile.balance);
+        }
+        setVipDashSubTab('overview');
+        showToast(`Welcome ${data.profile.name}! Live Cloud Sync active.`);
+        return;
+      } else if (data.error) {
+        showToast(data.error);
+        return;
+      }
+    } catch {
+      // Offline fallback
+    }
+
     const rawName = authName.trim();
     const displayName = rawName || id.split('@')[0] || 'VIP Member';
     setVipUser({ name: displayName, identifier: id || '+92 347 8936242' });
@@ -1194,9 +1298,30 @@ export default function App() {
     document.body.removeChild(link);
   };
 
+  const handleUpdateSiteConfig = (
+    nextConfig: SiteSettingsConfig | ((prev: SiteSettingsConfig) => SiteSettingsConfig)
+  ) => {
+    setSiteConfig((prev) => {
+      const resolved = typeof nextConfig === 'function' ? nextConfig(prev) : nextConfig;
+      fetch('/api/site-config', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ config: resolved }),
+      }).catch((err) => console.error('Cloud siteConfig save failed:', err));
+      return resolved;
+    });
+  };
+
   const resetSiteConfigToDefault = () => {
     playPopSound(780);
     setSiteConfig(DEFAULT_SITE_CONFIG);
+    fetch('/api/site-config', {
+      method: 'POST',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ config: DEFAULT_SITE_CONFIG }),
+    }).catch((err) => console.error('Cloud siteConfig reset failed:', err));
     showToast('Restored all Banner, WhatsApp, Payment & Footer settings to default!');
   };
 
@@ -1259,6 +1384,15 @@ export default function App() {
       setServicesCatalog((prev) => [newService, ...prev]);
       showToast(`Added "${newService.title}" to Store!`);
     }
+
+    // Cloud Sync to Supabase
+    fetch('/api/services', {
+      method: 'POST',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ service: newService }),
+    }).catch((err) => console.error('Cloud save failed:', err));
+
     resetAdminForm();
   };
 
@@ -1276,7 +1410,7 @@ export default function App() {
     setAdminDirectToolUrl(srv.directToolUrl || '');
     setAdminInputLabel(srv.inputLabel);
     setAdminPlaceholder(srv.placeholder);
-    setAdminTiersText(srv.tiers.join('\n'));
+    setAdminTiersText((srv.tiers || []).map(formatTierToString).join('\n'));
     window.scrollTo({ top: 260, behavior: 'smooth' });
     showToast(`Editing "${srv.title}"`);
   };
@@ -1287,6 +1421,12 @@ export default function App() {
     if (editingServiceId === id) {
       resetAdminForm();
     }
+    // Cloud Sync to Supabase
+    fetch(`/api/services?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+    }).catch((err) => console.error('Cloud delete failed:', err));
     showToast(`Removed "${title}" from catalog`);
   };
 
@@ -1298,6 +1438,14 @@ export default function App() {
       prev.map((s) => (s.id === id ? { ...s, hidden: nextHidden } : s))
     );
     if (target) {
+      // Cloud Sync to Supabase
+      fetch('/api/services', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ service: { ...target, hidden: nextHidden } }),
+      }).catch((err) => console.error('Cloud toggle failed:', err));
+
       showToast(
         nextHidden
           ? `🙈 Hidden "${target.title}" from Storefront!`
@@ -1384,6 +1532,15 @@ export default function App() {
       setWebToolsCatalog((prev) => [newTool, ...prev]);
       showToast(`Added New Tool "${newTool.title}" to Website!`);
     }
+
+    // Cloud Sync to Supabase
+    fetch('/api/tools', {
+      method: 'POST',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({ tool: newTool }),
+    }).catch((err) => console.error('Cloud tool save failed:', err));
+
     resetToolForm();
   };
 
@@ -1410,6 +1567,12 @@ export default function App() {
     if (editingToolId === id) {
       resetToolForm();
     }
+    // Cloud Sync to Supabase
+    fetch(`/api/tools?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+    }).catch((err) => console.error('Cloud tool delete failed:', err));
     showToast(`Removed Tool "${title}"`);
   };
 
@@ -1421,6 +1584,14 @@ export default function App() {
       prev.map((t) => (t.id === id ? { ...t, hidden: nextHidden } : t))
     );
     if (target) {
+      // Cloud Sync to Supabase
+      fetch('/api/tools', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        credentials: 'include',
+        body: JSON.stringify({ tool: { ...target, hidden: nextHidden } }),
+      }).catch((err) => console.error('Cloud tool toggle failed:', err));
+
       showToast(
         nextHidden
           ? `🙈 Hidden Tool "${target.title}" from Website!`
@@ -1476,6 +1647,28 @@ export default function App() {
     };
     setPaymentProofs((prev) => [entry, ...prev]);
     triggerConfettiBurst();
+
+    // Cloud Sync to Supabase Storage & Database
+    fetch('/api/payments', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proof: entry,
+        userId: vipUser?.identifier || '+92 347 8936242',
+      }),
+    })
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.proof?.screenshot_url) {
+          setPaymentProofs((prev) =>
+            prev.map((p) =>
+              p.id === id ? { ...p, screenshotUrl: resData.proof.screenshot_url } : p
+            )
+          );
+        }
+      })
+      .catch((err) => console.error('Cloud payment proof submit failed:', err));
+
     showToast(`Payment Proof #${id} (Rs. ${newProof.amount.toLocaleString()}) Submitted for Admin Approval!`);
   };
 
@@ -1490,8 +1683,22 @@ export default function App() {
     setPaymentProofs((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'approved' } : p))
     );
-    setWalletBalance((prev) => prev + target.amount);
+    const newBal = walletBalance + target.amount;
+    setWalletBalance(newBal);
     triggerConfettiBurst();
+
+    // Cloud Sync Approval to Supabase
+    fetch('/api/payments', {
+      method: 'PATCH',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        proofId: id,
+        status: 'approved',
+        userId: target.senderAccountNumber || vipUser?.identifier || '+92 347 8936242',
+      }),
+    }).catch((err) => console.error('Cloud approve failed:', err));
+
     showToast(`✅ Approved! +Rs. ${target.amount.toLocaleString()} added to User Live Balance!`);
   };
 
@@ -1506,19 +1713,52 @@ export default function App() {
     setPaymentProofs((prev) =>
       prev.map((p) => (p.id === id ? { ...p, status: 'rejected' } : p))
     );
+
+    // Cloud Sync Rejection to Supabase
+    fetch('/api/payments', {
+      method: 'PATCH',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+      body: JSON.stringify({
+        proofId: id,
+        status: 'rejected',
+        userId: target.senderAccountNumber || vipUser?.identifier || '+92 347 8936242',
+      }),
+    }).catch((err) => console.error('Cloud reject failed:', err));
+
     showToast(`Marked Payment Proof #${id} as Rejected.`);
   };
 
   const handleDeletePaymentProof = (id: string) => {
     playPopSound(400);
     setPaymentProofs((prev) => prev.filter((p) => p.id !== id));
+
+    // Cloud Sync Deletion to Supabase
+    fetch(`/api/payments?id=${encodeURIComponent(id)}`, {
+      method: 'DELETE',
+      headers: getAdminHeaders(),
+      credentials: 'include',
+    }).catch((err) => console.error('Cloud delete proof failed:', err));
+
     showToast(`Deleted Payment Proof #${id}`);
   };
 
   const handleSetCustomBalance = (newBal: number) => {
     playPopSound(740);
-    setWalletBalance(Math.max(0, Math.round(newBal)));
-    showToast(`User Live Wallet Balance set to Rs. ${Math.max(0, Math.round(newBal)).toLocaleString()}!`);
+    const finalBal = Math.max(0, Math.round(newBal));
+    setWalletBalance(finalBal);
+
+    // Cloud Sync Balance to Supabase
+    fetch('/api/wallet', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userId: vipUser?.identifier || '+92 347 8936242',
+        balance: finalBal,
+      }),
+    }).catch((err) => console.error('Cloud balance set failed:', err));
+
+    showToast(`User Live Wallet Balance set to Rs. ${finalBal.toLocaleString()}!`);
   };
 
   const pendingProofsCount = paymentProofs.filter((p) => p.status === 'pending').length;
@@ -1539,7 +1779,7 @@ export default function App() {
       srv.title.toLowerCase().includes(q) ||
       srv.desc.toLowerCase().includes(q) ||
       srv.badge.toLowerCase().includes(q) ||
-      srv.tiers.some((t) => t.toLowerCase().includes(q))
+      (srv.tiers || []).some((t) => formatTierToString(t).toLowerCase().includes(q))
     );
   });
 
@@ -1619,16 +1859,12 @@ export default function App() {
         });
       },
       {
-        threshold: 0.08,
-        rootMargin: '0px 0px -28px 0px'
+        threshold: 0.01,
+        rootMargin: '120px 0px 50px 0px'
       }
     );
 
     elements.forEach((el) => {
-      const rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight * 0.92 && rect.bottom > 0) {
-        el.classList.add('scroll-in-view');
-      }
       observer.observe(el);
     });
 
@@ -1954,9 +2190,10 @@ export default function App() {
                     ? 'space-navy-box px-2 sm:px-3.5 py-1.5 rounded-xl sm:rounded-full text-[10px] sm:text-xs font-extrabold text-sky-300 border border-sky-400/50 flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer'
                     : 'px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer border border-white/80'
                 }
+                suppressHydrationWarning
               >
                 <i className="fa-solid fa-wallet text-sky-200 sm:text-sky-400"></i>
-                <span className="font-display tracking-wide whitespace-nowrap">
+                <span className="font-display tracking-wide whitespace-nowrap" suppressHydrationWarning>
                   {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                 </span>
                 <span className="hidden xs:inline-block sm:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
@@ -2019,7 +2256,7 @@ export default function App() {
             >
               <i className="fa-solid fa-palette text-pink-500 text-xs"></i>
               <span className="hidden sm:inline font-bold">Theme:</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 font-black text-slate-800 uppercase tracking-tight">
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 font-black text-slate-800 uppercase tracking-tight" suppressHydrationWarning>
                 {websiteUiMode === 'astro-neu'
                   ? 'Astro'
                   : websiteUiMode === 'pink-acrylic'
@@ -2161,7 +2398,7 @@ export default function App() {
                   <div className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-300">
                     ● LIVE WALLET BALANCE
                   </div>
-                  <div className="text-base font-display font-extrabold text-white">
+                  <div className="text-base font-display font-extrabold text-white" suppressHydrationWarning>
                     Rs. {walletBalance.toLocaleString()}
                   </div>
                 </div>
@@ -2715,7 +2952,7 @@ export default function App() {
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
                           {siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:'}
                         </span>
-                        <span className="font-display font-bold text-lg sm:text-2xl text-white">
+                        <span className="font-display font-bold text-lg sm:text-2xl text-white" suppressHydrationWarning>
                           {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                         </span>
                         {(siteConfig.storeBars?.showPendingProofBadge ?? true) && pendingProofsCount > 0 && (
@@ -2781,13 +3018,7 @@ export default function App() {
                       type="text"
                       value={storeSearchQuery}
                       onChange={(e) => {
-                        const val = e.target.value;
-                        if (val.trim().toLowerCase() === '/saqibadmb') {
-                          setStoreSearchQuery('');
-                          openSecretAdminPortal();
-                          return;
-                        }
-                        setStoreSearchQuery(val);
+                        setStoreSearchQuery(e.target.value);
                       }}
                       placeholder="Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)..."
                       className="w-full bg-transparent border-none outline-none font-bold text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 placeholder:font-medium"
@@ -2949,7 +3180,8 @@ export default function App() {
               >
                 {filteredServices.map((srv, idx) => {
                   const activeTierIdx = selectedTiers[srv.id] ?? 0;
-                  const activeTierText = srv.tiers[activeTierIdx] || srv.tiers[0] || '';
+                  const rawActiveTier = srv.tiers?.[activeTierIdx] || srv.tiers?.[0] || '';
+                  const activeTierText = formatTierToString(rawActiveTier);
                   const priceMatch = activeTierText.match(/Rs\.?\s*[\d,]+/i);
                   const quickPriceLabel = priceMatch ? priceMatch[0] : 'Best Rate';
                   const staggerClass =
@@ -3011,9 +3243,9 @@ export default function App() {
                               }
                               className="w-full min-w-0 px-1.5 py-1.5 sm:px-2.5 sm:py-2 rounded-lg sm:rounded-xl bg-white/95 border border-white text-[9.5px] sm:text-xs font-extrabold text-slate-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-pink-400 cursor-pointer truncate"
                             >
-                              {srv.tiers.map((t, i) => (
+                              {(srv.tiers || []).map((t, i) => (
                                 <option key={i} value={i}>
-                                  {t}
+                                  {formatTierToString(t)}
                                 </option>
                               ))}
                             </select>
@@ -4123,7 +4355,7 @@ export default function App() {
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-extrabold shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                     <span className="text-slate-300">Balance:</span>
-                    <span className="text-emerald-300 font-display">Rs. {walletBalance.toLocaleString()}</span>
+                    <span className="text-emerald-300 font-display" suppressHydrationWarning>Rs. {walletBalance.toLocaleString()}</span>
                   </div>
 
                   {!vipUser ? (
@@ -4177,14 +4409,6 @@ export default function App() {
                               className="px-2.5 py-1 rounded-full bg-white/85 hover:bg-white text-purple-700 border border-purple-200 text-[10px] font-extrabold shadow-2xs transition hover:scale-105 cursor-pointer"
                             >
                               <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>Auto-Fill
-                            </button>
-                            <button
-                              type="button"
-                              onClick={openSecretAdminPortal}
-                              title="Open Admin Command Center (/saqibadmb)"
-                              className="px-2.5 py-1 rounded-full bg-slate-900/90 hover:bg-slate-900 text-amber-300 text-[10px] font-extrabold shadow-2xs transition hover:scale-105 cursor-pointer"
-                            >
-                              <i className="fa-solid fa-sliders mr-1"></i>Admin
                             </button>
                           </div>
                         </div>
@@ -4553,7 +4777,7 @@ export default function App() {
                               <div className="text-[10px] font-extrabold uppercase text-slate-500">
                                 VIP Wallet Balance
                               </div>
-                              <div className="font-display font-bold text-2xl text-emerald-600 mt-0.5">
+                              <div className="font-display font-bold text-2xl text-emerald-600 mt-0.5" suppressHydrationWarning>
                                 Rs. {walletBalance.toLocaleString()}
                               </div>
                               <div className="text-[10px] font-bold text-slate-600 mt-0.5">
@@ -4698,9 +4922,17 @@ export default function App() {
 
         {/* ==================== VIEW 7: SECRET ADMIN COMMAND CENTER (/saqibadmb ONLY) ==================== */}
         {activeTab === 'saqibadmb' && (
-          <AdminStepByStepSettingsHub
+          <React.Suspense
+            fallback={
+              <div className="acrylic-frame rounded-3xl p-12 text-center text-slate-800 font-extrabold flex flex-col items-center justify-center gap-3">
+                <i className="fa-solid fa-circle-notch fa-spin text-3xl text-pink-500"></i>
+                <span className="text-sm">Loading Muhammad Saqib Admin Command Center...</span>
+              </div>
+            }
+          >
+            <AdminStepByStepSettingsHub
             siteConfig={siteConfig}
-            onUpdateSiteConfig={setSiteConfig}
+            onUpdateSiteConfig={handleUpdateSiteConfig}
             onResetSiteConfig={resetSiteConfigToDefault}
             onReassignDeletedCategory={(deletedCatId, fallbackCatId) => {
               setServicesCatalog((prev) =>
@@ -4797,6 +5029,7 @@ export default function App() {
             copyText={copyText}
             exitSecretAdminPortal={exitSecretAdminPortal}
           />
+          </React.Suspense>
         )}
       </main>
 
@@ -5036,11 +5269,14 @@ export default function App() {
                   onChange={(e) => setModalTierValue(e.target.value)}
                   className="w-full px-3 py-2.5 rounded-xl bg-white border border-pink-300 font-bold text-xs sm:text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-pink-400"
                 >
-                  {activeOrderService.tiers.map((t, i) => (
-                    <option key={i} value={t}>
-                      {t}
-                    </option>
-                  ))}
+                  {(activeOrderService.tiers || []).map((t, i) => {
+                    const formatted = formatTierToString(t);
+                    return (
+                      <option key={i} value={formatted}>
+                        {formatted}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -5124,7 +5360,7 @@ export default function App() {
                       }`}
                     >
                       <i className="fa-solid fa-wallet"></i>
-                      <span>
+                      <span suppressHydrationWarning>
                         {canAfford
                           ? `Pay Instantly from Wallet Balance (Rs. ${walletBalance.toLocaleString()} Available)`
                           : `Wallet Balance Low (Rs. ${walletBalance.toLocaleString()}) — Click to +Add Balance`}

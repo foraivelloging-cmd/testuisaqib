@@ -415,6 +415,8 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
               <img
                 src={banner.imageUrl}
                 alt={banner.imageAlt || banner.title}
+                loading="lazy"
+                decoding="async"
                 referrerPolicy="no-referrer"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

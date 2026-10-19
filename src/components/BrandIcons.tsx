@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { CategoryId, IconType, StoreCategoryMeta } from '../data/defaultCatalog';
 import {
@@ -320,6 +322,8 @@ export function renderOrbVisual(
       <img
         src={trimmedUrl}
         alt=""
+        loading="lazy"
+        decoding="async"
         className="w-5 h-5 sm:w-7 sm:h-7 object-contain rounded-lg drop-shadow"
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).style.display = 'none';
@@ -341,6 +345,8 @@ export function renderCategoryIcon(
       <img
         src={trimmedCustomUrl}
         alt=""
+        loading="lazy"
+        decoding="async"
         className={`${className} object-contain rounded-xs inline-block`}
         onError={(e) => {
           (e.currentTarget as HTMLImageElement).style.display = 'none';
