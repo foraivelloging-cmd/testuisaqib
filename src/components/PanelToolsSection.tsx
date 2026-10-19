@@ -11,6 +11,7 @@ import {
   SiTiktok,
   FaSatelliteDish
 } from './BrandIcons';
+import { SiteStoreBarsConfig } from './AdminStepByStepSettingsHub';
 
 interface MarqueeItem {
   id: string;
@@ -446,44 +447,57 @@ export const MarqueeAndPulseBanner: React.FC<{
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: CategoryId, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
-}> = ({ onSelectServiceById, onQuickFilter, onPlayPop }) => {
+  storeBarsConfig?: SiteStoreBarsConfig;
+}> = ({ onSelectServiceById, onQuickFilter, onPlayPop, storeBarsConfig }) => {
+  const bars = storeBarsConfig;
   return (
     <div className="space-y-3">
       {/* Live Server Uptime & Speed Telemetry Pulse Bar */}
-      <div className="acrylic-frame rounded-[26px] p-2 sm:p-2.5">
-        <div className="plush-pillow plush-contact rounded-[20px] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 server-pulse-dot"></span>
-            <span className="font-display font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-              SAQIB VISUALS LIVE PANEL STATUS:
-            </span>
-            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300">
-              ALL 3 SERVERS 99.9% ONLINE
-            </span>
-          </div>
+      {bars?.showStatusPulseBar !== false && (
+        <div className="acrylic-frame rounded-[26px] p-2 sm:p-2.5">
+          <div className="plush-pillow plush-contact rounded-[20px] px-3.5 py-2.5 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 server-pulse-dot"></span>
+              <span className="font-display font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                {bars?.statusPanelTitle ?? 'SAQIB VISUALS LIVE PANEL STATUS:'}
+              </span>
+              {(bars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE') && (
+                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300">
+                  {bars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE'}
+                </span>
+              )}
+            </div>
 
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] font-bold text-slate-700">
-            <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
-              <SiGooglegemini className="w-3.5 h-3.5 text-purple-600" />
-              <span>AI Pro Server:</span>
-              <strong className="text-emerald-700">3 Min Avg</strong>
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
-              <SiTiktok className="w-3.5 h-3.5 text-rose-500" />
-              <span>SMM Turbo API:</span>
-              <strong className="text-emerald-700">Instant Start</strong>
-            </span>
-            <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
-              <FaSatelliteDish className="w-3.5 h-3.5 text-blue-600" />
-              <span>2026 SIM/NADRA Desk:</span>
-              <strong className="text-emerald-700">15 Min PDF</strong>
-            </span>
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] font-bold text-slate-700">
+              {bars?.chip1Enabled !== false && (
+                <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
+                  <SiGooglegemini className="w-3.5 h-3.5 text-purple-600" />
+                  <span>{bars?.chip1Label ?? 'AI Pro Server:'}</span>
+                  <strong className="text-emerald-700">{bars?.chip1Value ?? '3 Min Avg'}</strong>
+                </span>
+              )}
+              {bars?.chip2Enabled !== false && (
+                <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
+                  <SiTiktok className="w-3.5 h-3.5 text-rose-500" />
+                  <span>{bars?.chip2Label ?? 'SMM Turbo API:'}</span>
+                  <strong className="text-emerald-700">{bars?.chip2Value ?? 'Instant Start'}</strong>
+                </span>
+              )}
+              {bars?.chip3Enabled !== false && (
+                <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
+                  <FaSatelliteDish className="w-3.5 h-3.5 text-blue-600" />
+                  <span>{bars?.chip3Label ?? '2026 SIM/NADRA Desk:'}</span>
+                  <strong className="text-emerald-700">{bars?.chip3Value ?? '15 Min PDF'}</strong>
+                </span>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Infinite 3D Brand & Tool Ecosystem Marquee */}
-      <div data-scroll="zoom" className="acrylic-frame rounded-[28px] p-2.5 overflow-hidden marquee-wrapper">
+      {bars?.showMarquee !== false && (
+        <div data-scroll="zoom" className="acrylic-frame rounded-[28px] p-2.5 overflow-hidden marquee-wrapper">
         <div className="space-y-2 overflow-hidden">
           {/* Row 1: Left-scrolling AI & Creator Pro Ecosystem */}
           <div className="marquee-track-left gap-2.5">
@@ -552,8 +566,9 @@ export const MarqueeAndPulseBanner: React.FC<{
           </div>
         </div>
       </div>
-    </div>
-  );
+    )}
+  </div>
+);
 };
 
 export const PanelToolsSection: React.FC<PanelToolsProps> = ({

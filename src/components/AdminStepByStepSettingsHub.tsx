@@ -57,19 +57,47 @@ import {
   FaFont,
   FaShieldHalved,
   FaBolt,
-  FaImages
+  FaImages,
+  FaTags,
+  FaBullhorn,
+  FaArrowUp,
+  FaArrowDown,
+  FaClone,
+  FaPalette
 } from 'react-icons/fa6';
+import { AdminSeoStudio } from './AdminSeoStudio';
 
 export interface SiteBannerConfig {
   showHeroBanner: boolean;
   showTopStrip: boolean;
+  showTopStripWhatsapp?: boolean;
   rgbBorderEnabled: boolean;
   topStripTitle: string;
+  // Portrait Avatar & Orbit Badges
+  showPortraitPhoto?: boolean;
+  portraitUrl: string;
+  showPortraitOrbitBadges?: boolean;
+  orbitBadge1Enabled?: boolean;
+  orbitBadge1Title?: string;
+  orbitBadge1Sub?: string;
+  orbitBadge2Enabled?: boolean;
+  orbitBadge2Title?: string;
+  orbitBadge2Sub?: string;
+  orbitBadge3Enabled?: boolean;
+  orbitBadge3Title?: string;
+  orbitBadge3Sub?: string;
+  orbitBadge4Enabled?: boolean;
+  orbitBadge4Title?: string;
+  orbitBadge4Sub?: string;
+  // Content Texts & Granular Toggles
+  showBadgeText?: boolean;
   badgeText: string;
+  showMainTitle?: boolean;
   mainTitle: string;
   highlightTitle: string;
+  showDescription?: boolean;
   description: string;
-  portraitUrl: string;
+  showHeroFeaturePills?: boolean;
 }
 
 export interface SiteContactConfig {
@@ -119,6 +147,7 @@ export interface SiteVisibilityConfig {
   showFaqsTab: boolean;
   showContactTab: boolean;
   showLoginTab: boolean;
+  showPromoBanners?: boolean;
 }
 
 export const DEFAULT_SITE_VISIBILITY: SiteVisibilityConfig = {
@@ -141,17 +170,304 @@ export const DEFAULT_SITE_VISIBILITY: SiteVisibilityConfig = {
   showAboutTab: true,
   showFaqsTab: true,
   showContactTab: true,
-  showLoginTab: true
+  showLoginTab: true,
+  showPromoBanners: true
 };
+
+export interface SiteSeoConfig {
+  metaTitle: string;
+  metaDescription: string;
+  keywords: string;
+  author: string;
+  canonicalUrl: string;
+  robotsIndex: boolean;
+  robotsFollow: boolean;
+  ogType: string;
+  ogTitle: string;
+  ogDescription: string;
+  ogImageUrl: string;
+  twitterCard: string;
+  twitterCreator: string;
+  schemaType: string;
+}
+
+export const DEFAULT_SITE_SEO: SiteSeoConfig = {
+  metaTitle: 'Muhammad Saqib — Saqib Visuals | AI Accounts, SMM & Digital Services',
+  metaDescription: 'Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.',
+  keywords: 'Muhammad Saqib, Saqib Visuals, CapCut Pro Pakistan, SMM Panel Pakistan, Lovable Pro Account, Gemini 18M Pro, ChatGPT Plus & Claude, Pak SIM Database Live, SIM Tracker 2026, NADRA Verification FRC, TikTok Agency Accounts UK USA, Fast USDT EasyPaisa Delivery',
+  author: 'Muhammad Saqib',
+  canonicalUrl: 'https://mrsaqib242.vercel.app',
+  robotsIndex: true,
+  robotsFollow: true,
+  ogType: 'website',
+  ogTitle: 'Muhammad Saqib — Saqib Visuals | AI Accounts & SMM Services',
+  ogDescription: 'Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.',
+  ogImageUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png',
+  twitterCard: 'summary_large_image',
+  twitterCreator: '@mrsaqib242',
+  schemaType: 'WebApplication'
+};
+
+export interface SiteStoreBarsConfig {
+  // 1. Live Server Panel Status Ticker Strip (Image 2)
+  showStatusPulseBar?: boolean;
+  statusPanelTitle?: string;
+  statusPanelBadge?: string;
+  chip1Enabled?: boolean;
+  chip1Label?: string;
+  chip1Value?: string;
+  chip2Enabled?: boolean;
+  chip2Label?: string;
+  chip2Value?: string;
+  chip3Enabled?: boolean;
+  chip3Label?: string;
+  chip3Value?: string;
+
+  // 2. Infinite Marquee Strip (Image 1 top)
+  showMarquee?: boolean;
+
+  // 3. Storefront Live Wallet Balance & Payment Bar (Image 1 middle)
+  showWalletBar?: boolean;
+  walletBalanceLabel?: string;
+  walletInstructionText?: string;
+  showWalletInstruction?: boolean;
+  addPaymentBtnLabel?: string;
+  showAddPaymentBtn?: boolean;
+  historyBtnLabel?: string;
+  showHistoryBtn?: boolean;
+  showPendingProofBadge?: boolean;
+  currencyPrefix?: string;
+  headerPillAddLabel?: string;
+  showHeaderWalletPill?: boolean;
+
+  // 4. Accepted Payment Gateways Card (Sidebar / Contact area & Modals)
+  showAcceptedGatewaysCard?: boolean;
+  acceptedGatewaysTitle?: string;
+  acceptedGatewaysSubtitle?: string;
+  showGatewaysWhatsappButton?: boolean;
+  showAccountNumbersInCard?: boolean;
+
+  // 5. Add Funds & Checkout Modals
+  minDepositAmount?: number;
+  depositModalTitle?: string;
+  depositModalSubtitle?: string;
+
+  // 6. Search Box, Hot Searches & Category Bar (Image 1 bottom)
+  showSearchBox?: boolean;
+  searchPlaceholder?: string;
+  showServicesCountBadge?: boolean;
+  showHotSearches?: boolean;
+  hotSearchesList?: string;
+  showCategoryTabs?: boolean;
+}
+
+export const DEFAULT_STORE_BARS_CONFIG: SiteStoreBarsConfig = {
+  showStatusPulseBar: true,
+  statusPanelTitle: 'SAQIB VISUALS LIVE PANEL STATUS:',
+  statusPanelBadge: 'ALL 3 SERVERS 99.9% ONLINE',
+  chip1Enabled: true,
+  chip1Label: 'AI Pro Server:',
+  chip1Value: '3 Min Avg',
+  chip2Enabled: true,
+  chip2Label: 'SMM Turbo API:',
+  chip2Value: 'Instant Start',
+  chip3Enabled: true,
+  chip3Label: '2026 SIM/NADRA Desk:',
+  chip3Value: '15 Min PDF',
+
+  showMarquee: true,
+
+  showWalletBar: true,
+  walletBalanceLabel: '● LIVE ACCOUNT BALANCE:',
+  walletInstructionText: 'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)',
+  showWalletInstruction: true,
+  addPaymentBtnLabel: '+ Add Payment / Balance',
+  showAddPaymentBtn: true,
+  historyBtnLabel: 'History',
+  showHistoryBtn: true,
+  showPendingProofBadge: true,
+  currencyPrefix: 'Rs.',
+  headerPillAddLabel: '+Add',
+  showHeaderWalletPill: true,
+
+  showAcceptedGatewaysCard: true,
+  acceptedGatewaysTitle: 'Accepted Payment Gateways',
+  acceptedGatewaysSubtitle: '100% Secure Local & Crypto Verification',
+  showGatewaysWhatsappButton: true,
+  showAccountNumbersInCard: true,
+
+  minDepositAmount: 50,
+  depositModalTitle: 'Add Funds / Top-Up Wallet Balance',
+  depositModalSubtitle: 'Enter Amount → Select EasyPaisa/JazzCash → Submit Account Name & Screenshot',
+
+  showSearchBox: true,
+  searchPlaceholder: 'Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)...',
+  showServicesCountBadge: true,
+  showHotSearches: true,
+  hotSearchesList: 'CapCut Pro, Lovable Pro, Gemini 18M, Muse AI 1B, ElevenLabs 300k, TikTok UK/USA, Ad Agency, Call CDR, NADRA FRC, Hostinger 12M, BTC / USDT',
+  showCategoryTabs: true
+};
+
+export type PromoBannerStyle = 'rose' | 'dark' | 'emerald' | 'amber' | 'cyan' | 'purple';
+
+export interface SitePromoBannerItem {
+  id: string;
+  enabled: boolean;
+  badgeIcon?: string;
+  badgeText: string;
+  title: string;
+  description: string;
+  style: PromoBannerStyle;
+  position?: 'below_services' | 'above_services' | 'both';
+  
+  primaryBtnEnabled: boolean;
+  primaryBtnText: string;
+  primaryBtnAction: 'whatsapp' | 'webtools' | 'addfunds' | 'custom_url';
+  primaryBtnCustomUrl?: string;
+  primaryBtnIcon?: string;
+  
+  secondaryBtnEnabled: boolean;
+  secondaryBtnText: string;
+  secondaryBtnAction: 'webtools' | 'whatsapp' | 'addfunds' | 'custom_url';
+  secondaryBtnCustomUrl?: string;
+  secondaryBtnIcon?: string;
+
+  imageUrl?: string;
+}
+
+export const DEFAULT_PROMO_BANNERS: SitePromoBannerItem[] = [
+  {
+    id: 'promo-deal-1',
+    enabled: true,
+    badgeIcon: 'fa-solid fa-bolt',
+    badgeText: 'ALL SERVICES AVAILABLE HERE',
+    title: 'Need Custom AI Credits, Ad Agency Accounts, NADRA/CDR Info, or USDT?',
+    description: 'Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, JazzCash / EasyPaisa payment, and instant delivery.',
+    style: 'rose',
+    position: 'below_services',
+    primaryBtnEnabled: true,
+    primaryBtnText: 'Deal on WhatsApp',
+    primaryBtnAction: 'whatsapp',
+    primaryBtnIcon: 'fa-brands fa-whatsapp',
+    secondaryBtnEnabled: true,
+    secondaryBtnText: 'Open Web Tools Hub',
+    secondaryBtnAction: 'webtools',
+    secondaryBtnIcon: 'fa-solid fa-screwdriver-wrench'
+  }
+];
+
+export function getPromoBannerStyleClasses(style: PromoBannerStyle) {
+  switch (style) {
+    case 'dark':
+      return {
+        frame:
+          'rounded-[30px] p-2 sm:p-3.5 bg-slate-950/60 backdrop-blur-md border border-indigo-500/40 shadow-2xl',
+        inner:
+          'rounded-[22px] p-4 sm:p-6 bg-gradient-to-r from-slate-950 via-indigo-950 to-purple-950 flex flex-col md:flex-row items-center justify-between gap-4 border border-indigo-400/30 text-white shadow-inner',
+        badge: 'bg-indigo-500/25 text-sky-300 border border-indigo-400/40',
+        title: 'text-white drop-shadow-sm',
+        desc: 'text-slate-300',
+        primaryBtn:
+          'bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-600 hover:from-sky-600 hover:to-purple-700 text-white shadow-lg shadow-indigo-500/30',
+        secondaryBtn:
+          'bg-white/10 hover:bg-white/20 text-white border border-white/25 shadow-sm',
+        themeLabel: '🌌 Cyber Dark',
+        pillBg: 'bg-indigo-900/60 text-sky-300 border-indigo-700'
+      };
+    case 'emerald':
+      return {
+        frame:
+          'rounded-[30px] p-2 sm:p-3.5 bg-emerald-950/40 backdrop-blur-md border border-emerald-500/40 shadow-2xl',
+        inner:
+          'rounded-[22px] p-4 sm:p-6 bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 flex flex-col md:flex-row items-center justify-between gap-4 border border-emerald-400/30 text-white shadow-inner',
+        badge: 'bg-emerald-500/25 text-emerald-300 border border-emerald-400/40',
+        title: 'text-white',
+        desc: 'text-emerald-100',
+        primaryBtn:
+          'bg-gradient-to-r from-emerald-400 via-teal-500 to-green-500 text-slate-950 font-black shadow-lg shadow-emerald-500/30',
+        secondaryBtn:
+          'bg-white/10 hover:bg-white/20 text-white border border-white/25 shadow-sm',
+        themeLabel: '💚 Emerald WhatsApp',
+        pillBg: 'bg-emerald-900/60 text-emerald-300 border-emerald-700'
+      };
+    case 'amber':
+      return {
+        frame:
+          'rounded-[30px] p-2 sm:p-3.5 bg-amber-950/40 backdrop-blur-md border border-amber-500/40 shadow-2xl',
+        inner:
+          'rounded-[22px] p-4 sm:p-6 bg-gradient-to-r from-amber-950 via-orange-950 to-slate-950 flex flex-col md:flex-row items-center justify-between gap-4 border border-amber-400/30 text-white shadow-inner',
+        badge: 'bg-amber-500/25 text-amber-300 border border-amber-400/40',
+        title: 'text-white',
+        desc: 'text-amber-100',
+        primaryBtn:
+          'bg-gradient-to-r from-amber-400 via-yellow-400 to-orange-500 text-slate-950 font-black shadow-lg shadow-amber-500/30',
+        secondaryBtn:
+          'bg-white/10 hover:bg-white/20 text-white border border-white/25 shadow-sm',
+        themeLabel: '👑 Gold Luxury',
+        pillBg: 'bg-amber-900/60 text-amber-300 border-amber-700'
+      };
+    case 'cyan':
+      return {
+        frame:
+          'rounded-[30px] p-2 sm:p-3.5 bg-cyan-950/40 backdrop-blur-md border border-cyan-500/40 shadow-2xl',
+        inner:
+          'rounded-[22px] p-4 sm:p-6 bg-gradient-to-r from-cyan-950 via-blue-950 to-slate-950 flex flex-col md:flex-row items-center justify-between gap-4 border border-cyan-400/30 text-white shadow-inner',
+        badge: 'bg-cyan-500/25 text-cyan-300 border border-cyan-400/40',
+        title: 'text-white',
+        desc: 'text-cyan-100',
+        primaryBtn:
+          'bg-gradient-to-r from-cyan-400 via-sky-500 to-blue-600 text-slate-950 font-black shadow-lg shadow-cyan-500/30',
+        secondaryBtn:
+          'bg-white/10 hover:bg-white/20 text-white border border-white/25 shadow-sm',
+        themeLabel: '💎 Ice Cyan',
+        pillBg: 'bg-cyan-900/60 text-cyan-300 border-cyan-700'
+      };
+    case 'purple':
+      return {
+        frame:
+          'rounded-[30px] p-2 sm:p-3.5 bg-purple-950/40 backdrop-blur-md border border-purple-500/40 shadow-2xl',
+        inner:
+          'rounded-[22px] p-4 sm:p-6 bg-gradient-to-r from-purple-950 via-fuchsia-950 to-slate-950 flex flex-col md:flex-row items-center justify-between gap-4 border border-purple-400/30 text-white shadow-inner',
+        badge: 'bg-purple-500/25 text-purple-300 border border-purple-400/40',
+        title: 'text-white',
+        desc: 'text-purple-100',
+        primaryBtn:
+          'bg-gradient-to-r from-fuchsia-500 via-purple-500 to-pink-500 text-white font-black shadow-lg shadow-purple-500/30',
+        secondaryBtn:
+          'bg-white/10 hover:bg-white/20 text-white border border-white/25 shadow-sm',
+        themeLabel: '🔮 Royal Purple',
+        pillBg: 'bg-purple-900/60 text-purple-300 border-purple-700'
+      };
+    case 'rose':
+    default:
+      return {
+        frame: 'acrylic-frame rounded-[30px] p-2.5 sm:p-3.5 shadow-xl',
+        inner:
+          'plush-pillow plush-sim-search rounded-[22px] p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4 border border-pink-200/80',
+        badge: 'bg-pink-100 text-pink-700 border border-pink-300',
+        title: 'text-slate-900',
+        desc: 'text-slate-700',
+        primaryBtn:
+          'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg shadow-emerald-500/25',
+        secondaryBtn:
+          'bg-white hover:bg-pink-50 text-pink-700 border border-pink-300 shadow-sm',
+        themeLabel: '🌸 Plush Rose',
+        pillBg: 'bg-pink-100 text-pink-700 border-pink-300'
+      };
+  }
+}
 
 export interface SiteSettingsConfig {
   banner: SiteBannerConfig;
+  promoBanners?: SitePromoBannerItem[];
+  storeBars?: SiteStoreBarsConfig;
   contact: SiteContactConfig;
   socials: SiteSocialsConfig;
   footer: SiteFooterConfig;
   paymentMethods: DepositMethodMeta[];
   categories: StoreCategoryMeta[];
   visibility?: SiteVisibilityConfig;
+  seo?: SiteSeoConfig;
 }
 
 export const SITE_CONFIG_STORAGE_KEY = 'saqib_visuals_site_config_v1';
@@ -160,15 +476,36 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
   banner: {
     showHeroBanner: true,
     showTopStrip: true,
+    showTopStripWhatsapp: true,
     rgbBorderEnabled: true,
     topStripTitle: 'MUHAMMAD SAQIB • VISUALS HUB',
+    showPortraitPhoto: true,
+    portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png',
+    showPortraitOrbitBadges: true,
+    orbitBadge1Enabled: true,
+    orbitBadge1Title: 'CapCut & Lovable',
+    orbitBadge1Sub: 'PRO UNLOCKED',
+    orbitBadge2Enabled: true,
+    orbitBadge2Title: 'AI Suite',
+    orbitBadge2Sub: 'GEMINI • CLAUDE',
+    orbitBadge3Enabled: true,
+    orbitBadge3Title: 'TikTok UK/USA',
+    orbitBadge3Sub: 'ADS & BOOST',
+    orbitBadge4Enabled: true,
+    orbitBadge4Title: 'SIM & NADRA',
+    orbitBadge4Sub: 'CDR • FRC • LIVE',
+    showBadgeText: true,
     badgeText: 'ALL DIGITAL, AI, SMM, FRANCHISE & NADRA SERVICES AVAILABLE',
+    showMainTitle: true,
     mainTitle: 'Muhammad Saqib',
     highlightTitle: '— Saqib Visuals',
+    showDescription: true,
     description:
       'Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!',
-    portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png'
+    showHeroFeaturePills: true
   },
+  promoBanners: DEFAULT_PROMO_BANNERS,
+  storeBars: DEFAULT_STORE_BARS_CONFIG,
   contact: {
     whatsappNumberClean: '923478936242',
     whatsappNumberDisplay: '+92 347 8936242',
@@ -194,7 +531,8 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
   },
   paymentMethods: DEPOSIT_METHODS,
   categories: CATEGORY_META,
-  visibility: DEFAULT_SITE_VISIBILITY
+  visibility: DEFAULT_SITE_VISIBILITY,
+  seo: DEFAULT_SITE_SEO
 };
 
 export type AdminSettingsScreenId =
@@ -204,10 +542,13 @@ export type AdminSettingsScreenId =
   | 'services'
   | 'tools'
   | 'banner'
+  | 'promo_banners'
+  | 'store_bars'
   | 'payment_methods'
   | 'payments'
   | 'contact_footer'
-  | 'ui';
+  | 'ui'
+  | 'seo';
 
 interface PlushOption {
   value: string;
@@ -527,9 +868,13 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   );
 
   const [toolStep, setToolStep] = useState<1 | 2 | 3 | 4>(1);
-  const [bannerStep, setBannerStep] = useState<1 | 2 | 3>(1);
+  const [bannerStep, setBannerStep] = useState<1 | 2 | 3 | 4>(1);
+  const [storeBarsStep, setStoreBarsStep] = useState<1 | 2 | 3>(1);
   const [contactStep, setContactStep] = useState<1 | 2 | 3>(1);
   const [activePayMethodIdx, setActivePayMethodIdx] = useState<number>(0);
+  const [payStep, setPayStep] = useState<1 | 2 | 3 | 4>(1);
+  const [editingPromoBannerId, setEditingPromoBannerId] = useState<string | null>(null);
+  const [promoBannerStep, setPromoBannerStep] = useState<1 | 2 | 3 | 4>(1);
 
   // Sync planRows whenever editingServiceId or adminTiersText changes externally
   useEffect(() => {
@@ -877,10 +1222,19 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       setToolStep(initialStep as 1 | 2 | 3 | 4);
     }
     if (screen === 'banner' && initialStep) {
-      setBannerStep(initialStep as 1 | 2 | 3);
+      setBannerStep(initialStep as 1 | 2 | 3 | 4);
+    }
+    if (screen === 'store_bars' && initialStep) {
+      setStoreBarsStep(initialStep as 1 | 2 | 3);
     }
     if (screen === 'contact_footer' && initialStep) {
       setContactStep(initialStep as 1 | 2 | 3);
+    }
+    if (screen === 'payment_methods' && initialStep) {
+      setPayStep(initialStep as 1 | 2 | 3 | 4);
+    }
+    if (screen === 'promo_banners' && initialStep) {
+      setPromoBannerStep(initialStep as 1 | 2 | 3 | 4);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -935,12 +1289,16 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
 
   const themeDisplayName =
     websiteUiMode === 'astro-neu'
-      ? 'Astro-OS Dark'
+      ? 'Astro-OS Slate'
       : websiteUiMode === 'pink-acrylic'
       ? 'Pink Acrylic 3D'
       : websiteUiMode === 'liquid-champagne'
       ? 'Liquid Gold'
-      : 'Pastel Jelly 3D';
+      : websiteUiMode === 'pastel-jelly'
+      ? 'Pastel Jelly 3D'
+      : websiteUiMode === 'neo-gray-dark'
+      ? 'Neo Gray Dark'
+      : 'Neo Blue Dark';
 
   const matchesSearch = (keywords: string) => {
     const q = settingsSearchQuery.trim().toLowerCase();
@@ -960,6 +1318,358 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       return {
         ...prev,
         paymentMethods: nextMethods
+      };
+    });
+  };
+
+  const handleAddPaymentMethod = (presetName = 'New Payment Method') => {
+    const isNayapay = presetName.toLowerCase().includes('nayapay');
+    const isMeezan =
+      presetName.toLowerCase().includes('meezan') ||
+      presetName.toLowerCase().includes('bank') ||
+      presetName.toLowerCase().includes('hbl');
+    const isCrypto =
+      presetName.toLowerCase().includes('usdt') ||
+      presetName.toLowerCase().includes('crypto') ||
+      presetName.toLowerCase().includes('binance');
+
+    const newMethod: DepositMethodMeta = {
+      id: presetName,
+      label: `${presetName} Account`,
+      shortTag: isCrypto
+        ? '💲 Crypto Top-Up'
+        : isMeezan
+        ? '🏦 0% Raast IBFT'
+        : '⚡ Instant Auto-Verify',
+      accountTitle: 'Muhammad Saqib',
+      accountNumber: isCrypto ? 'TRC20: WhatsApp for UID' : '0347-8936242',
+      extraInfo: isCrypto
+        ? 'Send USDT via TRC20 and upload receipt screenshot'
+        : 'Send payment and upload screenshot for instant verification',
+      icon: isCrypto
+        ? 'fa-brands fa-bitcoin'
+        : isMeezan
+        ? 'fa-solid fa-building-columns'
+        : 'fa-solid fa-wallet',
+      grad: isCrypto
+        ? 'from-amber-500 to-yellow-600'
+        : isNayapay
+        ? 'from-orange-500 to-amber-600'
+        : isMeezan
+        ? 'from-teal-600 to-emerald-700'
+        : 'from-blue-600 to-indigo-700',
+      badgeBg: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+      enabled: true
+    };
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      paymentMethods: [...prev.paymentMethods, newMethod]
+    }));
+    setActivePayMethodIdx(siteConfig.paymentMethods.length);
+    showToast(`✅ Added ${presetName} gateway!`);
+  };
+
+  const handleDeletePaymentMethod = (index: number) => {
+    if (siteConfig.paymentMethods.length <= 1) {
+      showToast('⚠️ At least one payment method is required!');
+      return;
+    }
+    const deletedName = siteConfig.paymentMethods[index]?.id || 'Method';
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      paymentMethods: prev.paymentMethods.filter((_, idx) => idx !== index)
+    }));
+    setActivePayMethodIdx((prev) => Math.max(0, prev - 1));
+    showToast(`🗑️ Removed ${deletedName}`);
+  };
+
+  const updateStoreBarsField = (
+    field: keyof SiteStoreBarsConfig,
+    value: any
+  ) => {
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      storeBars: {
+        ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+        [field]: value
+      }
+    }));
+  };
+
+  const currentPromoBanners: SitePromoBannerItem[] =
+    siteConfig.promoBanners && siteConfig.promoBanners.length > 0
+      ? siteConfig.promoBanners
+      : DEFAULT_PROMO_BANNERS;
+
+  const PROMO_BANNER_PRESETS: Array<{
+    name: string;
+    label: string;
+    desc: string;
+    style: PromoBannerStyle;
+    banner: Omit<SitePromoBannerItem, 'id'>;
+  }> = [
+    {
+      name: 'deal',
+      label: '⚡ Custom Deal / Reseller',
+      desc: 'AI Credits, Agency Accounts, NADRA & USDT Wholesale',
+      style: 'rose',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-solid fa-bolt',
+        badgeText: 'ALL SERVICES AVAILABLE HERE',
+        title: 'Need Custom AI Credits, Ad Agency Accounts, NADRA/CDR Info, or USDT?',
+        description:
+          'Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, JazzCash / EasyPaisa payment, and instant delivery.',
+        style: 'rose',
+        position: 'below_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Deal on WhatsApp',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: true,
+        secondaryBtnText: 'Open Web Tools Hub',
+        secondaryBtnAction: 'webtools',
+        secondaryBtnIcon: 'fa-solid fa-screwdriver-wrench'
+      }
+    },
+    {
+      name: 'usdt',
+      label: '💰 Crypto & USDT / Binance Pay',
+      desc: 'Instant PKR to USDT / Binance Pay conversion & deals',
+      style: 'amber',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-solid fa-coins',
+        badgeText: 'CRYPTO & USDT DESK ACTIVE',
+        title: 'Looking for USDT TRC20, Binance Pay, or Crypto Top-Up in Pakistan?',
+        description:
+          'Get instant live rate conversion via EasyPaisa & JazzCash. 100% verified, fast delivery within 5 minutes directly to your wallet.',
+        style: 'amber',
+        position: 'below_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Trade USDT on WhatsApp',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: true,
+        secondaryBtnText: 'Add Funds via Binance',
+        secondaryBtnAction: 'addfunds',
+        secondaryBtnIcon: 'fa-solid fa-wallet'
+      }
+    },
+    {
+      name: 'nadra',
+      label: '🛡️ SIM & NADRA Live Records Desk',
+      desc: 'Call CDR, Family Tree, FRC & Location Tracker',
+      style: 'dark',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-solid fa-shield-halved',
+        badgeText: 'OFFICIAL FRANCHISE VERIFIED DESK',
+        title: 'Need Instant SIM Ownership, Live Call CDR, or NADRA FRC Verification?',
+        description:
+          'Direct franchise server access with verified PDF reports sent straight to your WhatsApp in 15 minutes. 100% confidential & authentic.',
+        style: 'dark',
+        position: 'below_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Request NADRA / SIM PDF',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: true,
+        secondaryBtnText: 'Launch Live Web Tools',
+        secondaryBtnAction: 'webtools',
+        secondaryBtnIcon: 'fa-solid fa-screwdriver-wrench'
+      }
+    },
+    {
+      name: 'tiktok',
+      label: '🚀 TikTok UK/USA Agency Accounts',
+      desc: 'Tax-free, Beta Program & Worldwide Ads targeting',
+      style: 'cyan',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-solid fa-fire',
+        badgeText: 'VIRAL MONETIZATION & ADS READY',
+        title: 'Scale Globally with TikTok UK / USA Agency Accounts & Ads Credit',
+        description:
+          'Instant login delivery with 0% Tax, Worldwide targeting & Creativity Program Beta enabled. Wholesale discounts on bulk orders.',
+        style: 'cyan',
+        position: 'above_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Order Agency Account',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: true,
+        secondaryBtnText: 'Top-Up Store Balance',
+        secondaryBtnAction: 'addfunds',
+        secondaryBtnIcon: 'fa-solid fa-wallet'
+      }
+    },
+    {
+      name: 'support',
+      label: '💬 24/7 VIP WhatsApp Priority Support',
+      desc: 'Direct hotline for urgent orders, replacements & custom plans',
+      style: 'emerald',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-brands fa-whatsapp',
+        badgeText: '24/7 ONLINE • AVERAGE 2 MIN REPLY',
+        title: 'Have a Special Request, Need Fast Replacement, or Custom AI Plan?',
+        description:
+          'Muhammad Saqib is online right now! Message directly for custom enterprise bundles, special bulk pricing, or instant assistance.',
+        style: 'emerald',
+        position: 'below_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Chat on WhatsApp',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: false,
+        secondaryBtnText: 'Open Web Tools',
+        secondaryBtnAction: 'webtools'
+      }
+    },
+    {
+      name: 'aipro',
+      label: '🔮 AI Mega Bundle & CapCut Pro',
+      desc: 'Gemini 18M, Claude 3.7, Lovable Pro & ElevenLabs',
+      style: 'purple',
+      banner: {
+        enabled: true,
+        badgeIcon: 'fa-solid fa-wand-magic-sparkles',
+        badgeText: 'EXCLUSIVE CREATOR AI PRO SUITE',
+        title: 'Unlock Full Power: Gemini 18M, Claude 3.7, Lovable Pro & CapCut Pro',
+        description:
+          'Private 1-month & 1-year subscriptions with warranty. No VPN required, works on all devices with instant activation.',
+        style: 'purple',
+        position: 'above_services',
+        primaryBtnEnabled: true,
+        primaryBtnText: 'Get AI Pro Bundle',
+        primaryBtnAction: 'whatsapp',
+        primaryBtnIcon: 'fa-brands fa-whatsapp',
+        secondaryBtnEnabled: true,
+        secondaryBtnText: 'Add Balance to Wallet',
+        secondaryBtnAction: 'addfunds',
+        secondaryBtnIcon: 'fa-solid fa-wallet'
+      }
+    }
+  ];
+
+  const handleAddPromoBanner = (presetName?: string) => {
+    const foundPreset = PROMO_BANNER_PRESETS.find((p) => p.name === presetName);
+    const newBanner: SitePromoBannerItem = foundPreset
+      ? { ...foundPreset.banner, id: `promo-${Date.now()}` }
+      : {
+          id: `promo-${Date.now()}`,
+          enabled: true,
+          badgeIcon: 'fa-solid fa-bolt',
+          badgeText: 'NEW PROMOTIONAL DEAL',
+          title: 'Special Custom Offer & Exclusive Wholesale Deals',
+          description:
+            'Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, instant activation, and replacement warranty.',
+          style: 'rose',
+          position: 'below_services',
+          primaryBtnEnabled: true,
+          primaryBtnText: 'Deal on WhatsApp',
+          primaryBtnAction: 'whatsapp',
+          primaryBtnIcon: 'fa-brands fa-whatsapp',
+          secondaryBtnEnabled: true,
+          secondaryBtnText: 'Open Web Tools Hub',
+          secondaryBtnAction: 'webtools',
+          secondaryBtnIcon: 'fa-solid fa-screwdriver-wrench'
+        };
+
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      promoBanners: [...(prev.promoBanners || DEFAULT_PROMO_BANNERS), newBanner]
+    }));
+    setEditingPromoBannerId(newBanner.id);
+    setPromoBannerStep(1);
+    playPopSound(720);
+    showToast('✨ New Promo Banner Added! Customize Title, Style & Buttons below.');
+  };
+
+  const handleDeletePromoBanner = (id: string) => {
+    if (currentPromoBanners.length <= 1) {
+      showToast('⚠️ At least one banner must remain. You can toggle it OFF (Hide) instead!');
+      return;
+    }
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      promoBanners: (prev.promoBanners || DEFAULT_PROMO_BANNERS).filter((b) => b.id !== id)
+    }));
+    if (editingPromoBannerId === id) {
+      setEditingPromoBannerId(null);
+    }
+    playPopSound(420);
+    showToast('🗑️ Promo Banner Deleted successfully!');
+  };
+
+  const handleTogglePromoBanner = (id: string) => {
+    onUpdateSiteConfig((prev) => {
+      const list = prev.promoBanners || DEFAULT_PROMO_BANNERS;
+      const target = list.find((b) => b.id === id);
+      const nextEnabled = target ? target.enabled === false : false;
+      const updated = list.map((b) => (b.id === id ? { ...b, enabled: nextEnabled } : b));
+      showToast(
+        nextEnabled
+          ? '👁️ Banner Enabled on Storefront!'
+          : '🙈 Banner Hidden from Storefront!'
+      );
+      return {
+        ...prev,
+        promoBanners: updated
+      };
+    });
+  };
+
+  const handleDuplicatePromoBanner = (id: string) => {
+    const list = siteConfig.promoBanners || DEFAULT_PROMO_BANNERS;
+    const target = list.find((b) => b.id === id);
+    if (!target) return;
+    const duplicated: SitePromoBannerItem = {
+      ...target,
+      id: `promo-${Date.now()}`,
+      title: `${target.title} (Copy)`
+    };
+    onUpdateSiteConfig((prev) => ({
+      ...prev,
+      promoBanners: [...(prev.promoBanners || DEFAULT_PROMO_BANNERS), duplicated]
+    }));
+    setEditingPromoBannerId(duplicated.id);
+    playPopSound(760);
+    showToast('📋 Banner Duplicated! Now editing the copy.');
+  };
+
+  const handleMovePromoBanner = (id: string, direction: 'up' | 'down') => {
+    const list = [...(siteConfig.promoBanners || DEFAULT_PROMO_BANNERS)];
+    const idx = list.findIndex((b) => b.id === id);
+    if (idx === -1) return;
+    if (direction === 'up' && idx > 0) {
+      const temp = list[idx - 1];
+      list[idx - 1] = list[idx];
+      list[idx] = temp;
+      onUpdateSiteConfig((prev) => ({ ...prev, promoBanners: list }));
+      playPopSound(600);
+      showToast('⬆️ Banner moved up!');
+    } else if (direction === 'down' && idx < list.length - 1) {
+      const temp = list[idx + 1];
+      list[idx + 1] = list[idx];
+      list[idx] = temp;
+      onUpdateSiteConfig((prev) => ({ ...prev, promoBanners: list }));
+      playPopSound(600);
+      showToast('⬇️ Banner moved down!');
+    }
+  };
+
+  const handleUpdatePromoBannerField = <K extends keyof SitePromoBannerItem>(
+    id: string,
+    field: K,
+    value: SitePromoBannerItem[K]
+  ) => {
+    onUpdateSiteConfig((prev) => {
+      const list = prev.promoBanners || DEFAULT_PROMO_BANNERS;
+      return {
+        ...prev,
+        promoBanners: list.map((b) => (b.id === id ? { ...b, [field]: value } : b))
       };
     });
   };
@@ -1101,8 +1811,18 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               },
               {
                 id: 'banner' as const,
-                label: '🖼️ Hero Banner',
+                label: '🖼️ Hero Banner (1 no)',
                 badge: siteConfig.banner.showHeroBanner ? 'ON' : 'OFF'
+              },
+              {
+                id: 'promo_banners' as const,
+                label: '🎯 2 No Promo Banners',
+                badge: `${currentPromoBanners.filter((b) => b.enabled !== false).length} Active`
+              },
+              {
+                id: 'store_bars' as const,
+                label: '🏪 Store Bars & Wallet',
+                badge: 'Live'
               },
               {
                 id: 'payment_methods' as const,
@@ -1122,7 +1842,12 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               {
                 id: 'ui' as const,
                 label: '🎨 Themes & Fonts',
-                badge: '4+6'
+                badge: '6+6'
+              },
+              {
+                id: 'seo' as const,
+                label: '🌐 SEO & Meta Tags',
+                badge: 'Google'
               }
             ].map((item) => {
               const isAct = activeScreen === item.id;
@@ -1296,7 +2021,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               <button
                 type="button"
                 onClick={() => openSettingsScreen('contact_footer', 1)}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 col-span-2 sm:col-span-1"
+                className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
               >
                 <div className="flex items-center justify-between">
                   <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
@@ -1310,6 +2035,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   <div className="text-xs sm:text-sm font-extrabold">WhatsApp &amp; Footer</div>
                   <div className="text-[10px] text-amber-100 font-semibold">
                     Number, Socials &amp; Links
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => openSettingsScreen('seo')}
+                className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 col-span-2 sm:col-span-1"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                    <FaGlobe className="w-4 h-4 text-white" />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
+                    SEO Hub
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-extrabold">SEO &amp; Meta Tags</div>
+                  <div className="text-[10px] text-blue-100 font-semibold">
+                    Open Graph, Twitter &amp; Keywords
                   </div>
                 </div>
               </button>
@@ -1556,6 +2302,37 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       </div>
                     </div>
 
+                    {/* Row: 🎯 2 No Promo & Deal Banners Manager */}
+                    <div
+                      onClick={() => openSettingsScreen('promo_banners', 1)}
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaBullhorn className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                            <span>🎯 2 No Promo Banners Manager</span>
+                            <span className="px-1.5 py-0.2 rounded-full bg-pink-100 text-pink-700 text-[9px] font-black">
+                              {currentPromoBanners.length} Banners
+                            </span>
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            Add, Delete, Edit, Change Colors/Styles (Plush, Dark, Gold, Emerald) &amp; Actions
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                        {renderToggleSwitch(
+                          activeVisibility.showPromoBanners ?? true,
+                          () => toggleSiteVisibilityKey('showPromoBanners', '2 No Promo Banners'),
+                          'Toggle 2 No Promo Banners'
+                        )}
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
                     {/* Row: Soft Light RGB Border Around Portfolio & Cards Toggle */}
                     <div
                       onClick={() => {
@@ -1607,6 +2384,32 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       </div>
                     </div>
 
+                    {/* Row: Storefront Bars & Live Wallet */}
+                    <div
+                      onClick={() => openSettingsScreen('store_bars', 1)}
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <i className="fa-solid fa-store text-sm"></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            Storefront Bars, Live Wallet &amp; Status Telemetry
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            Live Account Balance, Server Pulse, Marquee, Search &amp; Hot Searches
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">
+                          Customize
+                        </span>
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
                     {/* Row: Themes & Font Studio */}
                     <div
                       onClick={() => openSettingsScreen('ui')}
@@ -1627,7 +2430,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                          4 Themes • 6 Fonts
+                          6 Themes • 6 Fonts
                         </span>
                         <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
                       </div>
@@ -1833,6 +2636,101 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           },
                           'Toggle Footer Quick Links'
                         )}
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* GROUP 5: SEO, OPEN GRAPH TAGS & CUSTOM KEYWORDS */}
+            {matchesSearch('seo opengraph og tags meta description keywords search google twitter social snippet robots') && (
+              <div className="acrylic-frame rounded-[30px] p-3 col-span-1 lg:col-span-2">
+                <div className="plush-pillow plush-hero rounded-[24px] p-4 sm:p-5 space-y-3">
+                  <div className="flex items-center justify-between px-1">
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-blue-700 flex items-center gap-1.5">
+                      <FaGlobe className="w-3.5 h-3.5 text-blue-600" />
+                      <span>5. Search Engine Optimization (SEO) &amp; OpenGraph Social Cards</span>
+                    </span>
+                    <span className="text-[10px] font-bold text-slate-500">Live Google Preview</span>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/90 border border-blue-100 divide-y divide-slate-200/70 overflow-hidden shadow-xs">
+                    {/* Row 1: Manage SEO Title & Meta Description */}
+                    <div
+                      onClick={() => openSettingsScreen('seo')}
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaGlobe className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            Google Meta Title, Description &amp; Canonical URL
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            {siteConfig.seo?.metaTitle || DEFAULT_SITE_SEO.metaTitle}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">
+                          Manage SEO
+                        </span>
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Row 2: Open Graph & Twitter Social Share Cards */}
+                    <div
+                      onClick={() => openSettingsScreen('seo')}
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaShareNodes className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            OpenGraph (WhatsApp/Facebook) &amp; Twitter / X Cards
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            Share image, title, card preview &amp; social branding
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                          Cards &amp; Previews
+                        </span>
+                        <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
+                      </div>
+                    </div>
+
+                    {/* Row 3: Custom SEO Keywords & Schema.org JSON-LD */}
+                    <div
+                      onClick={() => openSettingsScreen('seo')}
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-indigo-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
+                          <FaTags className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                            Custom Keywords &amp; Schema.org Structured Data (JSON-LD)
+                          </div>
+                          <div className="text-[11px] font-semibold text-slate-600 truncate">
+                            {(siteConfig.seo?.keywords || DEFAULT_SITE_SEO.keywords).split(',').filter(Boolean).length} Targeted Keywords for Pakistan SMM &amp; AI
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold">
+                          Keywords &amp; JSON-LD
+                        </span>
                         <FaChevronRight className="w-3.5 h-3.5 text-slate-400" />
                       </div>
                     </div>
@@ -3685,40 +4583,143 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
         </div>
       )}
 
-      {/* ==================== SCREEN 3: HERO BANNER & VISIBILITY STUDIO (3 STEPS) ==================== */}
+      {/* ==================== SCREEN 3: HERO BANNER & VISIBILITY STUDIO (4 STEPS) ==================== */}
       {activeScreen === 'banner' && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-200 pb-3.5">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-pink-600">
-                  🖼️ STEP-BY-STEP HERO BANNER STUDIO
+                  🖼️ STEP-BY-STEP HERO BANNER &amp; VISUALS STUDIO
                 </span>
                 <h3 className="text-base sm:text-xl font-extrabold text-slate-900">
-                  Show / Hide Hero Banner &amp; Customize Headline, Badge &amp; Photo
+                  Full Customizer: Section, Photo, Floating Badges, Headings &amp; Bio
                 </h3>
+                <p className="text-xs font-semibold text-slate-600">
+                  Har cheez ko Admin Panel se ON / OFF aur customize karein — Agar photo nahi lagani to direct hide kar dein!
+                </p>
               </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      banner: DEFAULT_SITE_CONFIG.banner
+                    }));
+                    showToast('Hero Banner restored to default!');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer hover:bg-rose-50 transition"
+                >
+                  Reset Banner
+                </button>
+              </div>
+            </div>
+
+            {/* Top Switcher: Hero Banner (1 no) vs Promo Banners (2 no) */}
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
               <button
                 type="button"
-                onClick={() => {
-                  onUpdateSiteConfig((prev) => ({
-                    ...prev,
-                    banner: DEFAULT_SITE_CONFIG.banner
-                  }));
-                  showToast('Hero Banner restored to default!');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                onClick={() => setBannerStep(1)}
+                className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-default"
               >
-                Reset Banner
+                <span>🖼️ Banner 1: Top Hero Banner &amp; Portrait</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[9px] font-black">
+                  {siteConfig.banner.showHeroBanner ? 'ON' : 'OFF'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => openSettingsScreen('promo_banners', 1)}
+                className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-pink-50 text-slate-700 font-extrabold text-xs border border-pink-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <span>🎯 Banner 2: 2 No Promo Banners</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[9px] font-black">
+                  {currentPromoBanners.length}
+                </span>
               </button>
             </div>
 
-            {/* 3-Step Selector */}
-            <div className="grid grid-cols-3 gap-2">
+            {/* Quick 1-Click Presets */}
+            <div className="p-3 rounded-2xl bg-white/80 border border-pink-200 flex flex-wrap items-center justify-between gap-2.5">
+              <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                ⚡ Quick Presets:
+              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      banner: {
+                        ...prev.banner,
+                        showHeroBanner: false,
+                        showTopStrip: false
+                      }
+                    }));
+                    showToast('🚀 Direct Bar & Tools Mode Activated! (Hero Hidden)');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 text-white text-[11px] font-extrabold shadow-sm hover:scale-105 transition cursor-pointer"
+                  title="Hides Hero Banner and starts directly with Tools & Products"
+                >
+                  🚀 Direct Bar &amp; Tools (Hide Hero)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      banner: {
+                        ...prev.banner,
+                        showHeroBanner: true,
+                        showPortraitPhoto: false
+                      }
+                    }));
+                    showToast('👤 Text-Only Mode Activated! (Photo Hidden, Bio Full Width)');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-purple-100 text-purple-800 border border-purple-200 text-[11px] font-extrabold shadow-sm hover:scale-105 transition cursor-pointer"
+                  title="Keeps bio headline & text but hides profile photo"
+                >
+                  👤 Text-Only Mode (No Photo)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      banner: {
+                        ...prev.banner,
+                        showHeroBanner: true,
+                        showTopStrip: true,
+                        showPortraitPhoto: true,
+                        showPortraitOrbitBadges: true,
+                        orbitBadge1Enabled: true,
+                        orbitBadge2Enabled: true,
+                        orbitBadge3Enabled: true,
+                        orbitBadge4Enabled: true,
+                        showBadgeText: true,
+                        showMainTitle: true,
+                        showDescription: true,
+                        showHeroFeaturePills: true,
+                        rgbBorderEnabled: true
+                      }
+                    }));
+                    showToast('✨ Full Visuals Deluxe Enabled!');
+                  }}
+                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white text-[11px] font-extrabold shadow-sm hover:scale-105 transition cursor-pointer"
+                >
+                  ✨ Full Visuals Deluxe
+                </button>
+              </div>
+            </div>
+
+            {/* 4-Step Selector */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               {[
-                { step: 1 as const, label: '1. Show / Hide & Top Strip' },
-                { step: 2 as const, label: '2. Headline, Badge & Bio' },
-                { step: 3 as const, label: '3. Portrait Image & Preview' }
+                { step: 1 as const, label: '1. Layout & Toggles', icon: '🎛️' },
+                { step: 2 as const, label: '2. Heading & Bio', icon: '✍️' },
+                { step: 3 as const, label: '3. Floating Badges', icon: '🪐' },
+                { step: 4 as const, label: '4. Photo & Preview', icon: '🖼️' }
               ].map((s) => (
                 <button
                   key={s.step}
@@ -3727,27 +4728,39 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     playPopSound(620);
                     setBannerStep(s.step);
                   }}
-                  className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer ${
+                  className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 ${
                     bannerStep === s.step
                       ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-md'
-                      : 'bg-white/85 text-slate-700 border border-pink-200'
+                      : 'bg-white/85 text-slate-700 border border-pink-200 hover:bg-white'
                   }`}
                 >
-                  {s.label}
+                  <span>{s.icon}</span>
+                  <span>{s.label}</span>
                 </button>
               ))}
             </div>
 
+            {/* STEP 1: MASTER LAYOUT & SECTION TOGGLES */}
             {bannerStep === 1 && (
               <div className="space-y-4">
-                <div className="rounded-2xl bg-white/90 border border-pink-200 divide-y divide-slate-200/70">
+                <div className="rounded-2xl bg-white/90 border border-pink-200 divide-y divide-slate-200/70 shadow-xs">
+                  {/* Master Section Toggle */}
                   <div className="p-4 flex items-center justify-between gap-3">
                     <div>
-                      <div className="text-sm font-extrabold text-slate-900">
-                        Show Main 3D Hero Banner on Website
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>🌟 Show Main 3D Hero Banner Section</span>
+                        {siteConfig.banner.showHeroBanner ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON (Visible)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold">
+                            OFF (Hidden — Direct Bar &amp; Tools Start)
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs font-semibold text-slate-600">
-                        Turn OFF if you want visitors to see the Store Products immediately at the top
+                        Turn OFF if you want visitors to see the Store Products &amp; Tools immediately at the top without any hero card
                       </div>
                     </div>
                     {renderToggleSwitch(
@@ -3764,13 +4777,47 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     )}
                   </div>
 
+                  {/* Profile Photo Toggle */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>📸 Show Profile Photo / Portrait Lens</span>
+                        {siteConfig.banner.showPortraitPhoto !== false ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            Photo Shown
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold">
+                            Photo Hidden (Bio Full Width)
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Admin agar apni pic nahi lagana chahta to isko OFF kar dein — Picture aur floating badges hide ho kar bio card automatically clean full width me adjust ho jayega!
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.banner.showPortraitPhoto !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            showPortraitPhoto: prev.banner.showPortraitPhoto === false
+                          }
+                        })),
+                      'Show Portrait Photo'
+                    )}
+                  </div>
+
+                  {/* Top Strip Toggle */}
                   <div className="p-4 flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-extrabold text-slate-900">
-                        Show Top Title Strip &amp; WhatsApp Pill
+                        ✨ Show Top Title Strip
                       </div>
                       <div className="text-xs font-semibold text-slate-600">
-                        Displays &ldquo;{siteConfig.banner.topStripTitle}&rdquo; and your live WhatsApp button
+                        Displays &ldquo;{siteConfig.banner.topStripTitle}&rdquo; headline above the hero card
                       </div>
                     </div>
                     {renderToggleSwitch(
@@ -3787,13 +4834,38 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     )}
                   </div>
 
+                  {/* Top Strip WhatsApp Button Toggle */}
                   <div className="p-4 flex items-center justify-between gap-3">
                     <div>
                       <div className="text-sm font-extrabold text-slate-900">
-                        🌈 Soft Light RGB Border Around Portfolio &amp; All Cards (ON / OFF)
+                        💬 Show WhatsApp Pill in Top Strip
                       </div>
                       <div className="text-xs font-semibold text-slate-600">
-                        Illuminates your circular portfolio portrait &amp; card borders with a soft, airy light-mode RGB flow (never dark!)
+                        Displays the live pulsing WhatsApp quick button in the top headline strip
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.banner.showTopStripWhatsapp !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            showTopStripWhatsapp: prev.banner.showTopStripWhatsapp === false
+                          }
+                        })),
+                      'Show WhatsApp in Top Strip'
+                    )}
+                  </div>
+
+                  {/* RGB Lighting Halo Ring */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">
+                        🌈 Soft Light RGB Halo Border (ON / OFF)
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Illuminates the circular portrait frame and cards with a smooth rotating RGB rim
                       </div>
                     </div>
                     {renderToggleSwitch(
@@ -3811,104 +4883,210 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </div>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                    Top Strip Heading Text
-                  </label>
-                  <input
-                    type="text"
-                    value={siteConfig.banner.topStripTitle}
-                    onChange={(e) =>
-                      onUpdateSiteConfig((prev) => ({
-                        ...prev,
-                        banner: { ...prev.banner, topStripTitle: e.target.value }
-                      }))
-                    }
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900"
-                  />
-                </div>
+                {/* Top Strip Text Input */}
+                {siteConfig.banner.showTopStrip && (
+                  <div className="p-3.5 rounded-2xl bg-white/85 border border-pink-200 space-y-2">
+                    <label className="block text-xs font-extrabold text-slate-900">
+                      Top Strip Heading Text
+                    </label>
+                    <input
+                      type="text"
+                      value={siteConfig.banner.topStripTitle}
+                      onChange={(e) =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: { ...prev.banner, topStripTitle: e.target.value }
+                        }))
+                      }
+                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                      placeholder="e.g. MUHAMMAD SAQIB • VISUALS HUB"
+                    />
+                  </div>
+                )}
 
                 <div className="flex justify-end">
                   <button
                     type="button"
                     onClick={() => setBannerStep(2)}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md"
                   >
-                    Next: Headline &amp; Description →
+                    Next: Heading, Badge &amp; Bio →
                   </button>
                 </div>
               </div>
             )}
 
+            {/* STEP 2: HEADINGS, BADGE & BIO TEXT CUSTOMIZER */}
             {bannerStep === 2 && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                    Top Promo Status Badge Text
-                  </label>
-                  <input
-                    type="text"
-                    value={siteConfig.banner.badgeText}
-                    onChange={(e) =>
-                      onUpdateSiteConfig((prev) => ({
-                        ...prev,
-                        banner: { ...prev.banner, badgeText: e.target.value }
-                      }))
-                    }
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs text-slate-900"
-                  />
-                </div>
+                <div className="rounded-2xl bg-white/90 border border-pink-200 divide-y divide-slate-200/70 shadow-xs">
+                  {/* Status Promo Badge Toggle & Input */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          🏷️ Top Status Promo Badge
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600">
+                          Small pill tag above headline (e.g. ALL DIGITAL, AI, SMM SERVICES...)
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.banner.showBadgeText !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: {
+                              ...prev.banner,
+                              showBadgeText: prev.banner.showBadgeText === false
+                            }
+                          })),
+                        'Show Status Badge'
+                      )}
+                    </div>
+                    {siteConfig.banner.showBadgeText !== false && (
+                      <input
+                        type="text"
+                        value={siteConfig.banner.badgeText}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: { ...prev.banner, badgeText: e.target.value }
+                          }))
+                        }
+                        className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs text-slate-900 shadow-inner"
+                        placeholder="Enter badge text..."
+                      />
+                    )}
+                  </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                      Main Hero Name / Title
-                    </label>
-                    <input
-                      type="text"
-                      value={siteConfig.banner.mainTitle}
-                      onChange={(e) =>
+                  {/* Main Title & Highlight Toggle & Inputs */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          ✍️ Main Hero Name &amp; Highlighted Brand Title
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600">
+                          Large headline displayed prominently in the Bio card
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.banner.showMainTitle !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: {
+                              ...prev.banner,
+                              showMainTitle: prev.banner.showMainTitle === false
+                            }
+                          })),
+                        'Show Main Title'
+                      )}
+                    </div>
+                    {siteConfig.banner.showMainTitle !== false && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Main Name / Title
+                          </label>
+                          <input
+                            type="text"
+                            value={siteConfig.banner.mainTitle}
+                            onChange={(e) =>
+                              onUpdateSiteConfig((prev) => ({
+                                ...prev,
+                                banner: { ...prev.banner, mainTitle: e.target.value }
+                              }))
+                            }
+                            className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                            placeholder="e.g. Muhammad Saqib"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                            Highlighted Accent Title
+                          </label>
+                          <input
+                            type="text"
+                            value={siteConfig.banner.highlightTitle}
+                            onChange={(e) =>
+                              onUpdateSiteConfig((prev) => ({
+                                ...prev,
+                                banner: { ...prev.banner, highlightTitle: e.target.value }
+                              }))
+                            }
+                            className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                            placeholder="e.g. — Saqib Visuals"
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bio Paragraph Description Toggle & Textarea */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          📝 Hero Bio &amp; Services Description Paragraph
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600">
+                          Summary description of your CapCut, AI accounts &amp; SMM services
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.banner.showDescription !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: {
+                              ...prev.banner,
+                              showDescription: prev.banner.showDescription === false
+                            }
+                          })),
+                        'Show Bio Description'
+                      )}
+                    </div>
+                    {siteConfig.banner.showDescription !== false && (
+                      <textarea
+                        rows={3}
+                        value={siteConfig.banner.description}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: { ...prev.banner, description: e.target.value }
+                          }))
+                        }
+                        className="w-full p-3 rounded-xl bg-white border-2 border-pink-300 font-semibold text-xs sm:text-sm text-slate-900 shadow-inner"
+                        placeholder="Write your bio text here..."
+                      />
+                    )}
+                  </div>
+
+                  {/* Interactive Feature Pills Inside Hero */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900">
+                        💊 Interactive Filter Pills Underneath Bio
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Buttons like &ldquo;AI &amp; Pro Apps&rdquo;, &ldquo;TikTok UK&rdquo;, &ldquo;Franchise &amp; CDR&rdquo;, &ldquo;NADRA&rdquo;, &ldquo;USDT&rdquo;, &ldquo;Live Web Tools&rdquo;
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.banner.showHeroFeaturePills !== false,
+                      () =>
                         onUpdateSiteConfig((prev) => ({
                           ...prev,
-                          banner: { ...prev.banner, mainTitle: e.target.value }
-                        }))
-                      }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900"
-                    />
+                          banner: {
+                            ...prev.banner,
+                            showHeroFeaturePills: prev.banner.showHeroFeaturePills === false
+                          }
+                        })),
+                      'Show Feature Pills'
+                    )}
                   </div>
-                  <div>
-                    <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                      Highlighted Brand Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      value={siteConfig.banner.highlightTitle}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          banner: { ...prev.banner, highlightTitle: e.target.value }
-                        }))
-                      }
-                      className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                    Hero Bio / Services Description Paragraph
-                  </label>
-                  <textarea
-                    rows={3}
-                    value={siteConfig.banner.description}
-                    onChange={(e) =>
-                      onUpdateSiteConfig((prev) => ({
-                        ...prev,
-                        banner: { ...prev.banner, description: e.target.value }
-                      }))
-                    }
-                    className="w-full p-3 rounded-xl bg-white border-2 border-pink-300 font-semibold text-xs sm:text-sm text-slate-900"
-                  />
                 </div>
 
                 <div className="flex justify-between">
@@ -3922,52 +5100,263 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   <button
                     type="button"
                     onClick={() => setBannerStep(3)}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs cursor-pointer"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md"
                   >
-                    Next: Portrait Photo &amp; Save →
+                    Next: Floating Orbit Badges →
                   </button>
                 </div>
               </div>
             )}
 
+            {/* STEP 3: FLOATING ORBIT BADGES (CHOTE CHOTE FLOATING COMPONENTS) */}
             {bannerStep === 3 && (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                    Hero Circular Portrait Image URL
-                  </label>
-                  <input
-                    type="text"
-                    value={siteConfig.banner.portraitUrl}
-                    onChange={(e) =>
-                      onUpdateSiteConfig((prev) => ({
-                        ...prev,
-                        banner: { ...prev.banner, portraitUrl: e.target.value }
-                      }))
-                    }
-                    placeholder="https://..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-mono-code text-xs text-slate-900"
-                  />
-                </div>
-
-                {/* Live Mini Preview of Hero Banner */}
-                <div className="p-4 rounded-2xl bg-white/90 border-2 border-white shadow-sm flex flex-col sm:flex-row items-center gap-4">
-                  <img
-                    src={siteConfig.banner.portraitUrl}
-                    alt="Portrait Preview"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-pink-400 shadow-md flex-shrink-0"
-                  />
-                  <div className="space-y-1 text-center sm:text-left">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[9px] font-extrabold">
-                      {siteConfig.banner.badgeText}
-                    </span>
-                    <div className="text-base font-extrabold text-slate-900">
-                      {siteConfig.banner.mainTitle}{' '}
-                      <span className="text-pink-600">{siteConfig.banner.highlightTitle}</span>
+                <div className="p-4 rounded-2xl bg-white/90 border border-pink-200 space-y-3 shadow-xs">
+                  {/* Master Orbit Badges Switch */}
+                  <div className="flex items-center justify-between gap-3 border-b border-pink-100 pb-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                        <span>🪐 All Floating Orbit Badges (Pic Floating Components)</span>
+                        {siteConfig.banner.showPortraitOrbitBadges !== false ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-extrabold">
+                            OFF
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Pic ke 4 corners par jo chote chote floating badges hain, unko ek click me ON ya OFF karein
+                      </div>
                     </div>
-                    <p className="text-xs font-medium text-slate-600">
-                      {siteConfig.banner.description}
-                    </p>
+                    {renderToggleSwitch(
+                      siteConfig.banner.showPortraitOrbitBadges !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            showPortraitOrbitBadges: prev.banner.showPortraitOrbitBadges === false
+                          }
+                        })),
+                      'Toggle All Orbit Badges'
+                    )}
+                  </div>
+
+                  <p className="text-xs font-bold text-slate-700">
+                    Individual Floating Badges Customizer (Turn ON / OFF &amp; Edit Labels):
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {/* Badge 1: CapCut Pro (Top-Left) */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-slate-900 text-white flex items-center justify-center text-xs font-bold">
+                            🎬
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-900">
+                            Badge 1: Top-Left
+                          </span>
+                        </div>
+                        {renderToggleSwitch(
+                          siteConfig.banner.orbitBadge1Enabled !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: {
+                                ...prev.banner,
+                                orbitBadge1Enabled: prev.banner.orbitBadge1Enabled === false
+                              }
+                            })),
+                          'Toggle Badge 1'
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge1Title ?? 'CapCut & Lovable'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge1Title: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Title (e.g. CapCut & Lovable)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge1Sub ?? 'PRO UNLOCKED'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge1Sub: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1 rounded-lg bg-white border border-pink-200 text-[11px] font-bold text-pink-600"
+                          placeholder="Subtitle (e.g. PRO UNLOCKED)"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Badge 2: AI Suite (Top-Right) */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-gradient-to-tr from-emerald-500 to-cyan-500 text-white flex items-center justify-center text-xs font-bold">
+                            ✨
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-900">
+                            Badge 2: Top-Right
+                          </span>
+                        </div>
+                        {renderToggleSwitch(
+                          siteConfig.banner.orbitBadge2Enabled !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: {
+                                ...prev.banner,
+                                orbitBadge2Enabled: prev.banner.orbitBadge2Enabled === false
+                              }
+                            })),
+                          'Toggle Badge 2'
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge2Title ?? 'AI Suite'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge2Title: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Title (e.g. AI Suite)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge2Sub ?? 'GEMINI • CLAUDE'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge2Sub: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1 rounded-lg bg-white border border-emerald-200 text-[11px] font-bold text-emerald-600"
+                          placeholder="Subtitle (e.g. GEMINI • CLAUDE)"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Badge 3: TikTok UK/USA (Bottom-Left) */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-rose-500 text-white flex items-center justify-center text-xs font-bold">
+                            🎵
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-900">
+                            Badge 3: Bottom-Left
+                          </span>
+                        </div>
+                        {renderToggleSwitch(
+                          siteConfig.banner.orbitBadge3Enabled !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: {
+                                ...prev.banner,
+                                orbitBadge3Enabled: prev.banner.orbitBadge3Enabled === false
+                              }
+                            })),
+                          'Toggle Badge 3'
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge3Title ?? 'TikTok UK/USA'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge3Title: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Title (e.g. TikTok UK/USA)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge3Sub ?? 'ADS & BOOST'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge3Sub: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-[11px] font-bold text-rose-600"
+                          placeholder="Subtitle (e.g. ADS & BOOST)"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Badge 4: SIM & NADRA (Bottom-Right) */}
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="w-6 h-6 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs font-bold">
+                            📡
+                          </span>
+                          <span className="text-xs font-extrabold text-slate-900">
+                            Badge 4: Bottom-Right
+                          </span>
+                        </div>
+                        {renderToggleSwitch(
+                          siteConfig.banner.orbitBadge4Enabled !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: {
+                                ...prev.banner,
+                                orbitBadge4Enabled: prev.banner.orbitBadge4Enabled === false
+                              }
+                            })),
+                          'Toggle Badge 4'
+                        )}
+                      </div>
+                      <div className="space-y-1.5">
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge4Title ?? 'SIM & NADRA'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge4Title: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Title (e.g. SIM & NADRA)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.banner.orbitBadge4Sub ?? 'CDR • FRC • LIVE'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, orbitBadge4Sub: e.target.value }
+                            }))
+                          }
+                          className="w-full px-2.5 py-1 rounded-lg bg-white border border-blue-200 text-[11px] font-bold text-blue-600"
+                          placeholder="Subtitle (e.g. CDR • FRC • LIVE)"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -3981,12 +5370,188 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </button>
                   <button
                     type="button"
+                    onClick={() => setBannerStep(4)}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md"
+                  >
+                    Next: Photo &amp; Live Preview →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: PORTRAIT PHOTO URL & LIVE REAL-TIME PREVIEW */}
+            {bannerStep === 4 && (
+              <div className="space-y-4">
+                {/* Photo URL Input */}
+                <div className="p-4 rounded-2xl bg-white/90 border border-pink-200 space-y-3 shadow-xs">
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="block text-xs font-extrabold text-slate-900">
+                      Hero Circular Portrait Image URL
+                    </label>
+                    <span className="text-[11px] font-bold text-pink-600">
+                      {siteConfig.banner.showPortraitPhoto !== false ? '✅ Photo is ON' : '🙈 Photo is HIDDEN'}
+                    </span>
+                  </div>
+                  <input
+                    type="text"
+                    value={siteConfig.banner.portraitUrl}
+                    onChange={(e) =>
+                      onUpdateSiteConfig((prev) => ({
+                        ...prev,
+                        banner: { ...prev.banner, portraitUrl: e.target.value }
+                      }))
+                    }
+                    placeholder="https://..."
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-mono-code text-xs text-slate-900 shadow-inner"
+                  />
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <span className="text-[11px] font-bold text-slate-600">Preset Avatars:</span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png'
+                          }
+                        }))
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-pink-50 border border-pink-200 text-[11px] font-bold text-pink-700 hover:bg-pink-100 transition"
+                    >
+                      Muhammad Saqib Official
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: {
+                            ...prev.banner,
+                            portraitUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
+                          }
+                        }))
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-purple-50 border border-purple-200 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition"
+                    >
+                      Creative Studio Avatar
+                    </button>
+                  </div>
+                </div>
+
+                {/* Real-Time Live Preview of How Hero Looks */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                      👀 Real-Time Live Storefront Preview:
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-600">
+                      ● Live Sync Active
+                    </span>
+                  </div>
+
+                  {/* Section Hidden Alert */}
+                  {!siteConfig.banner.showHeroBanner && (
+                    <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-900 text-xs font-bold text-center">
+                      ⚠️ Main Hero Banner is currently <span className="underline">TURNED OFF</span>.
+                      Visitors will immediately see the Category Search Bar, Marquee and Tools directly at the top of the storefront!
+                    </div>
+                  )}
+
+                  {/* Render simulated hero card preview */}
+                  {siteConfig.banner.showHeroBanner && (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-pink-50 via-rose-50 to-purple-50 border-2 border-pink-200 shadow-md">
+                      {/* Top Strip Preview */}
+                      {siteConfig.banner.showTopStrip && (
+                        <div className="flex items-center justify-between pb-3 mb-3 border-b border-pink-200/80">
+                          <span className="text-xs sm:text-sm font-extrabold text-slate-900 tracking-wide uppercase">
+                            ✨ {siteConfig.banner.topStripTitle}
+                          </span>
+                          {siteConfig.banner.showTopStripWhatsapp !== false && (
+                            <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                              💬 WhatsApp Pill ON
+                            </span>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Main Card Preview */}
+                      <div className={`flex flex-col ${siteConfig.banner.showPortraitPhoto !== false ? 'sm:flex-row' : ''} items-center gap-4`}>
+                        {/* Portrait Photo Preview */}
+                        {siteConfig.banner.showPortraitPhoto !== false ? (
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={siteConfig.banner.portraitUrl}
+                              alt="Portrait Preview"
+                              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full object-cover border-4 border-white shadow-xl bg-slate-100"
+                            />
+                            {siteConfig.banner.showPortraitOrbitBadges !== false && (
+                              <div className="absolute -bottom-1 -right-1 px-2 py-0.5 rounded-full bg-slate-900 text-white text-[9px] font-extrabold shadow">
+                                4 Badges ON
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="w-full text-center sm:text-left">
+                            <span className="inline-block px-2.5 py-1 rounded-lg bg-purple-100 text-purple-800 text-[11px] font-extrabold mb-1">
+                              👤 Photo Hidden — Bio Card displayed full width
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Bio Text Preview */}
+                        <div className="flex-1 space-y-1.5 text-center sm:text-left min-w-0">
+                          {siteConfig.banner.showBadgeText !== false && siteConfig.banner.badgeText && (
+                            <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/90 border border-pink-200 text-pink-700 text-[9px] font-extrabold shadow-xs">
+                              ✓ {siteConfig.banner.badgeText}
+                            </span>
+                          )}
+                          {siteConfig.banner.showMainTitle !== false && (
+                            <div className="text-base sm:text-lg font-extrabold text-slate-900 leading-snug">
+                              {siteConfig.banner.mainTitle}{' '}
+                              <span className="text-pink-600">{siteConfig.banner.highlightTitle}</span>
+                            </div>
+                          )}
+                          {siteConfig.banner.showDescription !== false && (
+                            <p className="text-xs font-semibold text-slate-700 line-clamp-2">
+                              {siteConfig.banner.description}
+                            </p>
+                          )}
+                          {siteConfig.banner.showHeroFeaturePills !== false && (
+                            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1 pt-1">
+                              <span className="px-2 py-0.5 rounded-md bg-white text-[10px] font-bold text-slate-800 shadow-xs border border-purple-200">
+                                ✨ AI &amp; Pro Apps
+                              </span>
+                              <span className="px-2 py-0.5 rounded-md bg-white text-[10px] font-bold text-slate-800 shadow-xs border border-pink-200">
+                                🎵 TikTok
+                              </span>
+                              <span className="px-2 py-0.5 rounded-md bg-white text-[10px] font-bold text-slate-800 shadow-xs border border-blue-200">
+                                📡 SIM Tracker
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setBannerStep(3)}
+                    className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                  >
+                    ← Back: Floating Badges
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => {
                       playPopSound(840);
-                      showToast('✅ Hero Banner Settings Saved & Live!');
+                      showToast('✅ Hero Banner & Visuals Settings Saved & Live!');
                       setActiveScreen('home');
                     }}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg cursor-pointer"
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer"
                   >
                     ✓ Save &amp; Return to Settings Menu
                   </button>
@@ -3997,70 +5562,1892 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
         </div>
       )}
 
-      {/* ==================== SCREEN 4: PAYMENT METHODS & ACCOUNT NUMBERS EDITOR ==================== */}
+      {/* ==================== SCREEN: 2 NO PROMO & DEAL BANNERS STUDIO ==================== */}
+      {activeScreen === 'promo_banners' && (
+        <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
+          <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
+            {/* Top Navigation & Breadcrumbs */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-200 pb-3.5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveScreen('home')}
+                    className="text-xs font-extrabold text-slate-700 hover:text-pink-600 flex items-center gap-1 cursor-pointer transition"
+                  >
+                    <FaArrowLeft className="w-3 h-3" />
+                    <span>Settings Menu</span>
+                  </button>
+                  <span className="text-slate-400">/</span>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-pink-600 bg-pink-100 px-2 py-0.5 rounded-full border border-pink-200">
+                    🎯 2 NO PROMO BANNERS STUDIO
+                  </span>
+                </div>
+                <h3 className="text-base sm:text-2xl font-extrabold text-slate-900">
+                  Full Customizer: 2 No Banner, Deals, Themes, Buttons &amp; Visibility
+                </h3>
+                <p className="text-xs font-semibold text-slate-600">
+                  Storefront par dikhne wale 2 Number Promotional Banners ko manage karein — Naye banners add karein, delete karein, colors/style change karein, WhatsApp/Tools links set karein ya hide karein!
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      promoBanners: DEFAULT_PROMO_BANNERS
+                    }));
+                    setEditingPromoBannerId(null);
+                    showToast('2 No Banners restored to default!');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer hover:bg-rose-50 transition"
+                >
+                  Reset to Default
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleAddPromoBanner()}
+                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white text-xs font-extrabold shadow-md flex items-center gap-1.5 cursor-pointer hover:scale-105 transition"
+                >
+                  <FaPlus className="w-3.5 h-3.5" />
+                  <span>+ Add New Banner</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Top Switcher: Hero Banner (1 no) vs Promo Banners (2 no) */}
+            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
+              <button
+                type="button"
+                onClick={() => openSettingsScreen('banner', 1)}
+                className="flex-1 py-2 px-3 rounded-xl bg-white hover:bg-pink-50 text-slate-700 font-extrabold text-xs border border-pink-200 flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <span>🖼️ Banner 1: Top Hero Banner &amp; Portrait</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-slate-100 text-slate-700 text-[9px] font-black">
+                  {siteConfig.banner.showHeroBanner ? 'ON' : 'OFF'}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => {}}
+                className="flex-1 py-2 px-3 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-default"
+              >
+                <span>🎯 Banner 2: 2 No Promo Banners (ACTIVE)</span>
+                <span className="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[9px] font-black">
+                  {currentPromoBanners.length} Banners
+                </span>
+              </button>
+            </div>
+
+            {/* Master Show / Hide Toggle Card */}
+            <div className="p-4 rounded-2xl bg-white/90 border border-pink-200 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-base shadow-sm flex-shrink-0">
+                  <FaBullhorn className="w-5 h-5" />
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                    <span>Show 2 No Promo Banners on Storefront</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                        (activeVisibility.showPromoBanners ?? true)
+                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                          : 'bg-rose-100 text-rose-800 border border-rose-300'
+                      }`}
+                    >
+                      {(activeVisibility.showPromoBanners ?? true) ? 'Visible' : 'Hidden'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] font-medium text-slate-600">
+                    Master Switch: 1-Tap se saare 2 number promo banners ko storefront par show ya hide karein.
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                {renderToggleSwitch(
+                  activeVisibility.showPromoBanners ?? true,
+                  () => toggleSiteVisibilityKey('showPromoBanners', '2 No Promo Banners'),
+                  'Toggle 2 No Promo Banners'
+                )}
+              </div>
+            </div>
+
+            {/* 1-Click Quick Preset Templates */}
+            <div className="p-3.5 rounded-2xl bg-white/80 border border-pink-200 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                  <FaWandMagicSparkles className="text-amber-500 w-3.5 h-3.5" />
+                  <span>1-Click Quick Templates to Add:</span>
+                </span>
+                <span className="text-[10px] font-bold text-slate-500">Tap to instantly add a pre-styled banner</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+                {PROMO_BANNER_PRESETS.map((preset) => (
+                  <button
+                    key={preset.name}
+                    type="button"
+                    onClick={() => handleAddPromoBanner(preset.name)}
+                    className="p-2.5 rounded-xl bg-white hover:bg-pink-50/80 border border-pink-200 text-left transition shadow-xs hover:scale-[1.02] cursor-pointer flex flex-col justify-between gap-1.5"
+                  >
+                    <div className="text-[11px] font-extrabold text-slate-900 line-clamp-1">
+                      {preset.label}
+                    </div>
+                    <div className="text-[9.5px] text-slate-500 line-clamp-2 leading-tight">
+                      {preset.desc}
+                    </div>
+                    <span className="self-start mt-0.5 px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase bg-pink-100 text-pink-700 border border-pink-200">
+                      + Add {preset.style}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* ==================== ACTIVE BANNER EDITOR (WHEN A BANNER IS BEING EDITED) ==================== */}
+            {editingPromoBannerId !== null ? (
+              (() => {
+                const activeBanner =
+                  currentPromoBanners.find((b) => b.id === editingPromoBannerId) ||
+                  currentPromoBanners[0];
+                if (!activeBanner) return null;
+                const activeBannerIdx = currentPromoBanners.findIndex((b) => b.id === activeBanner.id);
+                const styleObj = getPromoBannerStyleClasses(activeBanner.style);
+
+                return (
+                  <div className="rounded-2xl bg-white/95 border border-pink-200 p-4 sm:p-5 space-y-5 shadow-sm">
+                    {/* Editor Header */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-100 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className="w-8 h-8 rounded-xl bg-pink-500 text-white font-extrabold text-xs flex items-center justify-center shadow-xs">
+                          #{activeBannerIdx + 1}
+                        </span>
+                        <div>
+                          <div className="text-sm sm:text-base font-extrabold text-slate-900 flex items-center gap-2">
+                            <span>Editing Banner: {activeBanner.title || 'Untitled Banner'}</span>
+                            <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${styleObj.pillBg}`}>
+                              {styleObj.themeLabel}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-medium">
+                            {activeBanner.enabled !== false ? '✅ Active on Storefront' : '🙈 Currently Hidden'} • {activeBanner.position === 'above_services' ? 'Top of Store' : 'Below Services Catalog'}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleTogglePromoBanner(activeBanner.id)}
+                          className={`px-3 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center gap-1.5 border ${
+                            activeBanner.enabled !== false
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                              : 'bg-slate-100 text-slate-600 border-slate-300'
+                          }`}
+                        >
+                          {activeBanner.enabled !== false ? (
+                            <>
+                              <FaEye className="w-3.5 h-3.5" />
+                              <span>Active (Visible)</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaEyeSlash className="w-3.5 h-3.5" />
+                              <span>Hidden (Off)</span>
+                            </>
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingPromoBannerId(null)}
+                          className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold transition cursor-pointer shadow-xs"
+                        >
+                          Done Editing
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Step Tabs */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      {[
+                        { step: 1 as const, label: '🏷️ 1. Badge & Text' },
+                        { step: 2 as const, label: '🎨 2. Style Theme' },
+                        { step: 3 as const, label: '🔘 3. Buttons & Links' },
+                        { step: 4 as const, label: '👁️ 4. Live Preview' }
+                      ].map((tab) => {
+                        const isCurrent = promoBannerStep === tab.step;
+                        return (
+                          <button
+                            key={tab.step}
+                            type="button"
+                            onClick={() => {
+                              playPopSound(600);
+                              setPromoBannerStep(tab.step);
+                            }}
+                            className={`py-2 px-2.5 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 border ${
+                              isCurrent
+                                ? 'bg-gradient-to-r from-pink-500 to-rose-600 text-white border-pink-600 shadow-sm'
+                                : 'bg-slate-50 hover:bg-pink-50 text-slate-700 border-slate-200'
+                            }`}
+                          >
+                            <span>{tab.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* ==================== STEP 1: CONTENT & HEADLINES ==================== */}
+                    {promoBannerStep === 1 && (
+                      <div className="space-y-4">
+                        {/* Badge Tag & Icon */}
+                        <div className="p-3.5 rounded-2xl bg-pink-50/60 border border-pink-200 space-y-3">
+                          <label className="block text-xs font-extrabold uppercase text-slate-800">
+                            1. Top Badge Tag Text &amp; Icon:
+                          </label>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <input
+                              type="text"
+                              value={activeBanner.badgeText || ''}
+                              onChange={(e) =>
+                                handleUpdatePromoBannerField(activeBanner.id, 'badgeText', e.target.value)
+                              }
+                              placeholder="e.g. ALL SERVICES AVAILABLE HERE, SPECIAL RAMADAN DEAL..."
+                              className="flex-grow px-3.5 py-2.5 rounded-xl bg-white border border-pink-300 font-extrabold text-xs text-slate-900 focus:outline-none focus:border-pink-500 shadow-xs"
+                            />
+                            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-pink-300 shadow-xs">
+                              <span className="text-[10px] font-bold text-slate-500">Preview:</span>
+                              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-extrabold border border-pink-300">
+                                <i className={activeBanner.badgeIcon || 'fa-solid fa-bolt'}></i>
+                                <span>{activeBanner.badgeText || 'BADGE PREVIEW'}</span>
+                              </span>
+                            </div>
+                          </div>
+
+                          <div>
+                            <span className="text-[10px] font-extrabold text-slate-600 uppercase mb-1.5 block">
+                              Select Badge Icon:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {[
+                                { icon: 'fa-solid fa-bolt', label: '⚡ Bolt' },
+                                { icon: 'fa-solid fa-fire', label: '🔥 Fire' },
+                                { icon: 'fa-solid fa-gift', label: '🎁 Gift' },
+                                { icon: 'fa-solid fa-wand-magic-sparkles', label: '✨ Sparkles' },
+                                { icon: 'fa-solid fa-shield-halved', label: '🛡️ Shield' },
+                                { icon: 'fa-solid fa-star', label: '⭐ Star' },
+                                { icon: 'fa-solid fa-rocket', label: '🚀 Rocket' },
+                                { icon: 'fa-brands fa-whatsapp', label: '💬 WhatsApp' },
+                                { icon: 'fa-solid fa-coins', label: '💰 Coins' },
+                                { icon: 'fa-solid fa-crown', label: '👑 Crown' },
+                                { icon: 'fa-solid fa-bag-shopping', label: '🛍️ Shop' },
+                                { icon: 'fa-solid fa-screwdriver-wrench', label: '🛠️ Tools' }
+                              ].map((ic) => {
+                                const isSel = (activeBanner.badgeIcon || 'fa-solid fa-bolt') === ic.icon;
+                                return (
+                                  <button
+                                    key={ic.icon}
+                                    type="button"
+                                    onClick={() =>
+                                      handleUpdatePromoBannerField(activeBanner.id, 'badgeIcon', ic.icon)
+                                    }
+                                    className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer border ${
+                                      isSel
+                                        ? 'bg-pink-500 text-white border-pink-600 shadow-xs'
+                                        : 'bg-white hover:bg-pink-50 text-slate-700 border-slate-200'
+                                    }`}
+                                  >
+                                    <i className={ic.icon}></i>
+                                    <span className="text-[10px]">{ic.label}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Main Title / Headline */}
+                        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-1.5 shadow-xs">
+                          <label className="block text-xs font-extrabold text-slate-800">
+                            2. Main Banner Headline / Title:
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={activeBanner.title || ''}
+                            onChange={(e) =>
+                              handleUpdatePromoBannerField(activeBanner.id, 'title', e.target.value)
+                            }
+                            placeholder="Need Custom AI Credits, Ad Agency Accounts, NADRA/CDR Info, or USDT?"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-extrabold text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-pink-500"
+                          />
+                        </div>
+
+                        {/* Description / Subtitle */}
+                        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-1.5 shadow-xs">
+                          <label className="block text-xs font-extrabold text-slate-800">
+                            3. Subtitle / Description Text:
+                          </label>
+                          <textarea
+                            rows={3}
+                            value={activeBanner.description || ''}
+                            onChange={(e) =>
+                              handleUpdatePromoBannerField(activeBanner.id, 'description', e.target.value)
+                            }
+                            placeholder="Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, JazzCash / EasyPaisa payment, and instant delivery."
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-medium text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                          />
+                        </div>
+
+                        {/* Optional Illustration / Image URL */}
+                        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs">
+                          <div className="flex items-center justify-between">
+                            <label className="block text-xs font-extrabold text-slate-800">
+                              4. Optional Banner Illustration / Photo URL:
+                            </label>
+                            {activeBanner.imageUrl && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleUpdatePromoBannerField(activeBanner.id, 'imageUrl', '')
+                                }
+                                className="text-[10px] font-extrabold text-rose-600 hover:underline cursor-pointer"
+                              >
+                                Remove Image
+                              </button>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              value={activeBanner.imageUrl || ''}
+                              onChange={(e) =>
+                                handleUpdatePromoBannerField(activeBanner.id, 'imageUrl', e.target.value)
+                              }
+                              placeholder="https://.../banner-badge.png (optional transparent badge/illustration)"
+                              className="flex-grow px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                            />
+                            {activeBanner.imageUrl && (
+                              <img
+                                src={activeBanner.imageUrl}
+                                alt="Banner preview"
+                                className="w-9 h-9 rounded-lg object-contain bg-slate-100 border border-slate-300 p-0.5 flex-shrink-0"
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-end pt-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(660);
+                              setPromoBannerStep(2);
+                            }}
+                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
+                          >
+                            Next: Style Theme &amp; Placement →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ==================== STEP 2: STYLE THEME & PLACEMENT ==================== */}
+                    {promoBannerStep === 2 && (
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="block text-xs font-extrabold uppercase text-slate-800">
+                            1. Select Visual Banner Style / Color Theme:
+                          </label>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            {[
+                              {
+                                style: 'rose' as const,
+                                label: '🌸 Plush Rose',
+                                desc: 'Soft pink plush pillow with dark text & emerald WhatsApp button',
+                                previewClass: 'bg-gradient-to-r from-pink-100 to-rose-200 border-pink-300 text-slate-900'
+                              },
+                              {
+                                style: 'dark' as const,
+                                label: '🌌 Cyber Dark',
+                                desc: 'Deep cosmic slate/indigo/purple matrix with cyan glow',
+                                previewClass: 'bg-gradient-to-r from-slate-950 via-indigo-950 to-purple-950 border-indigo-500/50 text-white'
+                              },
+                              {
+                                style: 'emerald' as const,
+                                label: '💚 Emerald Cash',
+                                desc: 'WhatsApp emerald green gradient with mint neon badges',
+                                previewClass: 'bg-gradient-to-r from-emerald-950 via-teal-950 to-slate-950 border-emerald-500/50 text-white'
+                              },
+                              {
+                                style: 'amber' as const,
+                                label: '👑 Gold Luxury',
+                                desc: 'VIP sunset amber & gold luxury with bright yellow accents',
+                                previewClass: 'bg-gradient-to-r from-amber-950 via-orange-950 to-slate-950 border-amber-500/50 text-white'
+                              },
+                              {
+                                style: 'cyan' as const,
+                                label: '💎 Ice Cyan',
+                                desc: 'Futuristic electric blue & cyan glass with ice neon',
+                                previewClass: 'bg-gradient-to-r from-cyan-950 via-blue-950 to-slate-950 border-cyan-500/50 text-white'
+                              },
+                              {
+                                style: 'purple' as const,
+                                label: '🔮 Royal Purple',
+                                desc: 'Royal fuchsia & violet matrix with bright pink gradients',
+                                previewClass: 'bg-gradient-to-r from-purple-950 via-fuchsia-950 to-slate-950 border-purple-500/50 text-white'
+                              }
+                            ].map((thm) => {
+                              const isSelected = activeBanner.style === thm.style;
+                              return (
+                                <button
+                                  key={thm.style}
+                                  type="button"
+                                  onClick={() => {
+                                    playPopSound(660);
+                                    handleUpdatePromoBannerField(activeBanner.id, 'style', thm.style);
+                                  }}
+                                  className={`p-3.5 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between gap-2 shadow-xs ${
+                                    thm.previewClass
+                                  } ${
+                                    isSelected
+                                      ? 'ring-3 ring-pink-500 scale-[1.02] shadow-md'
+                                      : 'hover:opacity-90 opacity-80'
+                                  }`}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-xs font-black">{thm.label}</span>
+                                    {isSelected && (
+                                      <span className="w-5 h-5 rounded-full bg-pink-500 text-white text-[10px] flex items-center justify-center font-black">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div className="text-[10px] font-semibold opacity-85 leading-tight">
+                                    {thm.desc}
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Storefront Placement / Position */}
+                        <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-xs">
+                          <label className="block text-xs font-extrabold uppercase text-slate-800">
+                            2. Banner Placement on Storefront:
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {[
+                              {
+                                pos: 'below_services' as const,
+                                title: '📍 Below Services Catalog',
+                                desc: 'Standard 2 No Banner (underneath the 31+ service cards)'
+                              },
+                              {
+                                pos: 'above_services' as const,
+                                title: '📍 Above Services Catalog',
+                                desc: 'Shows near top right after the wallet balance bar'
+                              },
+                              {
+                                pos: 'both' as const,
+                                title: '📍 Both Positions',
+                                desc: 'Shows both at top of store and bottom of store'
+                              }
+                            ].map((p) => {
+                              const isSel = (activeBanner.position || 'below_services') === p.pos;
+                              return (
+                                <button
+                                  key={p.pos}
+                                  type="button"
+                                  onClick={() =>
+                                    handleUpdatePromoBannerField(activeBanner.id, 'position', p.pos)
+                                  }
+                                  className={`p-3 rounded-xl border text-left transition cursor-pointer flex flex-col gap-1 ${
+                                    isSel
+                                      ? 'bg-pink-50 text-pink-900 border-pink-400 font-extrabold shadow-xs'
+                                      : 'bg-white hover:bg-slate-50 text-slate-700 border-slate-200'
+                                  }`}
+                                >
+                                  <span className="text-xs font-extrabold">{p.title}</span>
+                                  <span className="text-[10px] text-slate-500 font-medium leading-tight">
+                                    {p.desc}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setPromoBannerStep(1)}
+                            className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                          >
+                            ← Back: Badge &amp; Text
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(660);
+                              setPromoBannerStep(3);
+                            }}
+                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
+                          >
+                            Next: Buttons &amp; Actions →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ==================== STEP 3: BUTTONS & ACTIONS ==================== */}
+                    {promoBannerStep === 3 && (
+                      <div className="space-y-4">
+                        {/* Primary Button */}
+                        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-3 shadow-xs">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-emerald-500 text-white text-xs flex items-center justify-center font-black">
+                                1
+                              </span>
+                              <span className="text-xs sm:text-sm font-extrabold text-slate-900">
+                                Primary Action Button (Main Right Button)
+                              </span>
+                            </div>
+                            {renderToggleSwitch(
+                              activeBanner.primaryBtnEnabled !== false,
+                              () =>
+                                handleUpdatePromoBannerField(
+                                  activeBanner.id,
+                                  'primaryBtnEnabled',
+                                  activeBanner.primaryBtnEnabled === false
+                                ),
+                              'Toggle Primary Button'
+                            )}
+                          </div>
+
+                          {activeBanner.primaryBtnEnabled !== false && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                              <div>
+                                <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                  Button Text:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={activeBanner.primaryBtnText || ''}
+                                  onChange={(e) =>
+                                    handleUpdatePromoBannerField(activeBanner.id, 'primaryBtnText', e.target.value)
+                                  }
+                                  placeholder="Deal on WhatsApp"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-extrabold text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                  Click Action:
+                                </label>
+                                <select
+                                  value={activeBanner.primaryBtnAction || 'whatsapp'}
+                                  onChange={(e) =>
+                                    handleUpdatePromoBannerField(
+                                      activeBanner.id,
+                                      'primaryBtnAction',
+                                      e.target.value as any
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-extrabold text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                >
+                                  <option value="whatsapp">💬 Deal on WhatsApp (Opens direct chat)</option>
+                                  <option value="webtools">🛠️ Open Live Web Tools Hub</option>
+                                  <option value="addfunds">💳 Open Add Funds / Deposit Modal</option>
+                                  <option value="custom_url">🔗 External Custom Website Link</option>
+                                </select>
+                              </div>
+
+                              {activeBanner.primaryBtnAction === 'custom_url' && (
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                    Custom Link URL:
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={activeBanner.primaryBtnCustomUrl || ''}
+                                    onChange={(e) =>
+                                      handleUpdatePromoBannerField(activeBanner.id, 'primaryBtnCustomUrl', e.target.value)
+                                    }
+                                    placeholder="https://example.com/custom-offer"
+                                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Secondary Button */}
+                        <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-3 shadow-xs">
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <div className="flex items-center gap-2">
+                              <span className="w-6 h-6 rounded-lg bg-pink-500 text-white text-xs flex items-center justify-center font-black">
+                                2
+                              </span>
+                              <span className="text-xs sm:text-sm font-extrabold text-slate-900">
+                                Secondary Button (Left / Alternative Button)
+                              </span>
+                            </div>
+                            {renderToggleSwitch(
+                              activeBanner.secondaryBtnEnabled !== false,
+                              () =>
+                                handleUpdatePromoBannerField(
+                                  activeBanner.id,
+                                  'secondaryBtnEnabled',
+                                  activeBanner.secondaryBtnEnabled === false
+                                ),
+                              'Toggle Secondary Button'
+                            )}
+                          </div>
+
+                          {activeBanner.secondaryBtnEnabled !== false && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                              <div>
+                                <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                  Button Text:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={activeBanner.secondaryBtnText || ''}
+                                  onChange={(e) =>
+                                    handleUpdatePromoBannerField(activeBanner.id, 'secondaryBtnText', e.target.value)
+                                  }
+                                  placeholder="Open Web Tools Hub"
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-extrabold text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                />
+                              </div>
+
+                              <div>
+                                <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                  Click Action:
+                                </label>
+                                <select
+                                  value={activeBanner.secondaryBtnAction || 'webtools'}
+                                  onChange={(e) =>
+                                    handleUpdatePromoBannerField(
+                                      activeBanner.id,
+                                      'secondaryBtnAction',
+                                      e.target.value as any
+                                    )
+                                  }
+                                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-extrabold text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                >
+                                  <option value="webtools">🛠️ Open Live Web Tools Hub</option>
+                                  <option value="whatsapp">💬 Deal on WhatsApp</option>
+                                  <option value="addfunds">💳 Open Add Funds / Deposit Modal</option>
+                                  <option value="custom_url">🔗 External Custom Website Link</option>
+                                </select>
+                              </div>
+
+                              {activeBanner.secondaryBtnAction === 'custom_url' && (
+                                <div className="sm:col-span-2">
+                                  <label className="block text-[10px] font-extrabold uppercase text-slate-600 mb-1">
+                                    Custom Link URL:
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={activeBanner.secondaryBtnCustomUrl || ''}
+                                    onChange={(e) =>
+                                      handleUpdatePromoBannerField(activeBanner.id, 'secondaryBtnCustomUrl', e.target.value)
+                                    }
+                                    placeholder="https://example.com/custom-offer"
+                                    className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900 focus:outline-none focus:border-pink-500"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex justify-between pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setPromoBannerStep(2)}
+                            className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                          >
+                            ← Back: Style Theme
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(660);
+                              setPromoBannerStep(4);
+                            }}
+                            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
+                          >
+                            Next: Live Preview →
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* ==================== STEP 4: LIVE STOREFRONT PREVIEW ==================== */}
+                    {promoBannerStep === 4 && (
+                      <div className="space-y-4">
+                        <div className="p-3 rounded-2xl bg-slate-100 border border-slate-200">
+                          <span className="text-xs font-extrabold text-slate-700 flex items-center gap-1.5">
+                            <FaEye className="w-3.5 h-3.5 text-pink-600" />
+                            <span>Live Storefront Visual Preview (Exact rendering on store):</span>
+                          </span>
+                        </div>
+
+                        {/* THE RENDERED BANNER */}
+                        <div className={styleObj.frame}>
+                          <div className={styleObj.inner}>
+                            <div className="space-y-1.5 text-center md:text-left flex-grow">
+                              <div className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-extrabold ${styleObj.badge}`}>
+                                <i className={activeBanner.badgeIcon || 'fa-solid fa-bolt'}></i>
+                                <span>{activeBanner.badgeText || 'ALL SERVICES AVAILABLE HERE'}</span>
+                              </div>
+                              <h3 className={`text-base sm:text-xl font-extrabold leading-snug ${styleObj.title}`}>
+                                {activeBanner.title || 'Banner Title'}
+                              </h3>
+                              <p className={`text-xs font-medium leading-relaxed max-w-2xl ${styleObj.desc}`}>
+                                {activeBanner.description || 'Banner Description'}
+                              </p>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-center gap-2 flex-shrink-0">
+                              {activeBanner.secondaryBtnEnabled !== false && activeBanner.secondaryBtnText && (
+                                <button
+                                  type="button"
+                                  onClick={() => showToast(`Preview Click: ${activeBanner.secondaryBtnText}`)}
+                                  className={`px-4 py-2.5 rounded-full font-extrabold text-xs cursor-pointer transition ${styleObj.secondaryBtn}`}
+                                >
+                                  {activeBanner.secondaryBtnText}
+                                </button>
+                              )}
+                              {activeBanner.primaryBtnEnabled !== false && activeBanner.primaryBtnText && (
+                                <button
+                                  type="button"
+                                  onClick={() => showToast(`Preview Click: ${activeBanner.primaryBtnText}`)}
+                                  className={`px-5 py-2.5 rounded-full font-extrabold text-xs cursor-pointer transition flex items-center gap-1.5 ${styleObj.primaryBtn}`}
+                                >
+                                  <SiWhatsapp className="w-4 h-4" />
+                                  <span>{activeBanner.primaryBtnText}</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex justify-between pt-2">
+                          <button
+                            type="button"
+                            onClick={() => setPromoBannerStep(3)}
+                            className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                          >
+                            ← Back: Buttons
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              playPopSound(840);
+                              showToast('✅ Promo Banner Saved & Active on Storefront!');
+                              setEditingPromoBannerId(null);
+                            }}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-lg hover:scale-105 transition cursor-pointer"
+                          >
+                            ✓ Save &amp; Finish Editing
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()
+            ) : (
+              /* ==================== BANNER LIST (ALL BANNERS OVERVIEW) ==================== */
+              <div className="space-y-3.5">
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-xs font-extrabold uppercase text-slate-800 flex items-center gap-1.5">
+                    <FaTags className="w-3.5 h-3.5 text-pink-600" />
+                    <span>All Configured 2 No Promo Banners ({currentPromoBanners.length}):</span>
+                  </span>
+                  <span className="text-[11px] font-bold text-slate-500">
+                    Drag / Reorder, Edit, Toggle or Delete
+                  </span>
+                </div>
+
+                <div className="space-y-3">
+                  {currentPromoBanners.map((banner, idx) => {
+                    const isFirst = idx === 0;
+                    const isLast = idx === currentPromoBanners.length - 1;
+                    const styleObj = getPromoBannerStyleClasses(banner.style);
+
+                    return (
+                      <div
+                        key={banner.id}
+                        className={`rounded-2xl border transition-all p-3.5 sm:p-4 shadow-xs ${
+                          banner.enabled !== false
+                            ? 'bg-white border-pink-200'
+                            : 'bg-slate-50/80 border-slate-300 opacity-60'
+                        }`}
+                      >
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-2xs mt-0.5">
+                              #{idx + 1}
+                            </span>
+                            <div className="min-w-0 space-y-1">
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="inline-flex items-center gap-1 px-2 py-0.2 rounded-full text-[9px] font-black uppercase bg-pink-100 text-pink-700 border border-pink-200">
+                                  <i className={banner.badgeIcon || 'fa-solid fa-bolt'}></i>
+                                  <span>{banner.badgeText || 'PROMO'}</span>
+                                </span>
+                                <span className={`px-2 py-0.2 rounded-full text-[9px] font-black uppercase border ${styleObj.pillBg}`}>
+                                  {styleObj.themeLabel}
+                                </span>
+                                <span className="px-2 py-0.2 rounded-full text-[9px] font-extrabold bg-slate-100 text-slate-600 border border-slate-200">
+                                  {banner.position === 'above_services' ? 'Top of Store' : 'Below Services'}
+                                </span>
+                                {banner.enabled === false && (
+                                  <span className="px-2 py-0.2 rounded-full text-[9px] font-black bg-rose-100 text-rose-700 border border-rose-200">
+                                    HIDDEN (OFF)
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-xs sm:text-sm font-extrabold text-slate-900 line-clamp-1">
+                                {banner.title || 'Untitled Banner'}
+                              </div>
+                              <div className="text-[11px] text-slate-600 line-clamp-1 font-medium">
+                                {banner.description || 'No description entered'}
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Action Buttons Toolbar */}
+                          <div className="flex flex-wrap items-center gap-1.5 flex-shrink-0 self-end sm:self-center">
+                            {/* Reorder Buttons */}
+                            <button
+                              type="button"
+                              disabled={isFirst}
+                              onClick={() => handleMovePromoBanner(banner.id, 'up')}
+                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+                              title="Move Up"
+                            >
+                              <FaArrowUp className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isLast}
+                              onClick={() => handleMovePromoBanner(banner.id, 'down')}
+                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 disabled:opacity-30 disabled:cursor-not-allowed transition cursor-pointer"
+                              title="Move Down"
+                            >
+                              <FaArrowDown className="w-3 h-3" />
+                            </button>
+
+                            {/* Clone / Duplicate */}
+                            <button
+                              type="button"
+                              onClick={() => handleDuplicatePromoBanner(banner.id)}
+                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition cursor-pointer"
+                              title="Duplicate Banner"
+                            >
+                              <FaClone className="w-3 h-3" />
+                            </button>
+
+                            {/* Show / Hide Toggle */}
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePromoBanner(banner.id)}
+                              className={`px-2.5 py-1.5 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center gap-1 border ${
+                                banner.enabled !== false
+                                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                                  : 'bg-rose-50 text-rose-700 border-rose-300'
+                              }`}
+                              title={banner.enabled !== false ? 'Hide Banner' : 'Show Banner'}
+                            >
+                              {banner.enabled !== false ? (
+                                <>
+                                  <FaEye className="w-3 h-3" />
+                                  <span className="text-[10px]">Active</span>
+                                </>
+                              ) : (
+                                <>
+                                  <FaEyeSlash className="w-3 h-3" />
+                                  <span className="text-[10px]">Hidden</span>
+                                </>
+                              )}
+                            </button>
+
+                            {/* Edit Button */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                playPopSound(660);
+                                setEditingPromoBannerId(banner.id);
+                                setPromoBannerStep(1);
+                              }}
+                              className="px-3 py-1.5 rounded-xl bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-xs shadow-xs transition cursor-pointer flex items-center gap-1"
+                            >
+                              <FaPenToSquare className="w-3 h-3" />
+                              <span>Edit</span>
+                            </button>
+
+                            {/* Delete Button */}
+                            <button
+                              type="button"
+                              onClick={() => handleDeletePromoBanner(banner.id)}
+                              className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 transition cursor-pointer"
+                              title="Delete Banner"
+                            >
+                              <FaTrashCan className="w-3 h-3" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Mini live preview strip */}
+                        <div className="mt-3 pt-2.5 border-t border-slate-100">
+                          <div className={`p-3 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-2.5 ${styleObj.inner}`}>
+                            <div className="space-y-0.5 text-center sm:text-left min-w-0">
+                              <div className="text-[11.5px] font-extrabold truncate max-w-xl">
+                                {banner.title || 'Banner Title'}
+                              </div>
+                              <div className="text-[10px] line-clamp-1 opacity-80">
+                                {banner.description || 'Description'}
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1.5 flex-shrink-0">
+                              {banner.secondaryBtnEnabled !== false && banner.secondaryBtnText && (
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${styleObj.secondaryBtn}`}>
+                                  {banner.secondaryBtnText}
+                                </span>
+                              )}
+                              {banner.primaryBtnEnabled !== false && banner.primaryBtnText && (
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold flex items-center gap-1 ${styleObj.primaryBtn}`}>
+                                  <SiWhatsapp className="w-3 h-3" />
+                                  <span>{banner.primaryBtnText}</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==================== SCREEN: STOREFRONT BARS, WALLET & TELEMETRY STUDIO (3 STEPS) ==================== */}
+      {activeScreen === 'store_bars' && (
+        <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
+          <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-200 pb-3.5">
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-700">
+                  🏪 STEP-BY-STEP STOREFRONT BARS &amp; WALLET STUDIO
+                </span>
+                <h3 className="text-base sm:text-xl font-extrabold text-slate-900">
+                  Customize Live Wallet Bar, Server Pulse, Marquee &amp; Search Box
+                </h3>
+                <p className="text-xs font-semibold text-slate-600">
+                  Storefront par dikhne wali har bar (Balance bar, Server status, Search placeholder, Hot searches) ko customize karein!
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      storeBars: DEFAULT_STORE_BARS_CONFIG
+                    }));
+                    showToast('Storefront Bars restored to default!');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer hover:bg-rose-50 transition"
+                >
+                  Reset Bars
+                </button>
+              </div>
+            </div>
+
+            {/* 3-Step Selector */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              {[
+                { step: 1 as const, label: '1. Wallet & Payment Bar', icon: '💳' },
+                { step: 2 as const, label: '2. Server Status Strip', icon: '⚡' },
+                { step: 3 as const, label: '3. Search & Hot Searches', icon: '🔍' }
+              ].map((s) => (
+                <button
+                  key={s.step}
+                  type="button"
+                  onClick={() => {
+                    playPopSound(620);
+                    setStoreBarsStep(s.step);
+                  }}
+                  className={`py-2.5 px-3 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                    storeBarsStep === s.step
+                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
+                      : 'bg-white/85 text-slate-700 border border-indigo-200 hover:bg-white'
+                  }`}
+                >
+                  <span>{s.icon}</span>
+                  <span>{s.label}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* STEP 1: WALLET & PAYMENT BAR */}
+            {storeBarsStep === 1 && (
+              <div className="space-y-4">
+                <div className="rounded-2xl bg-white/90 border border-indigo-200 divide-y divide-slate-200/70 shadow-xs">
+                  {/* Master Wallet Bar Switch */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>💳 Show Storefront Live Account Balance Bar</span>
+                        {(siteConfig.storeBars?.showWalletBar !== false) ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON (Visible)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold">
+                            OFF (Hidden)
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Dark balance bar with Live Account Balance, +Add Payment button &amp; History
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.storeBars?.showWalletBar !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            showWalletBar: prev.storeBars?.showWalletBar === false
+                          }
+                        })),
+                      'Show Wallet Bar'
+                    )}
+                  </div>
+
+                  {/* Balance Label Input */}
+                  <div className="p-4 space-y-2">
+                    <label className="block text-xs font-extrabold text-slate-900">
+                      Balance Header Label
+                    </label>
+                    <input
+                      type="text"
+                      value={siteConfig.storeBars?.walletBalanceLabel ?? '● LIVE ACCOUNT BALANCE:'}
+                      onChange={(e) =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            walletBalanceLabel: e.target.value
+                          }
+                        }))
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-indigo-300 font-bold text-xs text-slate-900 shadow-inner"
+                      placeholder="e.g. ● LIVE ACCOUNT BALANCE:"
+                    />
+                  </div>
+
+                  {/* Instruction Subtext Toggle & Textarea */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          📝 Payment Deposit Instructions Subtext
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600">
+                          Small text under balance (e.g. Add balance via EasyPaisa / JazzCash / Bank...)
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showWalletInstruction !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              showWalletInstruction: prev.storeBars?.showWalletInstruction === false
+                            }
+                          })),
+                        'Show Instructions'
+                      )}
+                    </div>
+                    {siteConfig.storeBars?.showWalletInstruction !== false && (
+                      <textarea
+                        rows={2}
+                        value={siteConfig.storeBars?.walletInstructionText ?? 'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)'}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              walletInstructionText: e.target.value
+                            }
+                          }))
+                        }
+                        className="w-full p-2.5 rounded-xl bg-white border-2 border-indigo-300 font-medium text-xs text-slate-900 shadow-inner"
+                        placeholder="Enter instructions..."
+                      />
+                    )}
+                  </div>
+
+                  {/* Buttons Settings */}
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-slate-900">+ Add Payment Button</span>
+                        {renderToggleSwitch(
+                          siteConfig.storeBars?.showAddPaymentBtn !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                showAddPaymentBtn: prev.storeBars?.showAddPaymentBtn === false
+                              }
+                            })),
+                          'Show Add Payment Button'
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={siteConfig.storeBars?.addPaymentBtnLabel ?? '+ Add Payment / Balance'}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              addPaymentBtnLabel: e.target.value
+                            }
+                          }))
+                        }
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                        placeholder="Button Label"
+                      />
+                    </div>
+
+                    <div className="space-y-2 p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-extrabold text-slate-900">History Button</span>
+                        {renderToggleSwitch(
+                          siteConfig.storeBars?.showHistoryBtn !== false,
+                          () =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                showHistoryBtn: prev.storeBars?.showHistoryBtn === false
+                              }
+                            })),
+                          'Show History Button'
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        value={siteConfig.storeBars?.historyBtnLabel ?? 'History'}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              historyBtnLabel: e.target.value
+                            }
+                          }))
+                        }
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                        placeholder="Button Label"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Real-time Preview */}
+                <div className="space-y-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                    👀 Real-Time Live Preview (Wallet Balance Bar):
+                  </span>
+                  <div className="rounded-[22px] bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white px-4 py-3 border border-white/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 text-center sm:text-left">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center text-lg shadow-md border border-white flex-shrink-0">
+                        <i className="fa-solid fa-wallet"></i>
+                      </div>
+                      <div>
+                        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
+                            {siteConfig.storeBars?.walletBalanceLabel ?? '● LIVE ACCOUNT BALANCE:'}
+                          </span>
+                          <span className="font-display font-bold text-lg text-white">
+                            Rs. 1,800
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
+                            ⏳ 1 Pending Proof
+                          </span>
+                        </div>
+                        {siteConfig.storeBars?.showWalletInstruction !== false && (
+                          <p className="text-[10px] font-medium text-pink-200">
+                            {siteConfig.storeBars?.walletInstructionText ?? 'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)'}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {siteConfig.storeBars?.showAddPaymentBtn !== false && (
+                        <span className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-extrabold text-xs shadow">
+                          {siteConfig.storeBars?.addPaymentBtnLabel ?? '+ Add Payment / Balance'}
+                        </span>
+                      )}
+                      {siteConfig.storeBars?.showHistoryBtn !== false && (
+                        <span className="px-3 py-1.5 rounded-xl bg-white/10 text-white border border-white/20 font-extrabold text-xs">
+                          {siteConfig.storeBars?.historyBtnLabel ?? 'History'}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setStoreBarsStep(2)}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md"
+                  >
+                    Next: Server Status Strip →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 2: SERVER STATUS STRIP */}
+            {storeBarsStep === 2 && (
+              <div className="space-y-4">
+                <div className="rounded-2xl bg-white/90 border border-indigo-200 divide-y divide-slate-200/70 shadow-xs">
+                  {/* Master Server Status Strip Switch */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>⚡ Show Live Server Pulse &amp; Panel Status Strip</span>
+                        {(siteConfig.storeBars?.showStatusPulseBar !== false) ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON (Visible)
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold">
+                            OFF (Hidden)
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Top status bar above storefront showing green pulse dot &amp; 3 server speed telemetry chips
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.storeBars?.showStatusPulseBar !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            showStatusPulseBar: prev.storeBars?.showStatusPulseBar === false
+                          }
+                        })),
+                      'Show Server Status Strip'
+                    )}
+                  </div>
+
+                  {/* Panel Title & Uptime Badge Inputs */}
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Panel Status Title
+                      </label>
+                      <input
+                        type="text"
+                        value={siteConfig.storeBars?.statusPanelTitle ?? 'SAQIB VISUALS LIVE PANEL STATUS:'}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              statusPanelTitle: e.target.value
+                            }
+                          }))
+                        }
+                        className="w-full px-3 py-2 rounded-xl bg-white border-2 border-indigo-300 font-bold text-xs text-slate-900 shadow-inner"
+                        placeholder="e.g. SAQIB VISUALS LIVE PANEL STATUS:"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Status Uptime Badge
+                      </label>
+                      <input
+                        type="text"
+                        value={siteConfig.storeBars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE'}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              statusPanelBadge: e.target.value
+                            }
+                          }))
+                        }
+                        className="w-full px-3 py-2 rounded-xl bg-white border-2 border-indigo-300 font-bold text-xs text-slate-900 shadow-inner"
+                        placeholder="e.g. ALL 3 SERVERS 99.9% ONLINE"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 3 Speed Telemetry Chips */}
+                  <div className="p-4 space-y-3">
+                    <span className="text-xs font-extrabold text-slate-800 block">
+                      3 Speed Telemetry Chips (Turn ON / OFF &amp; Edit Labels / Speeds):
+                    </span>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* Chip 1: AI Pro Server */}
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-slate-900">Chip 1: Gemini AI</span>
+                          {renderToggleSwitch(
+                            siteConfig.storeBars?.chip1Enabled !== false,
+                            () =>
+                              onUpdateSiteConfig((prev) => ({
+                                ...prev,
+                                storeBars: {
+                                  ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                  chip1Enabled: prev.storeBars?.chip1Enabled === false
+                                }
+                              })),
+                            'Toggle Chip 1'
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip1Label ?? 'AI Pro Server:'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip1Label: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Label (AI Pro Server:)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip1Value ?? '3 Min Avg'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip1Value: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1 rounded-lg bg-white border border-purple-200 text-xs font-extrabold text-emerald-700"
+                          placeholder="Value (3 Min Avg)"
+                        />
+                      </div>
+
+                      {/* Chip 2: SMM Turbo API */}
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-slate-900">Chip 2: TikTok SMM</span>
+                          {renderToggleSwitch(
+                            siteConfig.storeBars?.chip2Enabled !== false,
+                            () =>
+                              onUpdateSiteConfig((prev) => ({
+                                ...prev,
+                                storeBars: {
+                                  ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                  chip2Enabled: prev.storeBars?.chip2Enabled === false
+                                }
+                              })),
+                            'Toggle Chip 2'
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip2Label ?? 'SMM Turbo API:'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip2Label: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Label (SMM Turbo API:)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip2Value ?? 'Instant Start'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip2Value: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1 rounded-lg bg-white border border-rose-200 text-xs font-extrabold text-emerald-700"
+                          placeholder="Value (Instant Start)"
+                        />
+                      </div>
+
+                      {/* Chip 3: SIM & NADRA */}
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-extrabold text-slate-900">Chip 3: SIM Tracker</span>
+                          {renderToggleSwitch(
+                            siteConfig.storeBars?.chip3Enabled !== false,
+                            () =>
+                              onUpdateSiteConfig((prev) => ({
+                                ...prev,
+                                storeBars: {
+                                  ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                  chip3Enabled: prev.storeBars?.chip3Enabled === false
+                                }
+                              })),
+                            'Toggle Chip 3'
+                          )}
+                        </div>
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip3Label ?? '2026 SIM/NADRA Desk:'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip3Label: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1.5 rounded-lg bg-white border border-slate-300 text-xs font-bold text-slate-900"
+                          placeholder="Label (2026 SIM/NADRA Desk:)"
+                        />
+                        <input
+                          type="text"
+                          value={siteConfig.storeBars?.chip3Value ?? '15 Min PDF'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                chip3Value: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full px-2 py-1 rounded-lg bg-white border border-blue-200 text-xs font-extrabold text-emerald-700"
+                          placeholder="Value (15 Min PDF)"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Real-time Preview */}
+                <div className="space-y-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                    👀 Real-Time Live Preview (Server Status Strip):
+                  </span>
+                  <div className="rounded-[20px] bg-white px-3.5 py-2.5 border-2 border-indigo-200 shadow-md flex flex-wrap items-center justify-between gap-2 text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 server-pulse-dot"></span>
+                      <span className="font-display font-bold text-slate-900 uppercase tracking-wider text-[11px]">
+                        {siteConfig.storeBars?.statusPanelTitle ?? 'SAQIB VISUALS LIVE PANEL STATUS:'}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300">
+                        {siteConfig.storeBars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-700">
+                      {siteConfig.storeBars?.chip1Enabled !== false && (
+                        <span className="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                          <span>{siteConfig.storeBars?.chip1Label ?? 'AI Pro Server:'}</span>
+                          <strong className="text-emerald-700">{siteConfig.storeBars?.chip1Value ?? '3 Min Avg'}</strong>
+                        </span>
+                      )}
+                      {siteConfig.storeBars?.chip2Enabled !== false && (
+                        <span className="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                          <span>{siteConfig.storeBars?.chip2Label ?? 'SMM Turbo API:'}</span>
+                          <strong className="text-emerald-700">{siteConfig.storeBars?.chip2Value ?? 'Instant Start'}</strong>
+                        </span>
+                      )}
+                      {siteConfig.storeBars?.chip3Enabled !== false && (
+                        <span className="inline-flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200">
+                          <span>{siteConfig.storeBars?.chip3Label ?? '2026 SIM/NADRA Desk:'}</span>
+                          <strong className="text-emerald-700">{siteConfig.storeBars?.chip3Value ?? '15 Min PDF'}</strong>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setStoreBarsStep(1)}
+                    className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                  >
+                    ← Back: Wallet Bar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setStoreBarsStep(3)}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs cursor-pointer shadow-md"
+                  >
+                    Next: Search &amp; Hot Searches →
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 3: SEARCH BOX, HOT SEARCHES & MARQUEE */}
+            {storeBarsStep === 3 && (
+              <div className="space-y-4">
+                <div className="rounded-2xl bg-white/90 border border-indigo-200 divide-y divide-slate-200/70 shadow-xs">
+                  {/* Marquee Switch */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>🌟 Show Infinite Brand &amp; AI Tools Marquee</span>
+                        {(siteConfig.storeBars?.showMarquee !== false) ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold">
+                            OFF
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        Top scrolling ticker featuring ChatGPT, Gemini, CapCut, Lovable, ElevenLabs, TikTok, SIM...
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.storeBars?.showMarquee !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            showMarquee: prev.storeBars?.showMarquee === false
+                          }
+                        })),
+                      'Toggle Marquee'
+                    )}
+                  </div>
+
+                  {/* Search Box Master Switch */}
+                  <div className="p-4 flex items-center justify-between gap-3">
+                    <div>
+                      <div className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>🔍 Show Search Input &amp; Category Filters Bar</span>
+                        {(siteConfig.storeBars?.showSearchBox !== false) ? (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                            ON
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold">
+                            OFF
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-600">
+                        The search input box, Hot Searches chips and Category filter tabs above the product grid
+                      </div>
+                    </div>
+                    {renderToggleSwitch(
+                      siteConfig.storeBars?.showSearchBox !== false,
+                      () =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            showSearchBox: prev.storeBars?.showSearchBox === false
+                          }
+                        })),
+                      'Toggle Search Box'
+                    )}
+                  </div>
+
+                  {/* Search Placeholder Input */}
+                  <div className="p-4 space-y-2">
+                    <label className="block text-xs font-extrabold text-slate-900">
+                      Search Box Placeholder Text
+                    </label>
+                    <input
+                      type="text"
+                      value={siteConfig.storeBars?.searchPlaceholder ?? 'Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)...'}
+                      onChange={(e) =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          storeBars: {
+                            ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                            searchPlaceholder: e.target.value
+                          }
+                        }))
+                      }
+                      className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-indigo-300 font-bold text-xs text-slate-900 shadow-inner"
+                      placeholder="e.g. Search any service..."
+                    />
+                  </div>
+
+                  {/* Hot Searches Tags Toggle & Comma-Separated Input */}
+                  <div className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <div className="text-sm font-extrabold text-slate-900">
+                          🔥 Show &ldquo;HOT SEARCHES:&rdquo; Tags Row
+                        </div>
+                        <div className="text-xs font-semibold text-slate-600">
+                          Clickable quick search chips under the search bar
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showHotSearches !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              showHotSearches: prev.storeBars?.showHotSearches === false
+                            }
+                          })),
+                        'Show Hot Searches'
+                      )}
+                    </div>
+                    {siteConfig.storeBars?.showHotSearches !== false && (
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                          Hot Searches List (Comma-Separated):
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={siteConfig.storeBars?.hotSearchesList ?? 'CapCut Pro, Lovable Pro, Gemini 18M, Muse AI 1B, ElevenLabs 300k, TikTok UK/USA, Ad Agency, Call CDR, NADRA FRC, Hostinger 12M, BTC / USDT'}
+                          onChange={(e) =>
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              storeBars: {
+                                ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                                hotSearchesList: e.target.value
+                              }
+                            }))
+                          }
+                          className="w-full p-2.5 rounded-xl bg-white border-2 border-indigo-300 font-medium text-xs text-slate-900 shadow-inner"
+                          placeholder="e.g. CapCut Pro, Lovable Pro, Gemini 18M, TikTok UK/USA..."
+                        />
+                        <span className="text-[10px] text-slate-500 font-semibold">
+                          💡 Comma (,) se separate karein — Har keyword storefront par clickable chip button ban jayega!
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Category Tabs & Count Badge Toggles */}
+                  <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div>
+                        <span className="text-xs font-extrabold text-slate-900 block">Category Filter Tabs Bar</span>
+                        <span className="text-[10px] text-slate-600">All, AI, SMM, SIM tabs row</span>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showCategoryTabs !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              showCategoryTabs: prev.storeBars?.showCategoryTabs === false
+                            }
+                          })),
+                        'Show Category Tabs'
+                      )}
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <div>
+                        <span className="text-xs font-extrabold text-slate-900 block">&ldquo;Showing X of X&rdquo; Badge</span>
+                        <span className="text-[10px] text-slate-600">Product count indicator</span>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showServicesCountBadge !== false,
+                        () =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            storeBars: {
+                              ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                              showServicesCountBadge: prev.storeBars?.showServicesCountBadge === false
+                            }
+                          })),
+                        'Show Services Count Badge'
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-between pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setStoreBarsStep(2)}
+                    className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
+                  >
+                    ← Back: Server Status Strip
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(840);
+                      showToast('✅ Storefront Bars Settings Saved & Live!');
+                      setActiveScreen('home');
+                    }}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer"
+                  >
+                    ✓ Save &amp; Return to Settings Menu
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ==================== SCREEN 4: PAYMENT METHODS, WALLET BARS & GATEWAYS STUDIO (4 STEPS) ==================== */}
       {activeScreen === 'payment_methods' && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-contact rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-200 pb-3.5">
               <div>
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">
-                  🏦 STEP-BY-STEP PAYMENT METHODS &amp; ACCOUNT NUMBERS
+                  🏦 STEP-BY-STEP PAYMENT METHODS, WALLET BARS &amp; GATEWAYS STUDIO
                 </span>
                 <h3 className="text-base sm:text-xl font-extrabold text-slate-900">
-                  Edit EasyPaisa, JazzCash, SadaPay/Bank &amp; Binance Details
+                  Full Payment Gateways, Upper Bar &amp; Live Balance Customizer
                 </h3>
                 <p className="text-xs font-semibold text-slate-600">
-                  Changes sync immediately with the Customer Add Funds Wallet &amp; Order Checkout Modal.
+                  Easily add/remove payment accounts, customize upper header pill, storefront wallet bar &amp; accepted gateways card.
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onUpdateSiteConfig((prev) => ({
-                    ...prev,
-                    paymentMethods: DEPOSIT_METHODS
-                  }));
-                  showToast('Payment methods restored to default!');
-                }}
-                className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer"
-              >
-                Reset Accounts
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    onUpdateSiteConfig((prev) => ({
+                      ...prev,
+                      paymentMethods: DEPOSIT_METHODS,
+                      storeBars: {
+                        ...(prev.storeBars || DEFAULT_STORE_BARS_CONFIG),
+                        showWalletBar: true,
+                        showHeaderWalletPill: true,
+                        showAcceptedGatewaysCard: true,
+                        currencyPrefix: 'Rs.',
+                        headerPillAddLabel: '+Add',
+                        walletBalanceLabel: '● LIVE ACCOUNT BALANCE:',
+                        walletInstructionText:
+                          'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)',
+                        showWalletInstruction: true,
+                        addPaymentBtnLabel: '+ Add Payment / Balance',
+                        showAddPaymentBtn: true,
+                        historyBtnLabel: 'History',
+                        showHistoryBtn: true,
+                        showPendingProofBadge: true,
+                        acceptedGatewaysTitle: 'Accepted Payment Gateways',
+                        acceptedGatewaysSubtitle: '100% Secure Local & Crypto Verification',
+                        showGatewaysWhatsappButton: true,
+                        showAccountNumbersInCard: true,
+                        minDepositAmount: 50
+                      }
+                    }));
+                    showToast('Payment methods & wallet bars restored to default!');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-white text-rose-700 border border-rose-200 text-xs font-extrabold cursor-pointer hover:bg-rose-50 transition"
+                >
+                  Reset Defaults
+                </button>
+              </div>
             </div>
 
-            {/* Method Selector Tabs */}
+            {/* 4 Step Navigation Pills */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-              {siteConfig.paymentMethods.map((m, idx) => {
-                const isSelected = activePayMethodIdx === idx;
+              {[
+                {
+                  step: 1 as const,
+                  title: '1. Gateways & Accounts',
+                  sub: `${siteConfig.paymentMethods.length} Methods (${siteConfig.paymentMethods.filter((m) => m.enabled !== false).length} Active)`,
+                  icon: 'fa-solid fa-building-columns'
+                },
+                {
+                  step: 2 as const,
+                  title: '2. Upper & Store Bar',
+                  sub: 'Pill, Heading & Buttons',
+                  icon: 'fa-solid fa-wallet'
+                },
+                {
+                  step: 3 as const,
+                  title: '3. Accepted Cards',
+                  sub: 'Sidebar, Min SS & Modal',
+                  icon: 'fa-solid fa-credit-card'
+                },
+                {
+                  step: 4 as const,
+                  title: '4. Live Preview',
+                  sub: 'Real-Time Storefront Test',
+                  icon: 'fa-solid fa-eye'
+                }
+              ].map((s) => {
+                const isActive = payStep === s.step;
                 return (
                   <button
-                    key={m.id}
+                    key={s.step}
                     type="button"
                     onClick={() => {
                       playPopSound(620);
-                      setActivePayMethodIdx(idx);
+                      setPayStep(s.step);
                     }}
-                    className={`p-3 rounded-2xl border-2 text-left transition cursor-pointer flex items-center justify-between gap-2 ${
-                      isSelected
-                        ? 'bg-emerald-600 text-white border-white shadow-md scale-[1.02]'
+                    className={`p-3 rounded-2xl border text-left transition cursor-pointer flex items-center gap-2.5 ${
+                      isActive
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-emerald-500 shadow-md scale-[1.02]'
                         : 'bg-white/90 text-slate-800 border-emerald-200 hover:bg-white'
                     }`}
                   >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className={`w-8 h-8 rounded-xl bg-gradient-to-br ${m.grad} text-white flex items-center justify-center flex-shrink-0`}
+                    <span
+                      className={`w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                        isActive ? 'bg-white/20 text-white' : 'bg-emerald-100 text-emerald-800'
+                      }`}
+                    >
+                      <i className={`${s.icon} text-sm`}></i>
+                    </span>
+                    <div className="min-w-0">
+                      <div className="text-xs font-extrabold truncate">{s.title}</div>
+                      <div
+                        className={`text-[10px] truncate ${
+                          isActive ? 'text-emerald-100' : 'text-slate-500 font-medium'
+                        }`}
                       >
-                        {renderPaymentMethodIcon(m.id, 'w-4 h-4 text-white')}
-                      </span>
-                      <div className="min-w-0">
-                        <div className="text-xs font-extrabold truncate">{m.id}</div>
-                        <div
-                          className={`text-[10px] font-mono-code truncate ${
-                            isSelected ? 'text-emerald-100' : 'text-slate-500'
-                          }`}
-                        >
-                          {m.accountNumber}
-                        </div>
+                        {s.sub}
                       </div>
                     </div>
                   </button>
@@ -4068,44 +7455,395 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               })}
             </div>
 
-            {/* Active Payment Method Step Form */}
-            {(() => {
-              const currentMethod =
-                siteConfig.paymentMethods[activePayMethodIdx] || siteConfig.paymentMethods[0];
-              if (!currentMethod) return null;
+            {/* ==================== STEP 1: PAYMENT GATEWAYS & ACCOUNTS ==================== */}
+            {payStep === 1 && (
+              <div className="space-y-4">
+                {/* Quick Add Presets Bar */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-emerald-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-extrabold text-slate-800">
+                      ⚡ Quick Add Popular Payment Gateway Presets:
+                    </span>
+                    <span className="text-[10px] font-semibold text-slate-500">
+                      Click any preset to add instantly
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handleAddPaymentMethod('NayaPay')}
+                      className="px-2.5 py-1.5 rounded-xl bg-orange-100 hover:bg-orange-200 text-orange-900 border border-orange-300 text-xs font-extrabold transition cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]"></i> + NayaPay
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddPaymentMethod('Meezan Bank')}
+                      className="px-2.5 py-1.5 rounded-xl bg-teal-100 hover:bg-teal-200 text-teal-900 border border-teal-300 text-xs font-extrabold transition cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]"></i> + Meezan Bank
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddPaymentMethod('Bank Alfalah / HBL')}
+                      className="px-2.5 py-1.5 rounded-xl bg-blue-100 hover:bg-blue-200 text-blue-900 border border-blue-300 text-xs font-extrabold transition cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]"></i> + Bank Alfalah / HBL
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddPaymentMethod('USDT TRC20')}
+                      className="px-2.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 text-xs font-extrabold transition cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]"></i> + USDT TRC20 / Crypto
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleAddPaymentMethod('Custom Bank / Gateway')}
+                      className="px-2.5 py-1.5 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 text-xs font-extrabold transition cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-solid fa-plus text-[10px]"></i> + Custom Gateway
+                    </button>
+                  </div>
+                </div>
 
-              return (
-                <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border-2 border-emerald-200 space-y-4 shadow-xs">
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-                    <div className="flex items-center gap-3">
-                      <span
-                        className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${currentMethod.grad} text-white flex items-center justify-center shadow`}
+                {/* Gateway Cards Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {siteConfig.paymentMethods.map((m, idx) => {
+                    const isSelected = activePayMethodIdx === idx;
+                    const isEnabled = m.enabled !== false;
+                    return (
+                      <div
+                        key={`${m.id}-${idx}`}
+                        className={`p-3 rounded-2xl border-2 transition flex flex-col justify-between gap-2.5 ${
+                          isSelected
+                            ? 'bg-emerald-600 text-white border-white shadow-md scale-[1.02]'
+                            : 'bg-white/95 text-slate-800 border-emerald-200 hover:bg-white'
+                        }`}
                       >
-                        {renderPaymentMethodIcon(currentMethod.id, 'w-5 h-5 text-white')}
-                      </span>
+                        <div
+                          onClick={() => {
+                            playPopSound(620);
+                            setActivePayMethodIdx(idx);
+                          }}
+                          className="cursor-pointer min-w-0"
+                        >
+                          <div className="flex items-center justify-between gap-1 mb-1.5">
+                            <span
+                              className={`w-7 h-7 rounded-xl bg-gradient-to-br ${m.grad} text-white flex items-center justify-center flex-shrink-0 text-xs shadow-xs`}
+                            >
+                              {renderPaymentMethodIcon(m.id, 'w-3.5 h-3.5 text-white')}
+                            </span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded-full text-[9px] font-extrabold ${
+                                isEnabled
+                                  ? isSelected
+                                    ? 'bg-white/20 text-emerald-100'
+                                    : 'bg-emerald-100 text-emerald-800'
+                                  : 'bg-rose-100 text-rose-700'
+                              }`}
+                            >
+                              {isEnabled ? '● Active' : '○ Hidden'}
+                            </span>
+                          </div>
+                          <div className="text-xs font-extrabold truncate">{m.id}</div>
+                          <div
+                            className={`text-[10px] font-mono-code truncate ${
+                              isSelected ? 'text-emerald-100' : 'text-slate-500'
+                            }`}
+                          >
+                            {m.accountNumber}
+                          </div>
+                          <div
+                            className={`text-[9px] truncate mt-0.5 ${
+                              isSelected ? 'text-white/80' : 'text-slate-600 font-semibold'
+                            }`}
+                          >
+                            {m.accountTitle}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-slate-200/40 pt-2">
+                          <button
+                            type="button"
+                            onClick={() => updatePaymentMethodField(idx, 'enabled', !isEnabled)}
+                            className={`text-[10px] font-extrabold px-2 py-0.5 rounded-lg cursor-pointer ${
+                              isEnabled
+                                ? isSelected
+                                  ? 'bg-white/20 hover:bg-white/30 text-white'
+                                  : 'bg-emerald-100 hover:bg-emerald-200 text-emerald-800'
+                                : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                            }`}
+                          >
+                            {isEnabled ? 'Turn Off' : 'Turn On'}
+                          </button>
+
+                          {siteConfig.paymentMethods.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePaymentMethod(idx);
+                              }}
+                              title={`Delete ${m.id}`}
+                              className={`w-6 h-6 rounded-lg flex items-center justify-center text-xs cursor-pointer ${
+                                isSelected
+                                  ? 'bg-rose-500/80 hover:bg-rose-600 text-white'
+                                  : 'bg-rose-100 hover:bg-rose-200 text-rose-700'
+                              }`}
+                            >
+                              <i className="fa-solid fa-trash-can text-[10px]"></i>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Active Payment Method Step Form */}
+                {(() => {
+                  const currentMethod =
+                    siteConfig.paymentMethods[activePayMethodIdx] || siteConfig.paymentMethods[0];
+                  if (!currentMethod) return null;
+
+                  return (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border-2 border-emerald-200 space-y-4 shadow-xs">
+                      <div className="flex flex-wrap items-center justify-between border-b border-slate-200 pb-3 gap-2">
+                        <div className="flex items-center gap-3">
+                          <span
+                            className={`w-11 h-11 rounded-2xl bg-gradient-to-br ${currentMethod.grad} text-white flex items-center justify-center shadow`}
+                          >
+                            {renderPaymentMethodIcon(currentMethod.id, 'w-5 h-5 text-white')}
+                          </span>
+                          <div>
+                            <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                              Editing: {currentMethod.id}
+                            </h4>
+                            <p className="text-[11px] font-semibold text-slate-500">
+                              Method {activePayMethodIdx + 1} of {siteConfig.paymentMethods.length} Payment Gateways
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-extrabold text-slate-700">
+                            {currentMethod.enabled !== false ? 'Enabled on Store' : 'Hidden from Store'}
+                          </span>
+                          {renderToggleSwitch(
+                            currentMethod.enabled !== false,
+                            () =>
+                              updatePaymentMethodField(
+                                activePayMethodIdx,
+                                'enabled',
+                                currentMethod.enabled === false
+                              ),
+                            `Toggle ${currentMethod.id}`
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                        <div>
+                          <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                            1. Gateway Name / ID *
+                          </label>
+                          <input
+                            type="text"
+                            value={currentMethod.id}
+                            onChange={(e) =>
+                              updatePaymentMethodField(
+                                activePayMethodIdx,
+                                'id',
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. EasyPaisa, JazzCash, Nayapay"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-bold text-xs sm:text-sm text-slate-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                            2. Account Holder Name (Title) *
+                          </label>
+                          <input
+                            type="text"
+                            value={currentMethod.accountTitle}
+                            onChange={(e) =>
+                              updatePaymentMethodField(
+                                activePayMethodIdx,
+                                'accountTitle',
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. Muhammad Saqib"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-bold text-xs sm:text-sm text-slate-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                            3. Account Number / IBAN / UID *
+                          </label>
+                          <input
+                            type="text"
+                            value={currentMethod.accountNumber}
+                            onChange={(e) =>
+                              updatePaymentMethodField(
+                                activePayMethodIdx,
+                                'accountNumber',
+                                e.target.value
+                              )
+                            }
+                            placeholder="e.g. 0347-8936242"
+                            className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-mono-code font-bold text-xs sm:text-sm text-slate-900"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                        <div>
+                          <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                            4. Full Method Display Title
+                          </label>
+                          <input
+                            type="text"
+                            value={currentMethod.label}
+                            onChange={(e) =>
+                              updatePaymentMethodField(activePayMethodIdx, 'label', e.target.value)
+                            }
+                            placeholder="e.g. EasyPaisa Mobile Account"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                            5. Top Badge Tag
+                          </label>
+                          <input
+                            type="text"
+                            value={currentMethod.shortTag}
+                            onChange={(e) =>
+                              updatePaymentMethodField(activePayMethodIdx, 'shortTag', e.target.value)
+                            }
+                            placeholder="e.g. ⚡ Instant Auto-Verify"
+                            className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
+                          />
+                        </div>
+                      </div>
+
                       <div>
-                        <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
-                          Editing: {currentMethod.id}
-                        </h4>
-                        <p className="text-[11px] font-semibold text-slate-500">
-                          Step {activePayMethodIdx + 1} of {siteConfig.paymentMethods.length} Payment Gateways
-                        </p>
+                        <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                          6. Customer Payment Instructions Note
+                        </label>
+                        <input
+                          type="text"
+                          value={currentMethod.extraInfo}
+                          onChange={(e) =>
+                            updatePaymentMethodField(activePayMethodIdx, 'extraInfo', e.target.value)
+                          }
+                          placeholder="e.g. Send via EasyPaisa App or *786# and take screenshot"
+                          className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-xs text-slate-900"
+                        />
+                      </div>
+
+                      {/* Color Theme Selector */}
+                      <div>
+                        <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                          7. Card &amp; Icon Color Gradient:
+                        </label>
+                        <div className="flex flex-wrap items-center gap-2">
+                          {[
+                            { name: 'Emerald Green', grad: 'from-emerald-500 to-green-600' },
+                            { name: 'Rose Red', grad: 'from-rose-500 to-red-600' },
+                            { name: 'Teal Cyan', grad: 'from-teal-500 to-cyan-600' },
+                            { name: 'Amber Gold', grad: 'from-amber-500 to-yellow-600' },
+                            { name: 'Blue Indigo', grad: 'from-blue-600 to-indigo-700' },
+                            { name: 'Purple Violet', grad: 'from-purple-600 to-pink-600' },
+                            { name: 'Orange Amber', grad: 'from-orange-500 to-amber-600' }
+                          ].map((c) => (
+                            <button
+                              key={c.grad}
+                              type="button"
+                              onClick={() => updatePaymentMethodField(activePayMethodIdx, 'grad', c.grad)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-extrabold text-white bg-gradient-to-r ${c.grad} shadow-xs cursor-pointer flex items-center gap-1.5 border-2 ${
+                                currentMethod.grad === c.grad ? 'border-slate-900 scale-105' : 'border-transparent'
+                              }`}
+                            >
+                              <span>{c.name}</span>
+                              {currentMethod.grad === c.grad && <i className="fa-solid fa-check text-[10px]"></i>}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setActivePayMethodIdx((prev) =>
+                              prev > 0 ? prev - 1 : siteConfig.paymentMethods.length - 1
+                            )
+                          }
+                          className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs cursor-pointer"
+                        >
+                          ← Previous Method
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            playPopSound(820);
+                            showToast(`✅ ${currentMethod.id} Account Details Saved!`);
+                            if (activePayMethodIdx < siteConfig.paymentMethods.length - 1) {
+                              setActivePayMethodIdx(activePayMethodIdx + 1);
+                            } else {
+                              setPayStep(2);
+                            }
+                          }}
+                          className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
+                        >
+                          {activePayMethodIdx < siteConfig.paymentMethods.length - 1
+                            ? 'Save & Next Method →'
+                            : 'Save & Proceed to Upper/Store Bars →'}
+                        </button>
                       </div>
                     </div>
+                  );
+                })()}
+              </div>
+            )}
 
+            {/* ==================== STEP 2: UPPER BAR & STOREFRONT LIVE BALANCE BAR ==================== */}
+            {payStep === 2 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border-2 border-emerald-200 space-y-5 shadow-xs">
+                {/* 1. Header Upper Navigation Wallet Pill */}
+                <div className="space-y-3 border-b border-slate-200 pb-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                        1. Header Upper Bar Wallet Balance Pill
+                      </h4>
+                      <p className="text-[11px] font-semibold text-slate-500">
+                        Top header navigation bar wallet button with live user balance and +Add funds trigger.
+                      </p>
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-extrabold text-slate-700">
-                        {currentMethod.enabled !== false ? 'Enabled' : 'Hidden'}
+                        {(siteConfig.storeBars?.showHeaderWalletPill ?? activeVisibility.showHeaderWalletPill)
+                          ? 'Pill Visible'
+                          : 'Pill Hidden'}
                       </span>
                       {renderToggleSwitch(
-                        currentMethod.enabled !== false,
-                        () =>
-                          updatePaymentMethodField(
-                            activePayMethodIdx,
-                            'enabled',
-                            currentMethod.enabled === false
-                          ),
-                        `Toggle ${currentMethod.id}`
+                        siteConfig.storeBars?.showHeaderWalletPill ?? activeVisibility.showHeaderWalletPill,
+                        () => {
+                          const currentVal =
+                            siteConfig.storeBars?.showHeaderWalletPill ?? activeVisibility.showHeaderWalletPill;
+                          updateStoreBarsField('showHeaderWalletPill', !currentVal);
+                          toggleSiteVisibilityKey('showHeaderWalletPill', 'Header Wallet Pill');
+                        },
+                        'Toggle Header Wallet Pill'
                       )}
                     </div>
                   </div>
@@ -4113,120 +7851,560 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                        1. Account Holder Name (Title) *
+                        Currency Symbol / Prefix (Rs. / PKR / $ / USDT)
                       </label>
                       <input
                         type="text"
-                        value={currentMethod.accountTitle}
-                        onChange={(e) =>
-                          updatePaymentMethodField(
-                            activePayMethodIdx,
-                            'accountTitle',
-                            e.target.value
-                          )
-                        }
-                        placeholder="e.g. Muhammad Saqib"
+                        value={siteConfig.storeBars?.currencyPrefix || 'Rs.'}
+                        onChange={(e) => updateStoreBarsField('currencyPrefix', e.target.value)}
+                        placeholder="e.g. Rs. or PKR or $"
                         className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-bold text-xs sm:text-sm text-slate-900"
                       />
                     </div>
-
                     <div>
                       <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                        2. Account Number / IBAN / Binance UID *
+                        Header Pill Action Badge Text (+Add / Top-Up / Deposit)
                       </label>
                       <input
                         type="text"
-                        value={currentMethod.accountNumber}
-                        onChange={(e) =>
-                          updatePaymentMethodField(
-                            activePayMethodIdx,
-                            'accountNumber',
-                            e.target.value
-                          )
-                        }
-                        placeholder="e.g. 0347-8936242"
-                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-mono-code font-bold text-xs sm:text-sm text-slate-900"
+                        value={siteConfig.storeBars?.headerPillAddLabel || '+Add'}
+                        onChange={(e) => updateStoreBarsField('headerPillAddLabel', e.target.value)}
+                        placeholder="e.g. +Add or Deposit"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-bold text-xs sm:text-sm text-slate-900"
                       />
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Storefront Live Wallet Balance Bar */}
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 pb-3">
+                    <div>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                        2. Storefront Live Wallet Balance &amp; Payment Bar
+                      </h4>
+                      <p className="text-[11px] font-semibold text-slate-500">
+                        The prominent gradient bar directly above the store tools and products feed.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-slate-700">
+                        {(siteConfig.storeBars?.showWalletBar ?? activeVisibility.showStoreWalletBar)
+                          ? 'Bar Active'
+                          : 'Bar Hidden'}
+                      </span>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showWalletBar ?? activeVisibility.showStoreWalletBar,
+                        () => {
+                          const currentVal =
+                            siteConfig.storeBars?.showWalletBar ?? activeVisibility.showStoreWalletBar;
+                          updateStoreBarsField('showWalletBar', !currentVal);
+                          toggleSiteVisibilityKey('showStoreWalletBar', 'Storefront Wallet Bar');
+                        },
+                        'Toggle Storefront Wallet Bar'
+                      )}
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                        3. Full Method Display Title
+                        Live Balance Heading Label:
                       </label>
                       <input
                         type="text"
-                        value={currentMethod.label}
-                        onChange={(e) =>
-                          updatePaymentMethodField(activePayMethodIdx, 'label', e.target.value)
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
+                        value={siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:'}
+                        onChange={(e) => updateStoreBarsField('walletBalanceLabel', e.target.value)}
+                        placeholder="e.g. ● LIVE ACCOUNT BALANCE:"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900"
                       />
                     </div>
 
                     <div>
                       <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                        4. Top Badge Tag
+                        Add Payment Button Label:
                       </label>
                       <input
                         type="text"
-                        value={currentMethod.shortTag}
-                        onChange={(e) =>
-                          updatePaymentMethodField(activePayMethodIdx, 'shortTag', e.target.value)
-                        }
-                        className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
+                        value={siteConfig.storeBars?.addPaymentBtnLabel || '+ Add Payment / Balance'}
+                        onChange={(e) => updateStoreBarsField('addPaymentBtnLabel', e.target.value)}
+                        placeholder="e.g. + Add Payment / Balance"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold text-slate-900 mb-1">
-                      5. Customer Payment Instructions Note
-                    </label>
-                    <input
-                      type="text"
-                      value={currentMethod.extraInfo}
-                      onChange={(e) =>
-                        updatePaymentMethodField(activePayMethodIdx, 'extraInfo', e.target.value)
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Customer Instruction Note Text:
+                      </label>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] font-bold text-slate-600">
+                          {(siteConfig.storeBars?.showWalletInstruction ?? true) ? 'Visible' : 'Hidden'}
+                        </span>
+                        {renderToggleSwitch(
+                          siteConfig.storeBars?.showWalletInstruction ?? true,
+                          () =>
+                            updateStoreBarsField(
+                              'showWalletInstruction',
+                              !(siteConfig.storeBars?.showWalletInstruction ?? true)
+                            ),
+                          'Toggle Instruction Note'
+                        )}
+                      </div>
+                    </div>
+                    <textarea
+                      rows={2}
+                      value={
+                        siteConfig.storeBars?.walletInstructionText ||
+                        'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)'
                       }
+                      onChange={(e) => updateStoreBarsField('walletInstructionText', e.target.value)}
                       className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-semibold text-xs text-slate-900"
                     />
+                  </div>
+
+                  {/* Secondary Toggles in Wallet Bar */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">+ Add Button</div>
+                        <div className="text-[10px] text-slate-500">Opens Add Funds modal</div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showAddPaymentBtn ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showAddPaymentBtn',
+                            !(siteConfig.storeBars?.showAddPaymentBtn ?? true)
+                          ),
+                        'Toggle Add Button'
+                      )}
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">History Button</div>
+                        <div className="text-[10px] text-slate-500">Opens transaction tab</div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showHistoryBtn ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showHistoryBtn',
+                            !(siteConfig.storeBars?.showHistoryBtn ?? true)
+                          ),
+                        'Toggle History Button'
+                      )}
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">Pending Proofs Badge</div>
+                        <div className="text-[10px] text-slate-500">Shows pending count</div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showPendingProofBadge ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showPendingProofBadge',
+                            !(siteConfig.storeBars?.showPendingProofBadge ?? true)
+                          ),
+                        'Toggle Pending Proofs Badge'
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2">
                     <button
                       type="button"
-                      onClick={() =>
-                        setActivePayMethodIdx((prev) =>
-                          prev > 0 ? prev - 1 : siteConfig.paymentMethods.length - 1
-                        )
-                      }
+                      onClick={() => setPayStep(1)}
                       className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs cursor-pointer"
                     >
-                      ← Previous Method
+                      ← Back to Gateways
                     </button>
                     <button
                       type="button"
                       onClick={() => {
-                        playPopSound(820);
-                        showToast(`✅ ${currentMethod.id} Account Details Saved!`);
-                        if (activePayMethodIdx < siteConfig.paymentMethods.length - 1) {
-                          setActivePayMethodIdx(activePayMethodIdx + 1);
-                        } else {
-                          setActiveScreen('home');
-                        }
+                        playPopSound(720);
+                        setPayStep(3);
                       }}
                       className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
                     >
-                      {activePayMethodIdx < siteConfig.paymentMethods.length - 1
-                        ? 'Save & Next Method →'
-                        : '✓ Save All Payment Methods'}
+                      Save &amp; Go to Accepted Cards →
                     </button>
                   </div>
                 </div>
-              );
-            })()}
+              </div>
+            )}
+
+            {/* ==================== STEP 3: ACCEPTED PAYMENT GATEWAYS CARDS & MODALS ==================== */}
+            {payStep === 3 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border-2 border-emerald-200 space-y-5 shadow-xs">
+                {/* 1. Accepted Payment Gateways Card */}
+                <div className="space-y-4 border-b border-slate-200 pb-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                        1. Accepted Payment Gateways Showcase Card
+                      </h4>
+                      <p className="text-[11px] font-semibold text-slate-500">
+                        Displayed in the contact section and sidebars showing accepted payment logos and account numbers.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-extrabold text-slate-700">
+                        {(siteConfig.storeBars?.showAcceptedGatewaysCard ?? true)
+                          ? 'Card Active'
+                          : 'Card Hidden'}
+                      </span>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showAcceptedGatewaysCard ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showAcceptedGatewaysCard',
+                            !(siteConfig.storeBars?.showAcceptedGatewaysCard ?? true)
+                          ),
+                        'Toggle Accepted Gateways Card'
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Card Section Heading:
+                      </label>
+                      <input
+                        type="text"
+                        value={siteConfig.storeBars?.acceptedGatewaysTitle || 'Accepted Payment Gateways'}
+                        onChange={(e) => updateStoreBarsField('acceptedGatewaysTitle', e.target.value)}
+                        placeholder="e.g. Accepted Payment Gateways"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Card Subtitle / Security Guarantee:
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          siteConfig.storeBars?.acceptedGatewaysSubtitle ||
+                          '100% Secure Local & Crypto Verification'
+                        }
+                        onChange={(e) => updateStoreBarsField('acceptedGatewaysSubtitle', e.target.value)}
+                        placeholder="e.g. 100% Secure Local & Crypto Verification"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">
+                          Show Account Numbers Directly on Card
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          Displays 0347-8936242 in the preview blocks
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showAccountNumbersInCard ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showAccountNumbersInCard',
+                            !(siteConfig.storeBars?.showAccountNumbersInCard ?? true)
+                          ),
+                        'Toggle Account Numbers on Card'
+                      )}
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-extrabold text-slate-900">
+                          WhatsApp Direct Copy Button
+                        </div>
+                        <div className="text-[10px] text-slate-500">
+                          Shows &ldquo;Primary WhatsApp: +92 347...&rdquo; button
+                        </div>
+                      </div>
+                      {renderToggleSwitch(
+                        siteConfig.storeBars?.showGatewaysWhatsappButton ?? true,
+                        () =>
+                          updateStoreBarsField(
+                            'showGatewaysWhatsappButton',
+                            !(siteConfig.storeBars?.showGatewaysWhatsappButton ?? true)
+                          ),
+                        'Toggle WhatsApp Button on Card'
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2. Add Funds & Checkout Modals Settings */}
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-sm sm:text-base font-extrabold text-slate-900">
+                      2. Add Funds &amp; Deposit Modal Settings
+                    </h4>
+                    <p className="text-[11px] font-semibold text-slate-500">
+                      Controls minimum deposit amount and instructions presented when users top-up wallet.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                    <div>
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Minimum Deposit Amount ({siteConfig.storeBars?.currencyPrefix || 'Rs.'})
+                      </label>
+                      <input
+                        type="number"
+                        min={10}
+                        step={10}
+                        value={siteConfig.storeBars?.minDepositAmount ?? 50}
+                        onChange={(e) =>
+                          updateStoreBarsField('minDepositAmount', Number(e.target.value) || 50)
+                        }
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border-2 border-emerald-300 font-bold text-xs sm:text-sm text-slate-900"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-xs font-extrabold text-slate-900 mb-1">
+                        Deposit Modal Subtitle / Instructions:
+                      </label>
+                      <input
+                        type="text"
+                        value={
+                          siteConfig.storeBars?.depositModalSubtitle ||
+                          'Enter Amount → Select EasyPaisa/JazzCash → Submit Account Name & Screenshot'
+                        }
+                        onChange={(e) => updateStoreBarsField('depositModalSubtitle', e.target.value)}
+                        placeholder="e.g. Enter Amount → Select Method → Upload Screenshot"
+                        className="w-full px-3.5 py-2.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs sm:text-sm text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setPayStep(2)}
+                      className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs cursor-pointer"
+                    >
+                      ← Back to Upper/Store Bars
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playPopSound(720);
+                        setPayStep(4);
+                      }}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md cursor-pointer"
+                    >
+                      Save &amp; View Live Preview →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ==================== STEP 4: INTERACTIVE REAL-TIME LIVE PREVIEW ==================== */}
+            {payStep === 4 && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border-2 border-emerald-200 space-y-5 shadow-xs">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">
+                    👀 REAL-TIME LIVE PREVIEW
+                  </span>
+                  <h4 className="text-base sm:text-lg font-extrabold text-slate-900">
+                    Live Storefront Payment Bars &amp; Cards Preview
+                  </h4>
+                  <p className="text-xs font-semibold text-slate-600">
+                    Here is exactly how your live payment buttons, bars, and accepted gateways appear to customers right now.
+                  </p>
+                </div>
+
+                {/* 1. Header Pill Preview */}
+                <div className="p-3.5 rounded-2xl bg-slate-900 text-white space-y-2">
+                  <div className="text-[10px] font-extrabold uppercase text-slate-400">
+                    Top Header Navigation Preview:
+                  </div>
+                  <div className="flex items-center justify-between bg-slate-950/80 p-3 rounded-xl border border-white/10">
+                    <div className="flex items-center gap-2">
+                      <span className="w-7 h-7 rounded-lg bg-pink-600 text-white flex items-center justify-center text-xs font-bold">
+                        MS
+                      </span>
+                      <span className="text-xs font-extrabold text-white">Saqib Visuals</span>
+                    </div>
+
+                    {(siteConfig.storeBars?.showHeaderWalletPill ?? activeVisibility.showHeaderWalletPill) ? (
+                      <div className="px-3 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 border border-white/80 animate-pulse">
+                        <i className="fa-solid fa-wallet text-sky-200"></i>
+                        <span>
+                          {siteConfig.storeBars?.currencyPrefix || 'Rs.'} 12,500
+                        </span>
+                        <span className="px-1.5 py-0.2 rounded-full bg-white/25 text-[9px] font-extrabold">
+                          {siteConfig.storeBars?.headerPillAddLabel || '+Add'}
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="text-[11px] font-bold text-rose-400 italic">
+                        [Header Wallet Pill is Hidden]
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* 2. Storefront Live Balance Bar Preview */}
+                <div className="space-y-2">
+                  <div className="text-[10px] font-extrabold uppercase text-slate-700">
+                    Storefront Live Wallet Balance Bar Preview:
+                  </div>
+
+                  {(siteConfig.storeBars?.showWalletBar ?? activeVisibility.showStoreWalletBar) ? (
+                    <div className="rounded-[22px] bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white px-4 py-3.5 border border-white/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                      <div className="flex items-center gap-3 text-center sm:text-left">
+                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center text-lg shadow-md border border-white flex-shrink-0">
+                          <i className="fa-solid fa-wallet"></i>
+                        </div>
+                        <div>
+                          <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
+                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
+                              {siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:'}
+                            </span>
+                            <span className="font-display font-bold text-lg text-white">
+                              {siteConfig.storeBars?.currencyPrefix || 'Rs.'} 12,500
+                            </span>
+                            {(siteConfig.storeBars?.showPendingProofBadge ?? true) && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
+                                ⏳ 1 Pending Proof
+                              </span>
+                            )}
+                          </div>
+                          {(siteConfig.storeBars?.showWalletInstruction ?? true) && (
+                            <p className="text-[10px] font-medium text-pink-200">
+                              {siteConfig.storeBars?.walletInstructionText ||
+                                'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)'}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {(siteConfig.storeBars?.showAddPaymentBtn ?? true) && (
+                          <button
+                            type="button"
+                            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 text-white font-extrabold text-xs shadow cursor-pointer flex items-center gap-1"
+                          >
+                            <i className="fa-solid fa-circle-plus text-amber-200"></i>
+                            <span>
+                              {siteConfig.storeBars?.addPaymentBtnLabel || '+ Add Payment / Balance'}
+                            </span>
+                          </button>
+                        )}
+                        {(siteConfig.storeBars?.showHistoryBtn ?? true) && (
+                          <button
+                            type="button"
+                            className="px-3 py-2 rounded-xl bg-white/10 text-white border border-white/20 font-extrabold text-xs"
+                          >
+                            <i className="fa-solid fa-receipt mr-1 text-pink-300"></i>
+                            {siteConfig.storeBars?.historyBtnLabel || 'History'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-slate-100 text-slate-500 text-center text-xs font-bold border border-dashed border-slate-300">
+                      🚫 Storefront Live Wallet Balance Bar is Currently Hidden
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. Accepted Gateways Card Preview */}
+                <div className="space-y-2">
+                  <div className="text-[10px] font-extrabold uppercase text-slate-700">
+                    Accepted Payment Gateways Card Preview:
+                  </div>
+
+                  {(siteConfig.storeBars?.showAcceptedGatewaysCard ?? true) ? (
+                    <div className="plush-pillow plush-contact rounded-[24px] p-4 space-y-3 max-w-md">
+                      <div className="flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow">
+                          <i className="fa-solid fa-building-columns text-xs"></i>
+                        </span>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">
+                            {siteConfig.storeBars?.acceptedGatewaysTitle || 'Accepted Payment Gateways'}
+                          </h4>
+                          <p className="text-[10px] font-bold text-emerald-700">
+                            {siteConfig.storeBars?.acceptedGatewaysSubtitle ||
+                              '100% Secure Local & Crypto Verification'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 text-xs font-extrabold">
+                        {siteConfig.paymentMethods
+                          .filter((m) => m.enabled !== false)
+                          .map((m) => (
+                            <div
+                              key={m.id}
+                              className="bg-white/85 p-2.5 rounded-xl border border-white flex flex-col justify-between shadow-xs"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <span className="text-slate-900 truncate">{m.id}</span>
+                              </div>
+                              {(siteConfig.storeBars?.showAccountNumbersInCard ?? true) && (
+                                <div className="text-[10px] font-mono-code text-pink-600 truncate mt-0.5">
+                                  {m.accountNumber}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                      </div>
+
+                      {(siteConfig.storeBars?.showGatewaysWhatsappButton ?? true) && (
+                        <div className="w-full py-2 rounded-xl bg-white text-emerald-800 border border-emerald-200 text-[11px] font-extrabold shadow-xs text-center">
+                          <i className="fa-regular fa-copy mr-1"></i>Primary WhatsApp: +92 347 8936242
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="p-4 rounded-xl bg-slate-100 text-slate-500 text-center text-xs font-bold border border-dashed border-slate-300">
+                      🚫 Accepted Payment Gateways Card is Currently Hidden
+                    </div>
+                  )}
+                </div>
+
+                {/* Return Buttons */}
+                <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setPayStep(3)}
+                    className="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-700 font-extrabold text-xs cursor-pointer"
+                  >
+                    ← Back to Step 3
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(880);
+                      showToast('✅ All Payment Methods, Upper Bar & Store Bars Settings Saved!');
+                      setActiveScreen('home');
+                    }}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-xs shadow-lg cursor-pointer hover:scale-105 transition"
+                  >
+                    ✓ Save &amp; Return to Settings Menu
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -5227,6 +9405,18 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
             </div>
           </div>
         </div>
+      )}
+
+      {/* ==================== SCREEN 9: SEO & OPEN GRAPH METADATA STUDIO ==================== */}
+      {activeScreen === 'seo' && (
+        <AdminSeoStudio
+          siteConfig={siteConfig}
+          onUpdateSiteConfig={onUpdateSiteConfig}
+          playPopSound={playPopSound}
+          showToast={showToast}
+          copyText={copyText}
+          onReturnHome={() => openSettingsScreen('home')}
+        />
       )}
     </div>
   );

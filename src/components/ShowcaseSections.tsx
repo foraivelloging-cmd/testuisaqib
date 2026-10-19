@@ -12,18 +12,172 @@ import {
   SiWhatsapp
 } from './BrandIcons';
 
+export interface ShowcaseBannerPill {
+  id: string;
+  icon: string;
+  title: string;
+  sub: string;
+  tag: string;
+  grad?: string;
+}
+
+export interface ShowcaseBannerButton {
+  label: string;
+  icon: string;
+  actionType: 'service' | 'category' | 'whatsapp' | 'url';
+  targetValue: string;
+  variant: 'primary' | 'secondary' | 'emerald' | 'amber';
+}
+
+export interface ShowcaseBannerItem {
+  id: string;
+  enabled: boolean;
+  layout: 'image-right' | 'image-left';
+  themeStyle: 'sim-search' | 'about' | 'hero' | 'contact' | 'dark-neon' | 'capcut';
+  badgeCategory: string;
+  badgeCategoryColor: string;
+  subtitleInfo: string;
+  title: string;
+  paragraph1: string;
+  paragraph2?: string;
+  buttons: ShowcaseBannerButton[];
+  imageUrl: string;
+  imageAlt: string;
+  topBadgeLeft: string;
+  topBadgeRight: string;
+  pills?: ShowcaseBannerPill[];
+}
+
+export const DEFAULT_SHOWCASE_BANNERS: ShowcaseBannerItem[] = [
+  {
+    id: 'banner-creator-ai',
+    enabled: true,
+    layout: 'image-left',
+    themeStyle: 'capcut',
+    badgeCategory: 'FEATURED ARTICLE',
+    badgeCategoryColor: 'bg-indigo-100 text-indigo-800',
+    subtitleInfo: 'AI & Creator Guide · 3 Min Read · By Muhammad Saqib',
+    title:
+      'How Pakistani Creators & Freelancers Save 85% on Official ChatGPT Plus, Gemini 18M Pro & CapCut Pro',
+    paragraph1:
+      'Buying international subscriptions like ChatGPT Plus ($20/mo), Lovable Pro, or CapCut Pro directly with a bank card costs over Rs. 6,000+ per month with heavy taxes. At Saqib Visuals, we provide 100% genuine, official workspace and personal email activations starting from just Rs. 350!',
+    paragraph2:
+      'Whether you are running a faceless YouTube automation channel using ElevenLabs 300k Credits (No Expiry) & CapCut Pro 4K, building apps with Lovable Pro & Claude 3.7 Sonnet, or upgrading your personal Gmail with Google Gemini 18-Month Pro + 2TB Storage, every subscription comes with our Full Period Replacement Warranty.',
+    buttons: [
+      {
+        label: 'Activate Gemini 18M (Rs. 1,800)',
+        icon: 'fa-solid fa-wand-magic-sparkles',
+        actionType: 'service',
+        targetValue: 'gemini-18m-pro',
+        variant: 'primary'
+      },
+      {
+        label: 'Get ChatGPT Plus (Rs. 550)',
+        icon: 'fa-solid fa-robot',
+        actionType: 'service',
+        targetValue: 'chatgpt-plus',
+        variant: 'secondary'
+      }
+    ],
+    imageUrl:
+      'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'AI & Creator Pro Workstation',
+    topBadgeLeft: '✨ CREATOR BLOG #01',
+    topBadgeRight: '● 85% OFF RETAIL',
+    pills: [
+      {
+        id: 'p1',
+        icon: 'fa-solid fa-cloud',
+        title: 'Google One Cloud',
+        sub: '2,000 GB + Gemini',
+        tag: 'Gemini 18M • ChatGPT',
+        grad: 'from-emerald-500 to-teal-600'
+      },
+      {
+        id: 'p2',
+        icon: 'fa-solid fa-microphone',
+        title: 'AI Voice & Tokens',
+        sub: '1B Muse + 300k',
+        tag: 'ElevenLabs & Muse',
+        grad: 'from-pink-500 to-purple-600'
+      }
+    ]
+  },
+  {
+    id: 'banner-tiktok-franchise',
+    enabled: true,
+    layout: 'image-right',
+    themeStyle: 'sim-search',
+    badgeCategory: 'INSIDER BLOG',
+    badgeCategoryColor: 'bg-rose-100 text-rose-800',
+    subtitleInfo: 'Monetization & Telecom Insights · 4 Min Read · Saqib Visuals VIP Desk',
+    title:
+      'Unlock TikTok UK/USA Creator Rewards, Global Ad Agency Accounts & 2026 Franchise Verification',
+    paragraph1:
+      'Want to earn in Dollars/Pounds from Pakistan on TikTok? Our Fresh TikTok UK & USA Monetizable Accounts work smoothly without any VPN so you can qualify for the Creator Rewards Program and TikTok Shop. Pair it with our Verified TikTok & Facebook Ad Agency Accounts to run high-converting ads with zero ban risk.',
+    paragraph2:
+      'Need urgent telecom or official verification? Alongside our free public SIM tool, our 24/7 VIP Franchise & NADRA Desk provides 100% confidential 2026 Fresh SIM Owner Details, Call History (CDR), Live Location Pinpoint, Family Tree (FRC), and Passport Travel History directly to your WhatsApp within 15–30 minutes.',
+    buttons: [
+      {
+        label: 'Get TikTok UK/USA Account',
+        icon: 'fa-brands fa-tiktok',
+        actionType: 'service',
+        targetValue: 'tiktok-uk-usa-acc',
+        variant: 'primary'
+      },
+      {
+        label: 'Order Fresh SIM / CDR Info',
+        icon: 'fa-solid fa-satellite-dish',
+        actionType: 'service',
+        targetValue: 'sim-owner-details',
+        variant: 'emerald'
+      }
+    ],
+    imageUrl:
+      'https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=85',
+    imageAlt: 'TikTok Monetization & Telecom Analytics',
+    topBadgeLeft: '🚀 INSIDER GUIDE #02',
+    topBadgeRight: 'UK • USA • PAK',
+    pills: [
+      {
+        id: 'p1',
+        icon: 'fa-brands fa-tiktok',
+        title: 'UK Creator Rewards',
+        sub: 'No VPN Needed • Tax-Free',
+        tag: '$1.20+ RPM',
+        grad: 'from-rose-500 to-pink-600'
+      },
+      {
+        id: 'p2',
+        icon: 'fa-solid fa-satellite-dish',
+        title: '2026 Franchise & NADRA',
+        sub: 'Live SIM • CDR • FRC • Passport',
+        tag: '15 MIN PDF',
+        grad: 'from-emerald-500 to-teal-600'
+      }
+    ]
+  }
+];
+
 interface ShowcaseSectionsProps {
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: any, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
   servicesCatalog: StoreService[];
+  showcaseBanners?: ShowcaseBannerItem[];
+  primaryWaNumber?: string;
 }
 
 export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
   onSelectServiceById,
   onQuickFilter,
-  onPlayPop
+  onPlayPop,
+  showcaseBanners,
+  primaryWaNumber
 }) => {
+  const banners =
+    showcaseBanners && showcaseBanners.length > 0 ? showcaseBanners : DEFAULT_SHOWCASE_BANNERS;
+  const activeBanners = banners.filter((b) => b.enabled !== false);
   return (
     <div className="space-y-7 pt-2">
       {/* ==================== SECTION 1: FLAGSHIP AI PRO ACCOUNTS SPOTLIGHT (CHATGPT PRO, GEMINI 18M PRO, CAPCUT & LOVABLE) ==================== */}
@@ -230,226 +384,207 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
         </div>
       </section>
 
-      {/* ==================== SECTION 2: BLOG / EDITORIAL SPOTLIGHT #1 (LEFT IMAGE SHOWCASE + RIGHT STORY TEXT) ==================== */}
-      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-4">
-        <div className="plush-pillow plush-capcut rounded-[26px] p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Left Side (5 Cols): Featured Blog Image Card + Glass Overlay */}
-            <div
-              data-scroll="left"
-              onMouseEnter={() => onPlayPop(560)}
-              className="lg:col-span-5 relative rounded-[24px] overflow-hidden border-2 border-white shadow-xl bg-slate-950 group"
-            >
-              {/* High-Resolution Featured Blog Image */}
-              <div className="relative h-64 sm:h-72 w-full overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1000&q=85"
-                  alt="AI & Creator Pro Workstation"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-transparent"></div>
+      {/* ==================== DYNAMIC EDITORIAL SHOWCASE BANNERS (SPOTLIGHTS #1, #2, & CUSTOM) ==================== */}
+      {activeBanners.map((banner, bannerIdx) => {
+        const isImageLeft = banner.layout === 'image-left';
 
-                {/* Top Floating Badges */}
-                <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/30 text-[10px] font-extrabold tracking-wider uppercase text-pink-300 shadow">
-                    ✨ CREATOR BLOG #01
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/90 text-white text-[10px] font-mono-code font-extrabold shadow">
-                    ● 85% OFF RETAIL
-                  </span>
+        // Theme plush background mapping
+        const plushClass =
+          banner.themeStyle === 'sim-search'
+            ? 'plush-sim-search'
+            : banner.themeStyle === 'about'
+            ? 'plush-about'
+            : banner.themeStyle === 'hero'
+            ? 'plush-hero'
+            : banner.themeStyle === 'contact'
+            ? 'plush-contact'
+            : banner.themeStyle === 'dark-neon'
+            ? 'space-navy-box !text-white'
+            : 'plush-capcut';
+
+        const imageCol = (
+          <div
+            data-scroll={isImageLeft ? 'left' : 'right'}
+            onMouseEnter={() => onPlayPop(560 + bannerIdx * 30)}
+            className={`lg:col-span-5 relative rounded-[24px] overflow-hidden border-2 border-white shadow-xl bg-slate-950 group ${
+              isImageLeft ? 'order-1 lg:order-1' : 'order-1 lg:order-2'
+            }`}
+          >
+            {/* High-Resolution Featured Blog Image */}
+            <div className="relative h-64 sm:h-72 w-full overflow-hidden">
+              <img
+                src={banner.imageUrl}
+                alt={banner.imageAlt || banner.title}
+                referrerPolicy="no-referrer"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+
+              {/* Top Floating Badges */}
+              {(banner.topBadgeLeft || banner.topBadgeRight) && (
+                <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between gap-2">
+                  {banner.topBadgeLeft && (
+                    <span className="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/30 text-[10px] font-extrabold tracking-wider uppercase text-amber-300 shadow">
+                      {banner.topBadgeLeft}
+                    </span>
+                  )}
+                  {banner.topBadgeRight && (
+                    <span className="px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-mono-code font-extrabold shadow">
+                      {banner.topBadgeRight}
+                    </span>
+                  )}
                 </div>
+              )}
 
-                {/* Bottom Overlay Author & Workstation Card */}
+              {/* Bottom Overlay Pills */}
+              {banner.pills && banner.pills.length > 0 && (
                 <div className="absolute bottom-3.5 left-3.5 right-3.5 space-y-2">
-                  <div className="bg-white/15 backdrop-blur-md rounded-2xl p-2.5 border border-white/25 flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-xl overflow-hidden border-2 border-white flex-shrink-0 shadow">
-                      <img
-                        src="https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png"
-                        alt="Muhammad Saqib"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover object-[center_15%]"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-white truncate">
-                        Saqib Visuals AI Workstation
+                  {banner.pills.map((pill) => (
+                    <div
+                      key={pill.id}
+                      className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 border border-white/25 flex items-center justify-between gap-2"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                          className={`w-9 h-9 rounded-xl bg-gradient-to-br ${
+                            pill.grad || 'from-rose-500 to-pink-600'
+                          } flex items-center justify-center text-white text-base shadow flex-shrink-0`}
+                        >
+                          <i className={pill.icon}></i>
+                        </div>
+                        <div className="min-w-0">
+                          <div className="text-xs font-extrabold text-white truncate">
+                            {pill.title}
+                          </div>
+                          <div className="text-[10px] text-emerald-300 font-bold truncate">
+                            {pill.sub}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-[10px] text-pink-200 font-semibold">
-                        Gemini 18M • ChatGPT Plus • CapCut 4K
-                      </div>
+                      {pill.tag && (
+                        <span className="font-mono-code font-bold text-xs text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-lg border border-amber-300/30 whitespace-nowrap flex-shrink-0">
+                          {pill.tag}
+                        </span>
+                      )}
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-slate-900/80 backdrop-blur-md border border-emerald-400/40 rounded-xl px-2.5 py-1.5">
-                      <div className="text-[9px] font-extrabold uppercase text-emerald-300">Google One Cloud</div>
-                      <div className="font-display font-bold text-xs text-white">2,000 GB + Gemini</div>
-                    </div>
-                    <div className="bg-slate-900/80 backdrop-blur-md border border-pink-400/40 rounded-xl px-2.5 py-1.5">
-                      <div className="text-[9px] font-extrabold uppercase text-pink-300">AI Voice &amp; Tokens</div>
-                      <div className="font-display font-bold text-xs text-white">1B Muse + 300k</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
-            </div>
-
-            {/* Right Side (7 Cols): Blog Article & Guide Content */}
-            <div data-scroll="right" className="lg:col-span-7 space-y-3.5 text-center lg:text-left">
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-bold text-indigo-700">
-                <span className="px-2.5 py-0.5 rounded-full bg-indigo-100 text-indigo-800 font-extrabold text-[10px]">
-                  FEATURED ARTICLE
-                </span>
-                <span>AI &amp; Creator Guide</span>
-                <span aria-hidden="true">·</span>
-                <span>3 Min Read</span>
-                <span aria-hidden="true">·</span>
-                <span>By Muhammad Saqib</span>
-              </div>
-
-              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
-                How Pakistani Creators &amp; Freelancers Save 85% on Official ChatGPT Plus, Gemini 18M Pro &amp; CapCut Pro
-              </h3>
-
-              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
-                Buying international subscriptions like <strong>ChatGPT Plus ($20/mo)</strong>, <strong>Lovable Pro</strong>, or <strong>CapCut Pro</strong> directly with a bank card costs over Rs. 6,000+ per month with heavy taxes. At <strong>Saqib Visuals</strong>, we provide 100% genuine, official workspace and personal email activations starting from just <strong>Rs. 350</strong>!
-              </p>
-
-              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
-                Whether you are running a faceless YouTube automation channel using <strong>ElevenLabs 300k Credits (No Expiry)</strong> &amp; <strong>CapCut Pro 4K</strong>, building apps with <strong>Lovable Pro &amp; Claude 3.7 Sonnet</strong>, or upgrading your personal Gmail with <strong>Google Gemini 18-Month Pro + 2TB Storage</strong>, every subscription comes with our <strong>Full Period Replacement Warranty</strong>.
-              </p>
-
-              <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => onSelectServiceById('gemini-18m-pro')}
-                  className="px-4 py-2.5 rounded-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
-                >
-                  <i className="fa-solid fa-wand-magic-sparkles mr-1.5"></i>Activate Gemini 18M (Rs. 1,800)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectServiceById('chatgpt-plus')}
-                  className="px-4 py-2.5 rounded-full bg-white hover:bg-pink-50 text-slate-900 border border-indigo-200 font-extrabold text-xs shadow-sm transition cursor-pointer"
-                >
-                  <i className="fa-solid fa-robot text-emerald-600 mr-1.5"></i>Get ChatGPT Plus (Rs. 550)
-                </button>
-              </div>
+              )}
             </div>
           </div>
-        </div>
-      </section>
+        );
 
-      {/* ==================== SECTION 3: BLOG / EDITORIAL SPOTLIGHT #2 (LEFT STORY TEXT + RIGHT IMAGE SHOWCASE) ==================== */}
-      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-4">
-        <div className="plush-pillow plush-sim-search rounded-[26px] p-4 sm:p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
-            {/* Left Side (7 Cols): Blog Article & Guide Content */}
-            <div data-scroll="left" className="lg:col-span-7 space-y-3.5 text-center lg:text-left order-2 lg:order-1">
+        const textCol = (
+          <div
+            data-scroll={isImageLeft ? 'right' : 'left'}
+            className={`lg:col-span-7 space-y-3.5 text-center lg:text-left ${
+              isImageLeft ? 'order-2 lg:order-2' : 'order-2 lg:order-1'
+            }`}
+          >
+            {(banner.badgeCategory || banner.subtitleInfo) && (
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs font-bold text-rose-700">
-                <span className="px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-extrabold text-[10px]">
-                  INSIDER BLOG
-                </span>
-                <span>Monetization &amp; Telecom Insights</span>
-                <span aria-hidden="true">·</span>
-                <span>4 Min Read</span>
-                <span aria-hidden="true">·</span>
-                <span>Saqib Visuals VIP Desk</span>
+                {banner.badgeCategory && (
+                  <span
+                    className={`px-2.5 py-0.5 rounded-full font-extrabold text-[10px] ${
+                      banner.badgeCategoryColor || 'bg-rose-100 text-rose-800'
+                    }`}
+                  >
+                    {banner.badgeCategory}
+                  </span>
+                )}
+                {banner.subtitleInfo && (
+                  <span className="text-slate-600">{banner.subtitleInfo}</span>
+                )}
               </div>
+            )}
 
-              <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
-                Unlock TikTok UK/USA Creator Rewards, Global Ad Agency Accounts &amp; 2026 Franchise Verification
-              </h3>
+            <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
+              {banner.title}
+            </h3>
 
-              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
-                Want to earn in Dollars/Pounds from Pakistan on TikTok? Our <strong>Fresh TikTok UK &amp; USA Monetizable Accounts</strong> work smoothly without any VPN so you can qualify for the Creator Rewards Program and TikTok Shop. Pair it with our <strong>Verified TikTok &amp; Facebook Ad Agency Accounts</strong> to run high-converting ads with zero ban risk.
+            {banner.paragraph1 && (
+              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-line">
+                {banner.paragraph1}
               </p>
+            )}
 
-              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
-                Need urgent telecom or official verification? Alongside our free public SIM tool, our <strong>24/7 VIP Franchise &amp; NADRA Desk</strong> provides 100% confidential <strong>2026 Fresh SIM Owner Details, Call History (CDR), Live Location Pinpoint, Family Tree (FRC), and Passport Travel History</strong> directly to your WhatsApp within 15–30 minutes.
+            {banner.paragraph2 && (
+              <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed whitespace-pre-line">
+                {banner.paragraph2}
               </p>
+            )}
 
+            {/* Action Buttons */}
+            {banner.buttons && banner.buttons.length > 0 && (
               <div className="pt-2 flex flex-wrap items-center justify-center lg:justify-start gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => onSelectServiceById('tiktok-uk-usa-acc')}
-                  className="px-4 py-2.5 rounded-full bg-gradient-to-r from-rose-500 to-pink-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
-                >
-                  <i className="fa-brands fa-tiktok mr-1.5"></i>Get TikTok UK/USA Account
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onSelectServiceById('sim-owner-details')}
-                  className="px-4 py-2.5 rounded-full bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-sm transition cursor-pointer"
-                >
-                  <i className="fa-solid fa-satellite-dish mr-1.5"></i>Order Fresh SIM / CDR Info
-                </button>
+                {banner.buttons.map((btn, bIdx) => {
+                  const btnClass =
+                    btn.variant === 'primary'
+                      ? 'bg-gradient-to-r from-rose-500 to-pink-600 text-white font-extrabold text-xs shadow-md hover:scale-105'
+                      : btn.variant === 'emerald'
+                      ? 'bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-300 font-extrabold text-xs shadow-sm hover:scale-105'
+                      : btn.variant === 'amber'
+                      ? 'bg-gradient-to-r from-amber-500 to-yellow-600 text-slate-950 font-extrabold text-xs shadow-md hover:scale-105'
+                      : 'bg-white hover:bg-pink-50 text-slate-900 border border-indigo-200 font-extrabold text-xs shadow-sm hover:scale-105';
+
+                  return (
+                    <button
+                      key={bIdx}
+                      type="button"
+                      onClick={() => {
+                        onPlayPop(640);
+                        if (btn.actionType === 'service') {
+                          onSelectServiceById(btn.targetValue);
+                        } else if (btn.actionType === 'category') {
+                          onQuickFilter(btn.targetValue, '');
+                        } else if (btn.actionType === 'whatsapp') {
+                          const wa = (primaryWaNumber || '923478936242').replace(/[^0-9]/g, '');
+                          const msg = encodeURIComponent(
+                            btn.targetValue || 'Assalam-o-Alaikum! Mujhe details chahiye.'
+                          );
+                          window.open(`https://wa.me/${wa}?text=${msg}`, '_blank');
+                        } else if (btn.actionType === 'url') {
+                          window.open(btn.targetValue, '_blank');
+                        } else {
+                          onSelectServiceById(btn.targetValue);
+                        }
+                      }}
+                      className={`px-4 py-2.5 rounded-full transition cursor-pointer flex items-center gap-1.5 ${btnClass}`}
+                    >
+                      {btn.icon && <i className={`${btn.icon} mr-0.5`}></i>}
+                      <span>{btn.label}</span>
+                    </button>
+                  );
+                })}
               </div>
-            </div>
-
-            {/* Right Side (5 Cols): Featured Blog Image Card + Glass Overlay */}
-            <div
-              data-scroll="right"
-              onMouseEnter={() => onPlayPop(610)}
-              className="lg:col-span-5 order-1 lg:order-2 relative rounded-[24px] overflow-hidden border-2 border-white shadow-xl bg-slate-950 group"
-            >
-              <div className="relative h-64 sm:h-72 w-full overflow-hidden">
-                <img
-                  src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=1000&q=85"
-                  alt="TikTok Monetization & Telecom Analytics"
-                  referrerPolicy="no-referrer"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
-
-                {/* Top Floating Badges */}
-                <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                  <span className="px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md border border-white/30 text-[10px] font-extrabold tracking-wider uppercase text-amber-300 shadow">
-                    🚀 INSIDER GUIDE #02
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full bg-rose-600/90 text-white text-[10px] font-mono-code font-extrabold shadow">
-                    UK • USA • PAK
-                  </span>
-                </div>
-
-                {/* Bottom Overlay Cards */}
-                <div className="absolute bottom-3.5 left-3.5 right-3.5 space-y-2">
-                  <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 border border-white/25 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center text-white text-base shadow">
-                        <i className="fa-brands fa-tiktok"></i>
-                      </div>
-                      <div>
-                        <div className="text-xs font-extrabold text-white">UK Creator Rewards</div>
-                        <div className="text-[10px] text-emerald-300 font-bold">No VPN Needed • Tax-Free</div>
-                      </div>
-                    </div>
-                    <span className="font-mono-code font-bold text-xs text-amber-300 bg-amber-400/20 px-2 py-0.5 rounded-lg border border-amber-300/30">
-                      $1.20+ RPM
-                    </span>
-                  </div>
-
-                  <div className="bg-slate-900/80 backdrop-blur-md rounded-2xl p-2.5 border border-white/25 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white text-base shadow">
-                        <i className="fa-solid fa-satellite-dish"></i>
-                      </div>
-                      <div>
-                        <div className="text-xs font-extrabold text-white">2026 Franchise &amp; NADRA</div>
-                        <div className="text-[10px] text-pink-200 font-bold">Live SIM • CDR • FRC • Passport</div>
-                      </div>
-                    </div>
-                    <span className="font-mono-code font-bold text-[10px] text-emerald-300 bg-emerald-400/20 px-2 py-0.5 rounded-lg border border-emerald-300/30">
-                      15 MIN PDF
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            )}
           </div>
-        </div>
-      </section>
+        );
+
+        return (
+          <section
+            key={banner.id}
+            data-scroll="up"
+            className="acrylic-frame rounded-[34px] p-3 sm:p-4"
+          >
+            <div className={`plush-pillow ${plushClass} rounded-[26px] p-4 sm:p-6`}>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                {isImageLeft ? (
+                  <>
+                    {imageCol}
+                    {textCol}
+                  </>
+                ) : (
+                  <>
+                    {textCol}
+                    {imageCol}
+                  </>
+                )}
+              </div>
+            </div>
+          </section>
+        );
+      })}
 
       {/* ==================== SECTION 4: 1 - 2 - 3 HOW IT WORKS (EASY 3-STEP ORDER FLOW) ==================== */}
       <section data-scroll="up" className="space-y-3.5">

@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { renderPaymentMethodIcon } from './BrandIcons';
 
-export type DepositMethodId = 'EasyPaisa' | 'JazzCash' | 'SadaPay / Bank' | 'Binance / USDT';
+export type DepositMethodId = 'EasyPaisa' | 'JazzCash' | 'SadaPay / Bank' | 'Binance / USDT' | string;
 
 export interface PaymentProofRequest {
   id: string;
@@ -180,6 +180,8 @@ interface UserDepositProps {
   onPreviewScreenshot: (proof: PaymentProofRequest) => void;
   compactMode?: boolean;
   depositMethods?: DepositMethodMeta[];
+  currencyPrefix?: string;
+  minDepositAmount?: number;
 }
 
 export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
@@ -190,7 +192,9 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
   onPlayPop,
   onPreviewScreenshot,
   compactMode = false,
-  depositMethods = DEPOSIT_METHODS
+  depositMethods = DEPOSIT_METHODS,
+  currencyPrefix = 'Rs.',
+  minDepositAmount = 50
 }) => {
   const activeDepositMethods =
     depositMethods.filter((m) => m.enabled !== false).length > 0
@@ -227,8 +231,9 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
 
   const handleProceedToStep2 = () => {
     onPlayPop(640);
-    if (numericAmount < 100) {
-      setFormError('Minimum deposit amount is Rs. 100');
+    const minVal = minDepositAmount > 0 ? minDepositAmount : 50;
+    if (numericAmount < minVal) {
+      setFormError(`Minimum deposit amount is ${currencyPrefix} ${minVal}`);
       return;
     }
     setFormError(null);

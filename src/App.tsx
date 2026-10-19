@@ -27,14 +27,19 @@ import {
   WebsiteUiThemeMode,
   WebsiteFontMode,
   STORE_FONT_PACKS,
+  STORE_THEMES_CATALOG,
   AdminUiThemeSwitcherStudio
 } from './components/AstroNeumorphicDeck';
 import {
   SiteSettingsConfig,
   DEFAULT_SITE_CONFIG,
   DEFAULT_SITE_VISIBILITY,
+  DEFAULT_SITE_SEO,
   SITE_CONFIG_STORAGE_KEY,
-  AdminStepByStepSettingsHub
+  AdminStepByStepSettingsHub,
+  SitePromoBannerItem,
+  DEFAULT_PROMO_BANNERS,
+  getPromoBannerStyleClasses
 } from './components/AdminStepByStepSettingsHub';
 import {
   BRAND_ICON_OPTIONS as ICON_OPTIONS,
@@ -330,6 +335,18 @@ export default function App() {
             visibility: {
               ...DEFAULT_SITE_VISIBILITY,
               ...(parsed.visibility || {})
+            },
+            promoBanners:
+              Array.isArray(parsed.promoBanners) && parsed.promoBanners.length > 0
+                ? parsed.promoBanners
+                : DEFAULT_PROMO_BANNERS,
+            storeBars: {
+              ...(DEFAULT_SITE_CONFIG.storeBars || {}),
+              ...(parsed.storeBars || {})
+            },
+            seo: {
+              ...DEFAULT_SITE_SEO,
+              ...(parsed.seo || {})
             }
           };
         }
@@ -362,6 +379,87 @@ export default function App() {
     }
     const isRgbOn = siteConfig.banner.rgbBorderEnabled !== false;
     document.body.classList.toggle('rgb-light-on', isRgbOn);
+
+    // Sync HTML Page Title, Meta Description, Keywords & Social OpenGraph Tags
+    const seo = {
+      ...DEFAULT_SITE_SEO,
+      ...(siteConfig.seo || {})
+    };
+
+    if (seo.metaTitle) {
+      document.title = seo.metaTitle;
+    }
+
+    const setMetaTag = (name: string, content: string, isProp = false) => {
+      const attr = isProp ? 'property' : 'name';
+      let el = document.querySelector(`meta[${attr}="${name}"]`);
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, name);
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', content);
+    };
+
+    setMetaTag('description', seo.metaDescription || '');
+    setMetaTag('keywords', seo.keywords || '');
+    setMetaTag('author', seo.author || 'Muhammad Saqib');
+    setMetaTag(
+      'robots',
+      `${seo.robotsIndex !== false ? 'index' : 'noindex'}, ${seo.robotsFollow !== false ? 'follow' : 'nofollow'}`
+    );
+
+    // Canonical link tag
+    const currentOrigin =
+      typeof window !== 'undefined'
+        ? window.location.origin
+        : 'https://mrsaqib242.vercel.app';
+    const effectiveCanonical = seo.canonicalUrl?.trim() || currentOrigin;
+    let canonicalLink = document.querySelector('link[rel="canonical"]');
+    if (!canonicalLink) {
+      canonicalLink = document.createElement('link');
+      canonicalLink.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalLink);
+    }
+    canonicalLink.setAttribute('href', effectiveCanonical);
+
+    // OpenGraph Tags
+    setMetaTag('og:title', seo.ogTitle || seo.metaTitle || '', true);
+    setMetaTag('og:description', seo.ogDescription || seo.metaDescription || '', true);
+    setMetaTag('og:type', seo.ogType || 'website', true);
+    setMetaTag('og:url', effectiveCanonical, true);
+    setMetaTag('og:image', seo.ogImageUrl || siteConfig.banner.portraitUrl || '', true);
+    setMetaTag('og:site_name', siteConfig.footer.brandName || 'Saqib Visuals', true);
+
+    // Twitter / X Tags
+    setMetaTag('twitter:card', seo.twitterCard || 'summary_large_image');
+    setMetaTag('twitter:title', seo.ogTitle || seo.metaTitle || '');
+    setMetaTag('twitter:description', seo.ogDescription || seo.metaDescription || '');
+    setMetaTag('twitter:image', seo.ogImageUrl || siteConfig.banner.portraitUrl || '');
+    setMetaTag('twitter:creator', seo.twitterCreator || '@mrsaqib242');
+
+    // Schema.org JSON-LD Structured Data script
+    let scriptTag = document.getElementById('saqib-seo-jsonld') as HTMLScriptElement | null;
+    if (!scriptTag) {
+      scriptTag = document.createElement('script');
+      scriptTag.id = 'saqib-seo-jsonld';
+      scriptTag.type = 'application/ld+json';
+      document.head.appendChild(scriptTag);
+    }
+    const schemaJson = {
+      '@context': 'https://schema.org',
+      '@type': seo.schemaType || 'WebApplication',
+      name: seo.metaTitle || 'Muhammad Saqib — Saqib Visuals',
+      description: seo.metaDescription || '',
+      url: effectiveCanonical,
+      applicationCategory: 'BusinessApplication',
+      operatingSystem: 'All',
+      author: {
+        '@type': 'Person',
+        name: seo.author || 'Muhammad Saqib'
+      }
+    };
+    scriptTag.text = JSON.stringify(schemaJson);
   }, [siteConfig]);
 
   const activeWaNumberClean =
@@ -456,6 +554,7 @@ export default function App() {
   });
 
   const [addFundsModalOpen, setAddFundsModalOpen] = useState<boolean>(false);
+  const [themeModalOpen, setThemeModalOpen] = useState<boolean>(false);
   const [previewScreenshotProof, setPreviewScreenshotProof] =
     useState<PaymentProofRequest | null>(null);
 
@@ -478,7 +577,7 @@ export default function App() {
   // Admin Command Center Mode ('ui' | 'payments' | 'tools' | 'services')
   const [adminStudioMode, setAdminStudioMode] = useState<'ui' | 'payments' | 'tools' | 'services'>('ui');
 
-  // Global Store UI Theme Mode ('astro-neu' | 'pink-acrylic' | 'liquid-champagne' | 'pastel-jelly')
+  // Global Store UI Theme Mode ('astro-neu' | 'pink-acrylic' | 'liquid-champagne' | 'pastel-jelly' | 'neo-gray-dark' | 'neo-blue-dark')
   const [websiteUiMode, setWebsiteUiMode] = useState<WebsiteUiThemeMode>(() => {
     try {
       const saved = localStorage.getItem('saqib_visuals_ui_theme_v1');
@@ -490,6 +589,12 @@ export default function App() {
       }
       if (saved === 'pastel-jelly') {
         return 'pastel-jelly';
+      }
+      if (saved === 'neo-gray-dark') {
+        return 'neo-gray-dark';
+      }
+      if (saved === 'neo-blue-dark') {
+        return 'neo-blue-dark';
       }
       if (saved === 'astro-neu' || saved === 'astro-hybrid' || saved === 'astro-pure') {
         return 'astro-neu';
@@ -509,7 +614,9 @@ export default function App() {
     document.body.classList.remove(
       'theme-astro-neu',
       'theme-liquid-champagne',
-      'theme-pastel-jelly'
+      'theme-pastel-jelly',
+      'theme-neo-gray-dark',
+      'theme-neo-blue-dark'
     );
     if (websiteUiMode === 'astro-neu') {
       document.body.classList.add('theme-astro-neu');
@@ -517,6 +624,10 @@ export default function App() {
       document.body.classList.add('theme-liquid-champagne');
     } else if (websiteUiMode === 'pastel-jelly') {
       document.body.classList.add('theme-pastel-jelly');
+    } else if (websiteUiMode === 'neo-gray-dark') {
+      document.body.classList.add('theme-neo-gray-dark');
+    } else if (websiteUiMode === 'neo-blue-dark') {
+      document.body.classList.add('theme-neo-blue-dark');
     }
   }, [websiteUiMode]);
 
@@ -662,6 +773,108 @@ export default function App() {
   const triggerConfettiBurst = () => {
     playPopSound(880);
     showToast(`🚀 Muhammad Saqib — ${servicesCatalog.length} Digital & Franchise Services`);
+  };
+
+  const allPromoBanners: SitePromoBannerItem[] =
+    siteConfig.promoBanners && siteConfig.promoBanners.length > 0
+      ? siteConfig.promoBanners
+      : DEFAULT_PROMO_BANNERS;
+
+  const handlePromoBannerAction = (
+    action: string,
+    customUrl?: string,
+    bannerTitle?: string
+  ) => {
+    playPopSound(660);
+    if (action === 'webtools') {
+      switchTab('siminfo');
+      showToast('🚀 Opened Web Tools Hub!');
+    } else if (action === 'addfunds') {
+      setAddFundsModalOpen(true);
+      showToast('💳 Opened Add Funds Modal!');
+    } else if (action === 'custom_url' && customUrl) {
+      window.open(customUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      // Default: WhatsApp
+      const waMsg = encodeURIComponent(
+        `Assalam-o-Alaikum Saqib Bhai! Mujhe is deal/service ki details chahiye: "${bannerTitle || 'Special Deal'}"`
+      );
+      window.open(`https://wa.me/${activeWaNumberClean}?text=${waMsg}`, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const renderPromoBanner = (banner: SitePromoBannerItem) => {
+    if (banner.enabled === false) return null;
+    const styleObj = getPromoBannerStyleClasses(banner.style);
+
+    return (
+      <div key={banner.id} data-scroll="zoom" className={`acrylic-frame mb-4 ${styleObj.frame}`}>
+        <div className={styleObj.inner}>
+          <div className="space-y-1 text-center md:text-left flex-grow">
+            <div
+              className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-extrabold ${styleObj.badge}`}
+            >
+              <i className={banner.badgeIcon || 'fa-solid fa-bolt'}></i>
+              <span>{banner.badgeText || 'ALL SERVICES AVAILABLE HERE'}</span>
+            </div>
+            <h3 className={`text-lg sm:text-xl font-extrabold ${styleObj.title}`}>
+              {banner.title}
+            </h3>
+            <p className={`text-xs font-medium ${styleObj.desc}`}>
+              {banner.description}
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 flex-shrink-0">
+            {banner.secondaryBtnEnabled !== false && banner.secondaryBtnText && (
+              <button
+                type="button"
+                onClick={() =>
+                  handlePromoBannerAction(
+                    banner.secondaryBtnAction || 'webtools',
+                    banner.secondaryBtnCustomUrl,
+                    banner.title
+                  )
+                }
+                className={`px-4 py-2.5 rounded-full font-extrabold text-xs shadow-sm transition hover:scale-105 cursor-pointer flex items-center gap-1.5 ${styleObj.secondaryBtn}`}
+              >
+                {banner.secondaryBtnAction === 'webtools' ? (
+                  <FaScrewdriverWrench className="w-3.5 h-3.5" />
+                ) : banner.secondaryBtnAction === 'addfunds' ? (
+                  <i className="fa-solid fa-wallet"></i>
+                ) : (
+                  <i className={banner.secondaryBtnIcon || 'fa-solid fa-arrow-up-right-from-square'}></i>
+                )}
+                <span>{banner.secondaryBtnText}</span>
+              </button>
+            )}
+
+            {banner.primaryBtnEnabled !== false && banner.primaryBtnText && (
+              <button
+                type="button"
+                onClick={() =>
+                  handlePromoBannerAction(
+                    banner.primaryBtnAction || 'whatsapp',
+                    banner.primaryBtnCustomUrl,
+                    banner.title
+                  )
+                }
+                className={`px-5 py-2.5 rounded-full font-extrabold text-xs shadow-lg hover:scale-105 transition flex items-center gap-1.5 cursor-pointer ${styleObj.primaryBtn}`}
+              >
+                {banner.primaryBtnAction === 'whatsapp' ? (
+                  <SiWhatsapp className="w-4 h-4" />
+                ) : banner.primaryBtnAction === 'addfunds' ? (
+                  <i className="fa-solid fa-wallet"></i>
+                ) : (
+                  <i className={banner.primaryBtnIcon || 'fa-solid fa-bolt'}></i>
+                )}
+                <span>{banner.primaryBtnText}</span>
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const openSecretAdminPortal = () => {
@@ -1728,7 +1941,7 @@ export default function App() {
             )}
 
             {/* LIVE USER WALLET BALANCE + ADD FUNDS PILL */}
-            {siteVisibility.showHeaderWalletPill && (
+            {(siteConfig.storeBars?.showHeaderWalletPill ?? siteVisibility.showHeaderWalletPill) && (
               <button
                 type="button"
                 onClick={() => {
@@ -1744,10 +1957,10 @@ export default function App() {
               >
                 <i className="fa-solid fa-wallet text-sky-200 sm:text-sky-400"></i>
                 <span className="font-display tracking-wide whitespace-nowrap">
-                  Rs. {walletBalance.toLocaleString()}
+                  {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                 </span>
                 <span className="hidden xs:inline-block sm:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
-                  +Add
+                  {siteConfig.storeBars?.headerPillAddLabel || '+Add'}
                 </span>
               </button>
             )}
@@ -1793,6 +2006,33 @@ export default function App() {
                 <span className="hidden lg:inline">{rgbBorderEnabled ? 'ON' : 'OFF'}</span>
               </button>
             )}
+
+            {/* THEME SWITCHER BUTTON (6 THEMES: NEO GRAY DARK, NEO BLUE DARK, ASTRO, PINK, GOLD, JELLY) */}
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound(740);
+                setThemeModalOpen(true);
+              }}
+              title="Switch Website Theme (6 Themes: Neo Gray Dark, Neo Blue Dark, Astro, Pink, Gold, Jelly)"
+              className="px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full bg-white/90 hover:bg-white text-slate-800 text-[10px] sm:text-[11px] font-extrabold shadow-2xs border border-slate-300/80 flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer"
+            >
+              <i className="fa-solid fa-palette text-pink-500 text-xs"></i>
+              <span className="hidden sm:inline font-bold">Theme:</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-slate-100 font-black text-slate-800 uppercase tracking-tight">
+                {websiteUiMode === 'astro-neu'
+                  ? 'Astro'
+                  : websiteUiMode === 'pink-acrylic'
+                  ? 'Pink'
+                  : websiteUiMode === 'liquid-champagne'
+                  ? 'Gold'
+                  : websiteUiMode === 'pastel-jelly'
+                  ? 'Jelly'
+                  : websiteUiMode === 'neo-gray-dark'
+                  ? 'Neo Gray'
+                  : 'Neo Blue'}
+              </span>
+            </button>
 
             <button
               onClick={toggleSound}
@@ -2056,6 +2296,49 @@ export default function App() {
                 </div>
               </div>
 
+              {/* Store Themes Quick Switcher Strip in Mobile Drawer */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600">
+                    🎨 Website Themes (6 Themes)
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      setThemeModalOpen(true);
+                    }}
+                    className="text-[10px] font-bold text-pink-600 hover:underline cursor-pointer"
+                  >
+                    View All →
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-1.5">
+                  {STORE_THEMES_CATALOG.map((theme) => {
+                    const isAct = websiteUiMode === theme.id;
+                    return (
+                      <button
+                        key={`drawer-theme-${theme.id}`}
+                        type="button"
+                        onClick={() => {
+                          playPopSound(720);
+                          setWebsiteUiMode(theme.id);
+                          showToast(`🎨 Theme Applied: ${theme.shortLabel}!`);
+                        }}
+                        className={`p-2 rounded-xl text-center text-[10px] font-extrabold transition cursor-pointer border flex flex-col items-center justify-center gap-1 ${
+                          isAct
+                            ? 'bg-slate-900 text-white border-pink-400 shadow-sm scale-[1.02]'
+                            : 'bg-white/90 text-slate-800 border-white hover:bg-white'
+                        }`}
+                      >
+                        <i className={`${theme.icon} ${isAct ? 'text-pink-400' : 'text-slate-600'} text-xs`}></i>
+                        <span className="truncate w-full">{theme.shortLabel}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
               {/* Mobile Layout & Sound Quick Bar */}
               <div className="pt-2 border-t border-pink-200/80 flex items-center justify-between gap-2">
                 <div className="flex items-center gap-1 bg-white/90 p-1 rounded-xl border border-pink-200">
@@ -2139,163 +2422,220 @@ export default function App() {
                     {siteConfig.banner.topStripTitle}
                   </h1>
                 </div>
-                <div className="flex items-center gap-1.5 flex-shrink-0">
-                  <a
-                    href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
-                      siteConfig.contact.whatsappDefaultMessage
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="acrylic-frame acrylic-interactive rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold text-slate-900 whitespace-nowrap"
-                  >
-                    <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
-                    <i className="fa-brands fa-whatsapp text-emerald-600 text-xs sm:text-sm"></i>
-                    <span className="hidden xs:inline sm:inline">{activeWaNumberDisplay}</span>
-                  </a>
-                </div>
+                {siteConfig.banner.showTopStripWhatsapp !== false && (
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <a
+                      href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
+                        siteConfig.contact.whatsappDefaultMessage
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="acrylic-frame acrylic-interactive rounded-full px-2.5 sm:px-3.5 py-1 sm:py-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold text-slate-900 whitespace-nowrap"
+                    >
+                      <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-500 animate-ping"></span>
+                      <i className="fa-brands fa-whatsapp text-emerald-600 text-xs sm:text-sm"></i>
+                      <span className="hidden xs:inline sm:inline">{activeWaNumberDisplay}</span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Main Hero Card: Left Circular 3D Portrait with Floating CapCut & AI Icons + Right Glass Bio */}
             {siteConfig.banner.showHeroBanner && (
-              <div className="relative flex flex-col md:flex-row items-center pt-1 sm:pt-2">
+              <div className={`relative flex flex-col ${siteConfig.banner.showPortraitPhoto !== false ? 'md:flex-row' : ''} items-center pt-1 sm:pt-2`}>
                 {/* Left: 3D Thick Circular Glass Frame + Floating CapCut, AI, TikTok & SIM Badges */}
-                <div data-scroll="left" className="relative flex-shrink-0 my-2 sm:my-3 md:my-0 z-20 mx-auto">
-                  {/* Main Portrait Lens */}
-                  <div
-                    onClick={() => {
-                      playPopSound(640);
-                      setPosterModalOpen(true);
-                    }}
-                    onMouseEnter={() => playPopSound(440)}
-                    className="portrait-lens relative w-36 h-36 sm:w-60 sm:h-60 rounded-full acrylic-frame p-1.5 sm:p-2.5 cursor-pointer shadow-2xl group mx-auto"
-                    title="Click to view full portrait"
-                  >
-                    <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-white/90 shadow-inner bg-gradient-to-b from-pink-100 to-blue-100">
-                      <div
-                        className="saqib-portrait-crop"
-                        style={
-                          siteConfig.banner.portraitUrl
-                            ? { backgroundImage: `url('${siteConfig.banner.portraitUrl}')` }
-                            : undefined
-                        }
-                        role="img"
-                        aria-label={`${siteConfig.banner.mainTitle} Portrait`}
-                      ></div>
-                      <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-white/40 pointer-events-none rounded-full"></div>
-                      <div className="absolute bottom-3 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <span className="bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg">
-                          <i className="fa-solid fa-expand mr-1"></i>
-                          {siteConfig.banner.mainTitle}
-                        </span>
+                {siteConfig.banner.showPortraitPhoto !== false && (
+                  <div data-scroll="left" className="relative flex-shrink-0 my-2 sm:my-3 md:my-0 z-20 mx-auto">
+                    {/* Main Portrait Lens */}
+                    <div
+                      onClick={() => {
+                        playPopSound(640);
+                        setPosterModalOpen(true);
+                      }}
+                      onMouseEnter={() => playPopSound(440)}
+                      className="portrait-lens relative w-36 h-36 sm:w-60 sm:h-60 rounded-full acrylic-frame p-1.5 sm:p-2.5 cursor-pointer shadow-2xl group mx-auto"
+                      title="Click to view full portrait"
+                    >
+                      <div className="w-full h-full rounded-full overflow-hidden relative border-2 border-white/90 shadow-inner bg-gradient-to-b from-pink-100 to-blue-100">
+                        <div
+                          className="saqib-portrait-crop"
+                          style={
+                            siteConfig.banner.portraitUrl
+                              ? { backgroundImage: `url('${siteConfig.banner.portraitUrl}')` }
+                              : undefined
+                          }
+                          role="img"
+                          aria-label={`${siteConfig.banner.mainTitle} Portrait`}
+                        ></div>
+                        <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/15 to-white/40 pointer-events-none rounded-full"></div>
+                        <div className="absolute bottom-3 inset-x-0 flex justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <span className="bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-lg">
+                            <i className="fa-solid fa-expand mr-1"></i>
+                            {siteConfig.banner.mainTitle}
+                          </span>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Floating Badges Around Portrait */}
+                    {siteVisibility.showPortraitOrbitBadges &&
+                      siteConfig.banner.showPortraitOrbitBadges !== false && (
+                        <>
+                          {/* Floating Badge 1: CapCut Pro Icon (Top-Left) */}
+                          {siteConfig.banner.orbitBadge1Enabled !== false && (
+                            <button
+                              onClick={() => filterStore('capcut_ai', '')}
+                              onMouseEnter={() => playPopSound(680)}
+                              title={siteConfig.banner.orbitBadge1Title || 'CapCut & Lovable Pro'}
+                              className="orbit-badge float-slow -top-2 -left-4 sm:-left-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
+                                <svg
+                                  className="w-3.5 h-3.5 sm:w-4 sm:h-4"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2.3"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M4 7l16 10" />
+                                  <path d="M20 7L4 17" />
+                                  <rect x="2" y="5" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
+                                  <rect x="2" y="15" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
+                                </svg>
+                              </div>
+                              <div className="text-left leading-none">
+                                <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">
+                                  {siteConfig.banner.orbitBadge1Title || 'CapCut & Lovable'}
+                                </div>
+                                <div className="text-[7px] sm:text-[8px] font-bold text-pink-600 uppercase">
+                                  {siteConfig.banner.orbitBadge1Sub || 'PRO UNLOCKED'}
+                                </div>
+                              </div>
+                            </button>
+                          )}
+
+                          {/* Floating Badge 2: AI Tools / Gemini / ElevenLabs (Top-Right) */}
+                          {siteConfig.banner.orbitBadge2Enabled !== false && (
+                            <button
+                              onClick={() => filterStore('capcut_ai', '')}
+                              onMouseEnter={() => playPopSound(720)}
+                              title={siteConfig.banner.orbitBadge2Title || 'AI Suite'}
+                              className="orbit-badge float-reverse -top-2 -right-4 sm:-right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center shadow-sm">
+                                <i className="fa-solid fa-wand-magic-sparkles text-[10px] sm:text-xs"></i>
+                              </div>
+                              <div className="text-left leading-none">
+                                <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">
+                                  {siteConfig.banner.orbitBadge2Title || 'AI Suite'}
+                                </div>
+                                <div className="text-[7px] sm:text-[8px] font-bold text-emerald-600 uppercase">
+                                  {siteConfig.banner.orbitBadge2Sub || 'GEMINI • CLAUDE'}
+                                </div>
+                              </div>
+                            </button>
+                          )}
+
+                          {/* Floating Badge 3: TikTok UK/USA & Ads (Bottom-Left) */}
+                          {siteConfig.banner.orbitBadge3Enabled !== false && (
+                            <button
+                              onClick={() => filterStore('tiktok_fb', '')}
+                              onMouseEnter={() => playPopSound(640)}
+                              title={siteConfig.banner.orbitBadge3Title || 'TikTok UK/USA'}
+                              className="orbit-badge float-reverse -bottom-2 -left-3 sm:-left-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
+                                <i className="fa-brands fa-tiktok text-[10px] sm:text-xs"></i>
+                              </div>
+                              <div className="text-left leading-none">
+                                <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">
+                                  {siteConfig.banner.orbitBadge3Title || 'TikTok UK/USA'}
+                                </div>
+                                <div className="text-[7px] sm:text-[8px] font-bold text-rose-600 uppercase">
+                                  {siteConfig.banner.orbitBadge3Sub || 'ADS & BOOST'}
+                                </div>
+                              </div>
+                            </button>
+                          )}
+
+                          {/* Floating Badge 4: Franchise & NADRA Info (Bottom-Right) */}
+                          {siteConfig.banner.orbitBadge4Enabled !== false && (
+                            <button
+                              onClick={() => filterStore('franchise_sim', '')}
+                              onMouseEnter={() => playPopSound(760)}
+                              title={siteConfig.banner.orbitBadge4Title || 'SIM & NADRA'}
+                              className="orbit-badge float-slow -bottom-2 -right-3 sm:-right-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-sm">
+                                <i className="fa-solid fa-satellite-dish text-[10px] sm:text-xs"></i>
+                              </div>
+                              <div className="text-left leading-none">
+                                <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">
+                                  {siteConfig.banner.orbitBadge4Title || 'SIM & NADRA'}
+                                </div>
+                                <div className="text-[7px] sm:text-[8px] font-bold text-blue-600 uppercase">
+                                  {siteConfig.banner.orbitBadge4Sub || 'CDR • FRC • LIVE'}
+                                </div>
+                              </div>
+                            </button>
+                          )}
+                        </>
+                      )}
                   </div>
-
-                  {/* Floating Badge 1: CapCut Pro Icon (Top-Left) */}
-                  {siteVisibility.showPortraitOrbitBadges && (
-                    <>
-                      <button
-                        onClick={() => filterStore('capcut_ai', '')}
-                        onMouseEnter={() => playPopSound(680)}
-                        title="CapCut Pro & Lovable Pro"
-                        className="orbit-badge float-slow -top-2 -left-4 sm:-left-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-sm">
-                          <svg
-                            className="w-3.5 h-3.5 sm:w-4 sm:h-4"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.3"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <path d="M4 7l16 10" />
-                            <path d="M20 7L4 17" />
-                            <rect x="2" y="5" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
-                            <rect x="2" y="15" width="20" height="4" rx="1" fill="currentColor" stroke="none" />
-                          </svg>
-                        </div>
-                        <div className="text-left leading-none">
-                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">CapCut &amp; Lovable</div>
-                          <div className="text-[7px] sm:text-[8px] font-bold text-pink-600 uppercase">PRO UNLOCKED</div>
-                        </div>
-                      </button>
-
-                      {/* Floating Badge 2: AI Tools / Gemini / ElevenLabs (Top-Right) */}
-                      <button
-                        onClick={() => filterStore('capcut_ai', '')}
-                        onMouseEnter={() => playPopSound(720)}
-                        title="Gemini 18M, Claude, Muse AI & ElevenLabs"
-                        className="orbit-badge float-reverse -top-2 -right-4 sm:-right-4 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 text-white flex items-center justify-center shadow-sm">
-                          <i className="fa-solid fa-wand-magic-sparkles text-[10px] sm:text-xs"></i>
-                        </div>
-                        <div className="text-left leading-none">
-                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">AI Suite</div>
-                          <div className="text-[7px] sm:text-[8px] font-bold text-emerald-600 uppercase">GEMINI • CLAUDE</div>
-                        </div>
-                      </button>
-
-                      {/* Floating Badge 3: TikTok UK/USA & Ads (Bottom-Left) */}
-                      <button
-                        onClick={() => filterStore('tiktok_fb', '')}
-                        onMouseEnter={() => playPopSound(640)}
-                        title="TikTok UK/USA & Ad Agency"
-                        className="orbit-badge float-reverse -bottom-2 -left-3 sm:-left-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-500 text-white flex items-center justify-center shadow-sm">
-                          <i className="fa-brands fa-tiktok text-[10px] sm:text-xs"></i>
-                        </div>
-                        <div className="text-left leading-none">
-                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">TikTok UK/USA</div>
-                          <div className="text-[7px] sm:text-[8px] font-bold text-rose-600 uppercase">ADS &amp; BOOST</div>
-                        </div>
-                      </button>
-
-                      {/* Floating Badge 4: Franchise & NADRA Info (Bottom-Right) */}
-                      <button
-                        onClick={() => filterStore('franchise_sim', '')}
-                        onMouseEnter={() => playPopSound(760)}
-                        title="Franchise SIM, CDR & NADRA Info"
-                        className="orbit-badge float-slow -bottom-2 -right-3 sm:-right-3 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-2xl flex items-center gap-1.5 cursor-pointer"
-                      >
-                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center shadow-sm">
-                          <i className="fa-solid fa-satellite-dish text-[10px] sm:text-xs"></i>
-                        </div>
-                        <div className="text-left leading-none">
-                          <div className="text-[9px] sm:text-[10px] font-extrabold text-slate-900">SIM &amp; NADRA</div>
-                          <div className="text-[7px] sm:text-[8px] font-bold text-blue-600 uppercase">CDR • FRC • LIVE</div>
-                        </div>
-                      </button>
-                    </>
-                  )}
-                </div>
+                )}
 
                 {/* Right: Soft Pink/Peach Plush Hero Bio & Feature Pills */}
-                <div data-scroll="right" className="hero-rgb-card relative z-10 w-full md:-ml-10 mt-4 md:mt-0 acrylic-frame rounded-[28px] sm:rounded-[38px] p-2 sm:p-3.5">
-                  <div className="plush-pillow plush-hero rounded-[22px] sm:rounded-[30px] px-3.5 py-4 sm:pl-14 sm:pr-7 sm:py-6 text-center md:text-left">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/80 border border-white text-[9px] sm:text-[10px] font-extrabold text-pink-600 shadow-sm mb-2">
-                      <i className="fa-solid fa-circle-check text-emerald-500"></i>{' '}
-                      {siteConfig.banner.badgeText}
-                    </div>
+                <div
+                  data-scroll="right"
+                  className={`hero-rgb-card relative z-10 w-full ${
+                    siteConfig.banner.showPortraitPhoto !== false
+                      ? 'md:-ml-10 mt-4 md:mt-0'
+                      : 'mt-0'
+                  } acrylic-frame rounded-[28px] sm:rounded-[38px] p-2 sm:p-3.5`}
+                >
+                  <div
+                    className={`plush-pillow plush-hero rounded-[22px] sm:rounded-[30px] px-3.5 py-4 ${
+                      siteConfig.banner.showPortraitPhoto !== false
+                        ? 'sm:pl-14 sm:pr-7'
+                        : 'sm:px-8'
+                    } sm:py-6 text-center ${
+                      siteConfig.banner.showPortraitPhoto !== false ? 'md:text-left' : 'text-center md:text-left'
+                    }`}
+                  >
+                    {/* Top Status Promo Badge */}
+                    {siteConfig.banner.showBadgeText !== false && siteConfig.banner.badgeText && (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/80 border border-white text-[9px] sm:text-[10px] font-extrabold text-pink-600 shadow-sm mb-2">
+                        <i className="fa-solid fa-circle-check text-emerald-500"></i>{' '}
+                        {siteConfig.banner.badgeText}
+                      </div>
+                    )}
 
-                    <h2 className="text-xl sm:text-2xl md:text-[26px] font-extrabold text-slate-900 tracking-tight leading-snug">
-                      {siteConfig.banner.mainTitle}{' '}
-                      <span className="text-pink-600 font-display">
-                        {siteConfig.banner.highlightTitle}
-                      </span>
-                    </h2>
+                    {/* Main Title & Highlight */}
+                    {siteConfig.banner.showMainTitle !== false && (
+                      <h2 className="text-xl sm:text-2xl md:text-[26px] font-extrabold text-slate-900 tracking-tight leading-snug">
+                        {siteConfig.banner.mainTitle}{' '}
+                        {siteConfig.banner.highlightTitle && (
+                          <span className="text-pink-600 font-display">
+                            {siteConfig.banner.highlightTitle}
+                          </span>
+                        )}
+                      </h2>
+                    )}
 
-                    <p className="mt-1.5 text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
-                      {siteConfig.banner.description}
-                    </p>
+                    {/* Bio Description */}
+                    {siteConfig.banner.showDescription !== false && siteConfig.banner.description && (
+                      <p className="mt-1.5 text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
+                        {siteConfig.banner.description}
+                      </p>
+                    )}
 
                     {/* Interactive Showcase Feature Badges */}
-                    {siteVisibility.showHeroFeaturePills && (
-                      <div className="mt-3.5 flex flex-wrap items-center justify-center md:justify-start gap-1.5 sm:gap-2">
+                    {siteVisibility.showHeroFeaturePills &&
+                      siteConfig.banner.showHeroFeaturePills !== false && (
+                      <div className={`mt-3.5 flex flex-wrap items-center justify-center ${siteConfig.banner.showPortraitPhoto !== false ? 'md:justify-start' : 'md:justify-start'} gap-1.5 sm:gap-2`}>
                         <button
                           onClick={() => filterStore('capcut_ai', '')}
                           className="px-3 py-1.5 rounded-xl bg-white/85 hover:bg-white text-slate-900 font-extrabold text-[11px] shadow-sm border border-purple-200 flex items-center gap-1.5 transition hover:scale-105 cursor-pointer"
@@ -2363,7 +2703,7 @@ export default function App() {
             )}
 
             {/* ==================== STOREFRONT LIVE WALLET BALANCE & INSTANT ADD PAYMENT BAR ==================== */}
-            {siteVisibility.showStoreWalletBar && (
+            {(siteConfig.storeBars?.showWalletBar ?? siteVisibility.showStoreWalletBar) && (
               <div data-scroll="up" className="acrylic-frame rounded-[28px] p-2.5 sm:p-3.5">
                 <div className="rounded-[22px] bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white px-3.5 py-3 sm:px-5 sm:py-3.5 border border-white/80 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div className="flex items-center gap-3 text-center sm:text-left">
@@ -2373,45 +2713,62 @@ export default function App() {
                     <div>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
-                          ● LIVE ACCOUNT BALANCE:
+                          {siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:'}
                         </span>
                         <span className="font-display font-bold text-lg sm:text-2xl text-white">
-                          Rs. {walletBalance.toLocaleString()}
+                          {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                         </span>
-                        {pendingProofsCount > 0 && (
+                        {(siteConfig.storeBars?.showPendingProofBadge ?? true) && pendingProofsCount > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
                             ⏳ {pendingProofsCount} Pending Proof
                           </span>
                         )}
                       </div>
-                      <p className="text-[10px] sm:text-xs font-medium text-pink-200">
-                        Add balance via <strong>EasyPaisa / JazzCash / Bank</strong> (Enter Amount → Select Method → Upload SS → Instant Balance!)
-                      </p>
+                      {(siteConfig.storeBars?.showWalletInstruction ?? true) && (
+                        <p className="text-[10px] sm:text-xs font-medium text-pink-200">
+                          {siteConfig.storeBars?.walletInstructionText ||
+                            'Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)'}
+                        </p>
+                      )}
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 flex-shrink-0 w-full sm:w-auto justify-center">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        playPopSound(680);
-                        setAddFundsModalOpen(true);
-                      }}
-                      className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-1.5 transition hover:scale-105 cursor-pointer"
-                    >
-                      <i className="fa-solid fa-circle-plus text-amber-200"></i>
-                      <span>+ Add Payment / Balance</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => switchTab('login')}
-                      className="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs transition cursor-pointer whitespace-nowrap"
-                    >
-                      <i className="fa-solid fa-receipt mr-1 text-pink-300"></i>History
-                    </button>
+                    {(siteConfig.storeBars?.showAddPaymentBtn ?? true) && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          playPopSound(680);
+                          setAddFundsModalOpen(true);
+                        }}
+                        className="flex-1 sm:flex-initial px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white font-extrabold text-xs shadow-lg flex items-center justify-center gap-1.5 transition hover:scale-105 cursor-pointer"
+                      >
+                        <i className="fa-solid fa-circle-plus text-amber-200"></i>
+                        <span>{siteConfig.storeBars?.addPaymentBtnLabel || '+ Add Payment / Balance'}</span>
+                      </button>
+                    )}
+                    {(siteConfig.storeBars?.showHistoryBtn ?? true) && (
+                      <button
+                        type="button"
+                        onClick={() => switchTab('login')}
+                        className="px-3.5 py-2.5 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 font-extrabold text-xs transition cursor-pointer whitespace-nowrap"
+                      >
+                        <i className="fa-solid fa-receipt mr-1 text-pink-300"></i>
+                        {siteConfig.storeBars?.historyBtnLabel || 'History'}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
+            )}
+
+            {/* ==================== 2 NO PROMO & DEAL BANNERS (ABOVE SERVICES) ==================== */}
+            {(siteVisibility.showPromoBanners ?? true) && (
+              <>
+                {allPromoBanners
+                  .filter((b) => b.position === 'above_services' || b.position === 'both')
+                  .map((b) => renderPromoBanner(b))}
+              </>
             )}
 
             {/* Live Search Bar + Quick Service Tags in 3D Pink Glass */}
@@ -2839,40 +3196,19 @@ export default function App() {
               />
             )}
 
-            {/* Instant Custom SMM / Franchise Deal Banner */}
-            <div data-scroll="zoom" className="acrylic-frame rounded-[32px] p-3 sm:p-4">
-              <div className="plush-pillow plush-sim-search rounded-[24px] p-4 sm:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="space-y-1 text-center md:text-left">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-extrabold border border-pink-300">
-                    <i className="fa-solid fa-bolt"></i> ALL SERVICES AVAILABLE HERE
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                    Need Custom AI Credits, Ad Agency Accounts, NADRA/CDR Info, or USDT?
-                  </h3>
-                  <p className="text-xs text-slate-700 font-medium">
-                    Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, JazzCash / EasyPaisa payment, and instant delivery.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center justify-center gap-2 flex-shrink-0">
-                  {siteVisibility.showToolsTab && (
-                    <button
-                      onClick={() => switchTab('siminfo')}
-                      className="px-4 py-2.5 rounded-full bg-white hover:bg-pink-50 text-pink-700 border border-pink-300 font-extrabold text-xs shadow-sm transition cursor-pointer flex items-center gap-1.5"
-                    >
-                      <FaScrewdriverWrench className="w-3.5 h-3.5" /> Open Web Tools Hub
-                    </button>
-                  )}
-                  <a
-                    href={`https://wa.me/${PRIMARY_WA_NUMBER}?text=Assalam-o-Alaikum%20Saqib%20Bhai!%20Mujhe%20AI%20Pro%20Tools,%20SMM%20ya%20Franchise/NADRA%20service%20ki%20deal%20chahiye.`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-5 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-lg hover:scale-105 transition flex items-center gap-1.5"
-                  >
-                    <SiWhatsapp className="w-4 h-4" /> Deal on WhatsApp
-                  </a>
-                </div>
-              </div>
-            </div>
+            {/* ==================== 2 NO PROMO & DEAL BANNERS (BELOW SERVICES) ==================== */}
+            {(siteVisibility.showPromoBanners ?? true) && (
+              <>
+                {allPromoBanners
+                  .filter(
+                    (b) =>
+                      !b.position ||
+                      b.position === 'below_services' ||
+                      b.position === 'both'
+                  )
+                  .map((b) => renderPromoBanner(b))}
+              </>
+            )}
           </div>
         )}
 
@@ -3450,49 +3786,58 @@ export default function App() {
               {/* Right (5 Cols): Payment Gateways & Direct Office Info */}
               <div className="lg:col-span-5 flex flex-col justify-between gap-4">
                 {/* Accepted Payment Methods Card */}
-                <div className="acrylic-frame rounded-[30px] p-3">
-                  <div className="plush-pillow plush-contact rounded-[24px] p-4 sm:p-5 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow">
-                        <i className="fa-solid fa-building-columns text-xs"></i>
-                      </span>
-                      <div>
-                        <h4 className="text-sm font-extrabold text-slate-900">Accepted Payment Gateways</h4>
-                        <p className="text-[10px] font-bold text-emerald-700">
-                          100% Secure Local &amp; Crypto Verification
-                        </p>
+                {(siteConfig.storeBars?.showAcceptedGatewaysCard ?? true) && (
+                  <div className="acrylic-frame rounded-[30px] p-3">
+                    <div className="plush-pillow plush-contact rounded-[24px] p-4 sm:p-5 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow">
+                          <i className="fa-solid fa-building-columns text-xs"></i>
+                        </span>
+                        <div>
+                          <h4 className="text-sm font-extrabold text-slate-900">
+                            {siteConfig.storeBars?.acceptedGatewaysTitle || 'Accepted Payment Gateways'}
+                          </h4>
+                          <p className="text-[10px] font-bold text-emerald-700">
+                            {siteConfig.storeBars?.acceptedGatewaysSubtitle ||
+                              '100% Secure Local & Crypto Verification'}
+                          </p>
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs font-extrabold">
-                      {siteConfig.paymentMethods
-                        .filter((m) => m.enabled !== false)
-                        .map((m) => (
-                          <div
-                            key={m.id}
-                            className="bg-white/85 p-2.5 rounded-xl border border-white flex flex-col justify-between shadow-sm"
-                          >
-                            <div className="flex items-center gap-2">
-                              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                              <span className="text-slate-900 truncate">{m.id}</span>
+                      <div className="grid grid-cols-2 gap-2 text-xs font-extrabold">
+                        {siteConfig.paymentMethods
+                          .filter((m) => m.enabled !== false)
+                          .map((m) => (
+                            <div
+                              key={m.id}
+                              className="bg-white/85 p-2.5 rounded-xl border border-white flex flex-col justify-between shadow-sm"
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                <span className="text-slate-900 truncate">{m.id}</span>
+                              </div>
+                              {(siteConfig.storeBars?.showAccountNumbersInCard ?? true) && (
+                                <div className="text-[10px] font-mono-code text-pink-600 truncate mt-0.5">
+                                  {m.accountNumber}
+                                </div>
+                              )}
                             </div>
-                            <div className="text-[10px] font-mono-code text-pink-600 truncate mt-0.5">
-                              {m.accountNumber}
-                            </div>
-                          </div>
-                        ))}
-                    </div>
+                          ))}
+                      </div>
 
-                    <button
-                      onClick={() =>
-                        copyText(activeWaNumberDisplay, 'Primary WhatsApp Number Copied!')
-                      }
-                      className="w-full py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold shadow-sm transition cursor-pointer"
-                    >
-                      <i className="fa-regular fa-copy mr-1"></i>Primary WhatsApp: {activeWaNumberDisplay}
-                    </button>
+                      {(siteConfig.storeBars?.showGatewaysWhatsappButton ?? true) && (
+                        <button
+                          onClick={() =>
+                            copyText(activeWaNumberDisplay, 'Primary WhatsApp Number Copied!')
+                          }
+                          className="w-full py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-800 border border-emerald-200 text-[11px] font-extrabold shadow-sm transition cursor-pointer"
+                        >
+                          <i className="fa-regular fa-copy mr-1"></i>Primary WhatsApp: {activeWaNumberDisplay}
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Support Hours & Guarantee Card */}
                 <div className="acrylic-frame rounded-[30px] p-3 flex-grow">
@@ -4832,10 +5177,11 @@ export default function App() {
                   </span>
                   <div>
                     <h3 className="text-sm sm:text-lg font-extrabold text-slate-900">
-                      Add Funds / Top-Up Wallet Balance
+                      {siteConfig.storeBars?.depositModalTitle || 'Add Funds / Top-Up Wallet Balance'}
                     </h3>
                     <p className="text-[10px] font-semibold text-slate-600">
-                      Enter Amount → Select EasyPaisa/JazzCash → Submit Account Name &amp; Screenshot
+                      {siteConfig.storeBars?.depositModalSubtitle ||
+                        'Enter Amount → Select EasyPaisa/JazzCash → Submit Account Name & Screenshot'}
                     </p>
                   </div>
                 </div>
@@ -4856,6 +5202,8 @@ export default function App() {
                 onPlayPop={playPopSound}
                 onPreviewScreenshot={(proof) => setPreviewScreenshotProof(proof)}
                 depositMethods={siteConfig.paymentMethods}
+                currencyPrefix={siteConfig.storeBars?.currencyPrefix || 'Rs.'}
+                minDepositAmount={siteConfig.storeBars?.minDepositAmount ?? 50}
               />
             </div>
           </div>
@@ -5007,6 +5355,153 @@ export default function App() {
                     <i className="fa-brands fa-whatsapp text-sm"></i> Send Complete Order
                   </button>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== 6-THEME INSTANT SWITCHER MODAL ==================== */}
+      {themeModalOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/75 backdrop-blur-md"
+          onClick={() => setThemeModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-3xl acrylic-frame rounded-t-[30px] sm:rounded-[34px] p-2.5 sm:p-3.5 max-h-[92dvh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="plush-pillow plush-login rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-5 relative space-y-4">
+              <div className="flex items-center justify-between border-b border-pink-200 pb-3">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white flex items-center justify-center shadow-md">
+                    <i className="fa-solid fa-palette text-base"></i>
+                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-sm sm:text-lg font-extrabold text-slate-900">
+                        Choose Website Theme
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-extrabold uppercase">
+                        6 Themes
+                      </span>
+                    </div>
+                    <p className="text-[11px] font-semibold text-slate-600">
+                      Tap any theme to instantly preview and switch the store styling!
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setThemeModalOpen(false)}
+                  className="w-8 h-8 rounded-full bg-white text-slate-800 shadow flex items-center justify-center font-bold hover:scale-110 transition cursor-pointer"
+                >
+                  <i className="fa-solid fa-xmark text-sm"></i>
+                </button>
+              </div>
+
+              {/* 6 Theme Cards Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {STORE_THEMES_CATALOG.map((theme) => {
+                  const isActive = websiteUiMode === theme.id;
+                  return (
+                    <div
+                      key={`modal-theme-${theme.id}`}
+                      onClick={() => {
+                        playPopSound(760);
+                        setWebsiteUiMode(theme.id);
+                        showToast(`🎨 Theme Applied: ${theme.name}!`);
+                      }}
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between gap-3 ${
+                        isActive
+                          ? 'bg-slate-900 text-white border-sky-400 shadow-xl scale-[1.02]'
+                          : 'bg-white/95 hover:bg-white text-slate-900 border-slate-200 shadow-xs'
+                      }`}
+                    >
+                      <div>
+                        <div className="flex items-center justify-between gap-2 mb-2">
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase ${
+                              isActive
+                                ? 'bg-sky-500/20 text-sky-300 border border-sky-400/40'
+                                : 'bg-slate-100 text-slate-700 border border-slate-200'
+                            }`}
+                          >
+                            {theme.badge}
+                          </span>
+                          {isActive && (
+                            <span className="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-400 text-slate-950">
+                              ● ACTIVE
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`w-8 h-8 rounded-xl bg-gradient-to-br ${theme.gradient} text-white flex items-center justify-center shadow-xs text-xs flex-shrink-0`}
+                          >
+                            <i className={theme.icon}></i>
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs sm:text-sm font-extrabold truncate">
+                              {theme.name}
+                            </h4>
+                          </div>
+                        </div>
+
+                        <p
+                          className={`text-[11px] mt-2 line-clamp-2 leading-relaxed ${
+                            isActive ? 'text-slate-300' : 'text-slate-600'
+                          }`}
+                        >
+                          {theme.tagline}
+                        </p>
+
+                        {/* Swatches */}
+                        <div className="mt-3 flex items-center gap-1.5">
+                          <span
+                            className="w-5 h-5 rounded-full border border-white shadow-xs"
+                            style={{ background: theme.swatch1 }}
+                          ></span>
+                          <span
+                            className="w-5 h-5 rounded-full border border-white shadow-xs"
+                            style={{ background: theme.swatch2 }}
+                          ></span>
+                          <span
+                            className={`text-[10px] font-mono-code font-bold ml-1 ${
+                              isActive ? 'text-slate-300' : 'text-slate-500'
+                            }`}
+                          >
+                            {theme.shortLabel}
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        className={`w-full py-2 rounded-xl text-xs font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                          isActive
+                            ? 'bg-sky-400 text-slate-950 font-black shadow-md'
+                            : 'bg-slate-900 text-white hover:bg-slate-800'
+                        }`}
+                      >
+                        <i className={isActive ? 'fa-solid fa-check' : 'fa-solid fa-wand-magic-sparkles'}></i>
+                        <span>{isActive ? 'Current Theme' : 'Apply Theme'}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs font-bold text-slate-600">
+                <span>All services, bag &amp; wallet remain 100% saved across themes.</span>
+                <button
+                  type="button"
+                  onClick={() => setThemeModalOpen(false)}
+                  className="px-4 py-1.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs cursor-pointer"
+                >
+                  Done
+                </button>
               </div>
             </div>
           </div>
