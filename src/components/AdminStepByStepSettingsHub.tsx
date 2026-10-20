@@ -56,6 +56,7 @@ import {
   FaVolumeHigh,
   FaCircleCheck,
   FaLayerGroup,
+  FaLock,
   FaFont,
   FaShieldHalved,
   FaUserShield,
@@ -489,6 +490,89 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   // Active Settings Screen ('home' shows WhatsApp/TikTok style grouped menu)
   const [activeScreen, setActiveScreen] = useState<AdminSettingsScreenId>('dashboard');
   const [securityStep, setSecurityStep] = useState<number>(1);
+
+  // Sub-Admin RBAC Identity & Granular Permissions State
+  const [currentAdminRole, setCurrentAdminRole] = useState<'superadmin' | 'subadmin' | 'admin'>('superadmin');
+  const [currentAdminUser, setCurrentAdminUser] = useState<string>('saqib');
+  const [adminPermissions, setAdminPermissions] = useState<{
+    manage_services: boolean;
+    manage_tools: boolean;
+    manage_orders: boolean;
+    manage_users: boolean;
+    view_telemetry: boolean;
+    manage_site_config: boolean;
+    manage_admins?: boolean;
+  }>({
+    manage_services: true,
+    manage_tools: true,
+    manage_orders: true,
+    manage_users: true,
+    view_telemetry: true,
+    manage_site_config: true,
+    manage_admins: true,
+  });
+
+  useEffect(() => {
+    async function loadAdminSession() {
+      try {
+        const storedToken = localStorage.getItem('saqib_admin_token');
+        const headers: Record<string, string> = {};
+        if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+        const res = await fetch('/api/admin/auth', { headers });
+        const data = await res.json();
+        if (data.authenticated) {
+          if (data.role) setCurrentAdminRole(data.role);
+          if (data.username) setCurrentAdminUser(data.username);
+          if (data.permissions) setAdminPermissions(data.permissions);
+        }
+      } catch {
+        // Fallback default
+      }
+    }
+    loadAdminSession();
+  }, []);
+
+  const isSuperadmin = currentAdminRole === 'superadmin' || currentAdminUser.toLowerCase() === 'saqib';
+  const canManageServices = isSuperadmin || Boolean(adminPermissions.manage_services);
+  const canManageTools = isSuperadmin || Boolean(adminPermissions.manage_tools);
+  const canManageOrders = isSuperadmin || Boolean(adminPermissions.manage_orders);
+  const canManageUsers = isSuperadmin || Boolean(adminPermissions.manage_users);
+  const canViewTelemetry = isSuperadmin || Boolean(adminPermissions.view_telemetry);
+  const canManageSiteConfig = isSuperadmin || Boolean(adminPermissions.manage_site_config);
+  const canManageAdmins = isSuperadmin || Boolean(adminPermissions.manage_admins);
+
+  const hasScreenPermission = (screen: AdminSettingsScreenId): boolean => {
+    switch (screen) {
+      case 'dashboard':
+      case 'home':
+        return true;
+      case 'categories':
+      case 'services':
+        return canManageServices;
+      case 'tools':
+        return canManageTools;
+      case 'payment_methods':
+      case 'payments':
+        return canManageOrders;
+      case 'visibility':
+      case 'banner':
+      case 'promo_banners':
+      case 'store_bars':
+      case 'contact_footer':
+      case 'ui':
+      case 'seo':
+        return canManageSiteConfig;
+      case 'security':
+        return canManageAdmins;
+      default:
+        return true;
+    }
+  };
+
+  const handleRestrictedAccess = (featureName: string) => {
+    playPopSound(200);
+    showToast(`🔒 Access Restricted: Aapke sub-admin account ko "${featureName}" manage karne ki permission nahi hai.`);
+  };
   const [settingsSearchQuery, setSettingsSearchQuery] = useState<string>('');
   const [visibilitySubTab, setVisibilitySubTab] = useState<
     'sections' | 'products' | 'categories' | 'tools'
@@ -906,6 +990,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   };
 
   const openSettingsScreen = (screen: AdminSettingsScreenId, initialStep?: number) => {
+    if (!hasScreenPermission(screen)) {
+      handleRestrictedAccess(screen);
+      return;
+    }
     playPopSound(660);
     setActiveScreen(screen);
     if (screen === 'categories' && initialStep) {
@@ -941,6 +1029,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   };
 
   const handleEditServiceInWizard = (srv: StoreService) => {
+    if (!canManageServices) {
+      handleRestrictedAccess('Add/Edit Products');
+      return;
+    }
     startEditService(srv);
     setPlanRows(parseTiersToPlanRows((srv.tiers || []).map(formatTierToString).join('\n')));
     setActiveScreen('services');
@@ -949,6 +1041,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   };
 
   const handleEditToolInWizard = (tool: WebToolItem) => {
+    if (!canManageTools) {
+      handleRestrictedAccess('Add/Edit Web Tools');
+      return;
+    }
     startEditTool(tool);
     setActiveScreen('tools');
     setToolStep(1);
@@ -1657,181 +1753,287 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               )}
             </div>
 
-            {/* 6 Step-by-Step Quick Action Cards */}
+            {/* 8 Step-by-Step Quick Action Cards with Sub-Admin RBAC Locks */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+              {/* Card 1: Hide / Show Anything */}
               <button
                 type="button"
-                onClick={() => openSettingsScreen('visibility')}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 border border-sky-400/40"
+                onClick={() => {
+                  if (!canManageSiteConfig) {
+                    handleRestrictedAccess('Hide / Show Anything');
+                    return;
+                  }
+                  openSettingsScreen('visibility');
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-900 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 border border-sky-400/40 relative ${
+                  !canManageSiteConfig ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-sky-400/20 flex items-center justify-center">
-                    <FaEyeSlash className="w-4 h-4 text-sky-300" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageSiteConfig ? 'bg-rose-500/20 text-rose-400' : 'bg-sky-400/20 text-sky-300'}`}>
+                    {!canManageSiteConfig ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaEyeSlash className="w-4 h-4 text-sky-300" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-sky-400/25 text-sky-200 text-[9px] font-extrabold uppercase">
-                    1-Tap Hide
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageSiteConfig ? 'bg-rose-500 text-white shadow-sm' : 'bg-sky-400/25 text-sky-200'
+                  }`}>
+                    {!canManageSiteConfig ? <>🔒 LOCKED</> : '1-Tap Hide'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">Hide / Show Anything</div>
-                  <div className="text-[10px] text-sky-200 font-semibold">
-                    Services, Sections, Tabs &amp; Tools
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>Hide / Show Anything</span>
+                    {!canManageSiteConfig && <FaLock className="text-[10px] text-rose-400" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageSiteConfig ? 'text-rose-300 font-bold' : 'text-sky-200'}`}>
+                    {!canManageSiteConfig ? '🔒 Restricted by Superadmin' : 'Services, Sections, Tabs & Tools'}
                   </div>
                 </div>
               </button>
 
+              {/* Card 2: Add / Edit Category */}
               <button
                 type="button"
                 onClick={() => {
+                  if (!canManageServices) {
+                    handleRestrictedAccess('Category Management');
+                    return;
+                  }
                   resetCategoryWizardForm();
                   openSettingsScreen('categories', 1);
                 }}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-pink-600 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageServices ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaLayerGroup className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageServices ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageServices ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaLayerGroup className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    {activeCategories.length} Tabs
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageServices ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageServices ? <>🔒 LOCKED</> : `${activeCategories.length} Tabs`}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">+ Add / Edit Category</div>
-                  <div className="text-[10px] text-pink-100 font-semibold">
-                    Create, Hide &amp; Custom Icons
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>+ Add / Edit Category</span>
+                    {!canManageServices && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageServices ? 'text-rose-200 font-bold' : 'text-pink-100'}`}>
+                    {!canManageServices ? '🔒 Restricted by Superadmin' : 'Create, Hide & Custom Icons'}
                   </div>
                 </div>
               </button>
 
+              {/* Card 3: Add New Product */}
               <button
                 type="button"
                 onClick={() => {
+                  if (!canManageServices) {
+                    handleRestrictedAccess('Product Management');
+                    return;
+                  }
                   resetAdminForm();
                   openSettingsScreen('services', 1);
                 }}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageServices ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaBagShopping className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageServices ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageServices ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaBagShopping className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    4 Steps
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageServices ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageServices ? <>🔒 LOCKED</> : '4 Steps'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">+ Add New Product</div>
-                  <div className="text-[10px] text-pink-100 font-semibold">
-                    Title, Plans, Prices &amp; Icon
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>+ Add New Product</span>
+                    {!canManageServices && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageServices ? 'text-rose-200 font-bold' : 'text-pink-100'}`}>
+                    {!canManageServices ? '🔒 Restricted by Superadmin' : 'Title, Plans, Prices & Icon'}
                   </div>
                 </div>
               </button>
 
+              {/* Card 4: Add Web Tool */}
               <button
                 type="button"
                 onClick={() => {
+                  if (!canManageTools) {
+                    handleRestrictedAccess('Web Tools Deck');
+                    return;
+                  }
                   resetToolForm();
                   openSettingsScreen('tools', 1);
                 }}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-blue-600 to-cyan-600 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageTools ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaScrewdriverWrench className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageTools ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageTools ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaScrewdriverWrench className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    4 Steps
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageTools ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageTools ? <>🔒 LOCKED</> : '4 Steps'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">+ Add Web Tool</div>
-                  <div className="text-[10px] text-sky-100 font-semibold">
-                    Link, Icon, Badge &amp; Mode
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>+ Add Web Tool</span>
+                    {!canManageTools && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageTools ? 'text-rose-200 font-bold' : 'text-sky-100'}`}>
+                    {!canManageTools ? '🔒 Restricted by Superadmin' : 'Link, Icon, Badge & Mode'}
                   </div>
                 </div>
               </button>
 
+              {/* Card 5: Payment Methods */}
               <button
                 type="button"
-                onClick={() => openSettingsScreen('payment_methods')}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-green-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                onClick={() => {
+                  if (!canManageOrders) {
+                    handleRestrictedAccess('Payment Methods');
+                    return;
+                  }
+                  openSettingsScreen('payment_methods');
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-green-600 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageOrders ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaBuildingColumns className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageOrders ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageOrders ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaBuildingColumns className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    Accounts
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageOrders ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageOrders ? <>🔒 LOCKED</> : 'Accounts'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">Payment Methods</div>
-                  <div className="text-[10px] text-emerald-100 font-semibold">
-                    EasyPaisa, JazzCash &amp; Bank
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>Payment Methods</span>
+                    {!canManageOrders && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageOrders ? 'text-rose-200 font-bold' : 'text-emerald-100'}`}>
+                    {!canManageOrders ? '🔒 Restricted by Superadmin' : 'EasyPaisa, JazzCash & Bank'}
                   </div>
                 </div>
               </button>
 
+              {/* Card 6: WhatsApp & Footer */}
               <button
                 type="button"
-                onClick={() => openSettingsScreen('contact_footer', 1)}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                onClick={() => {
+                  if (!canManageSiteConfig) {
+                    handleRestrictedAccess('WhatsApp & Footer');
+                    return;
+                  }
+                  openSettingsScreen('contact_footer', 1);
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageSiteConfig ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <SiWhatsapp className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageSiteConfig ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageSiteConfig ? <FaLock className="w-4 h-4 text-rose-400" /> : <SiWhatsapp className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    3 Steps
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageSiteConfig ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageSiteConfig ? <>🔒 LOCKED</> : '3 Steps'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">WhatsApp &amp; Footer</div>
-                  <div className="text-[10px] text-amber-100 font-semibold">
-                    Number, Socials &amp; Links
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>WhatsApp &amp; Footer</span>
+                    {!canManageSiteConfig && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageSiteConfig ? 'text-rose-200 font-bold' : 'text-amber-100'}`}>
+                    {!canManageSiteConfig ? '🔒 Restricted by Superadmin' : 'Number, Socials & Links'}
                   </div>
                 </div>
               </button>
 
-                            <button
+              {/* Card 7: Sub-Admins & Roles */}
+              <button
                 type="button"
-                onClick={() => openSettingsScreen('security', 2)}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+                onClick={() => {
+                  if (!canManageAdmins) {
+                    handleRestrictedAccess('Sub-Admins & Roles');
+                    return;
+                  }
+                  openSettingsScreen('security', 2);
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageAdmins ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaUserShield className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageAdmins ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageAdmins ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaUserShield className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    RBAC Team
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageAdmins ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageAdmins ? <>🔒 LOCKED</> : 'RBAC Team'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">Sub-Admins &amp; Roles</div>
-                  <div className="text-[10px] text-purple-100 font-semibold">
-                    Create Admin &amp; Granular Permissions
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>Sub-Admins &amp; Roles</span>
+                    {!canManageAdmins && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageAdmins ? 'text-rose-200 font-bold' : 'text-purple-100'}`}>
+                    {!canManageAdmins ? '🔒 Superadmin Only' : 'Create Admin & Granular Permissions'}
                   </div>
                 </div>
               </button>
 
-<button
+              {/* Card 8: SEO & Meta Tags */}
+              <button
                 type="button"
-                onClick={() => openSettingsScreen('seo')}
-                className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 col-span-2 sm:col-span-1"
+                onClick={() => {
+                  if (!canManageSiteConfig) {
+                    handleRestrictedAccess('SEO & Meta Tags');
+                    return;
+                  }
+                  openSettingsScreen('seo');
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 col-span-2 sm:col-span-1 relative ${
+                  !canManageSiteConfig ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
               >
                 <div className="flex items-center justify-between">
-                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
-                    <FaGlobe className="w-4 h-4 text-white" />
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageSiteConfig ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    {!canManageSiteConfig ? <FaLock className="w-4 h-4 text-rose-400" /> : <FaGlobe className="w-4 h-4 text-white" />}
                   </span>
-                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
-                    SEO Hub
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageSiteConfig ? 'bg-rose-500 text-white shadow-sm' : 'bg-white/25 text-white'
+                  }`}>
+                    {!canManageSiteConfig ? <>🔒 LOCKED</> : 'SEO Hub'}
                   </span>
                 </div>
                 <div>
-                  <div className="text-xs sm:text-sm font-extrabold">SEO &amp; Meta Tags</div>
-                  <div className="text-[10px] text-blue-100 font-semibold">
-                    Open Graph, Twitter &amp; Keywords
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>SEO &amp; Meta Tags</span>
+                    {!canManageSiteConfig && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageSiteConfig ? 'text-rose-200 font-bold' : 'text-blue-100'}`}>
+                    {!canManageSiteConfig ? '🔒 Restricted by Superadmin' : 'Open Graph, Twitter & Keywords'}
                   </div>
                 </div>
               </button>
@@ -2568,8 +2770,29 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
         </div>
       )}
 
-      {/* ==================== SCREEN 0.5: 3-STEP STORE CATEGORIES & ICONS STUDIO ==================== */}
-      {activeScreen === 'categories' && (
+            {/* ==================== SCREEN PERMISSION GUARD (WHEN SUBADMIN LACKS ACCESS) ==================== */}
+      {activeScreen !== 'home' && activeScreen !== 'dashboard' && !hasScreenPermission(activeScreen) && (
+        <div className="acrylic-frame rounded-3xl p-8 sm:p-12 text-center max-w-xl mx-auto my-8">
+          <div className="w-16 h-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-500 flex items-center justify-center mx-auto mb-4 text-3xl">
+            <FaLock />
+          </div>
+          <h3 className="text-xl font-black text-slate-900 mb-2">🔒 Permission Restricted</h3>
+          <p className="text-xs sm:text-sm text-slate-600 mb-6 leading-relaxed">
+            Aapka sub-admin account (<code className="font-bold text-rose-600 bg-rose-50 px-2 py-0.5 rounded">{currentAdminUser}</code>) is system ko manage karne ki permission nahi rakhta.
+            Ise open ya edit karne ke liye Superadmin (<b className="text-indigo-600">Muhammad Saqib</b>) se access enable karwayein.
+          </p>
+          <button
+            type="button"
+            onClick={() => openSettingsScreen('home')}
+            className="px-6 py-2.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs hover:bg-slate-800 transition cursor-pointer shadow-md"
+          >
+            ← Back to Settings Menu
+          </button>
+        </div>
+      )}
+
+{/* ==================== SCREEN 0.5: 3-STEP STORE CATEGORIES & ICONS STUDIO ==================== */}
+      {activeScreen === 'categories' && hasScreenPermission('categories') && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left (7 Cols): 3-Step Category Builder & Icon Studio */}
@@ -3072,7 +3295,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 1: 4-STEP PRODUCT / SERVICE WIZARD & CATALOG MANAGER ==================== */}
-      {activeScreen === 'services' && (
+      {activeScreen === 'services' && hasScreenPermission('services') && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left (7 Cols): 4-Step Guided Product Wizard */}
@@ -3863,7 +4086,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 2: 4-STEP LIVE WEB TOOL WIZARD & MANAGER ==================== */}
-      {activeScreen === 'tools' && (
+      {activeScreen === 'tools' && hasScreenPermission('tools') && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
             {/* Left (7 Cols): 4-Step Web Tool Wizard */}
@@ -4372,7 +4595,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 3: HERO BANNER & VISIBILITY STUDIO (4 STEPS) ==================== */}
-      {activeScreen === 'banner' && (
+      {activeScreen === 'banner' && hasScreenPermission('banner') && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-pink-200 pb-3.5">
@@ -5351,7 +5574,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN: 2 NO PROMO & DEAL BANNERS STUDIO ==================== */}
-      {activeScreen === 'promo_banners' && (
+      {activeScreen === 'promo_banners' && hasScreenPermission('promo_banners') && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
             {/* Top Navigation & Breadcrumbs */}
@@ -6331,7 +6554,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN: STOREFRONT BARS, WALLET & TELEMETRY STUDIO (3 STEPS) ==================== */}
-      {activeScreen === 'store_bars' && (
+      {activeScreen === 'store_bars' && hasScreenPermission('store_bars') && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-200 pb-3.5">
@@ -7124,7 +7347,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 4: PAYMENT METHODS, WALLET BARS & GATEWAYS STUDIO (4 STEPS) ==================== */}
-      {activeScreen === 'payment_methods' && (
+      {activeScreen === 'payment_methods' && hasScreenPermission('payment_methods') && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-contact rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-emerald-200 pb-3.5">
@@ -8198,7 +8421,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 5: WHATSAPP NUMBER, SOCIALS & FOOTER LINKS (3 STEPS) ==================== */}
-      {activeScreen === 'contact_footer' && (
+      {activeScreen === 'contact_footer' && hasScreenPermission('contact_footer') && (
         <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
           <div className="plush-pillow plush-about rounded-[26px] p-4 sm:p-6 space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-200 pb-3.5">
@@ -8913,7 +9136,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 6: PAYMENT PROOFS & USER BALANCE STUDIO ==================== */}
-      {activeScreen === 'payments' && (
+      {activeScreen === 'payments' && hasScreenPermission('payments') && (
         <AdminPaymentApprovalStudio
           walletBalance={walletBalance}
           paymentProofs={paymentProofs}
@@ -8927,7 +9150,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 7: WEBSITE UI THEME & FONT STUDIO ==================== */}
-      {activeScreen === 'ui' && (
+      {activeScreen === 'ui' && hasScreenPermission('ui') && (
         <AdminUiThemeSwitcherStudio
           uiMode={websiteUiMode}
           onChangeUiMode={(mode) => setWebsiteUiMode(mode)}
@@ -8939,7 +9162,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 8: 1-TAP HIDE / SHOW ANYTHING MASTER SWITCHBOARD ==================== */}
-      {activeScreen === 'visibility' && (
+      {activeScreen === 'visibility' && hasScreenPermission('visibility') && (
         <div className="space-y-5">
           <div className="acrylic-frame rounded-[34px] p-3 sm:p-4">
             <div className="plush-pillow plush-login rounded-[26px] p-4 sm:p-6 space-y-5">
@@ -9530,7 +9753,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 9: SEO & OPEN GRAPH METADATA STUDIO ==================== */}
-      {activeScreen === 'seo' && (
+      {activeScreen === 'seo' && hasScreenPermission('seo') && (
         <AdminSeoStudio
           siteConfig={siteConfig}
           onUpdateSiteConfig={onUpdateSiteConfig}
@@ -9542,7 +9765,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       )}
 
       {/* ==================== SCREEN 10: ADMIN SECURITY & ANTI-CLONE KILLSWITCH ==================== */}
-      {activeScreen === 'security' && (
+      {activeScreen === 'security' && hasScreenPermission('security') && (
         <AdminSecurityCredentialsStudio
           siteConfig={siteConfig}
           onUpdateSiteConfig={onUpdateSiteConfig}
