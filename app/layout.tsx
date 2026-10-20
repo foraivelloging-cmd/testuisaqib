@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import '../src/index.css';
+import { AntiScrapeProtectionShield } from '@/src/components/AntiScrapeProtectionShield';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || 'https://mrsaqib242.vercel.app'),
@@ -66,6 +67,7 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="overflow-x-hidden antialiased selection:bg-pink-500 selection:text-white">
+        <AntiScrapeProtectionShield />
         {children}
       </body>
     </html>

@@ -16,6 +16,50 @@ const SUSPICIOUS_USER_AGENTS = [
   'wpscan',
 ];
 
+// Blacklist of automated code-rippers, scrapers, and headless browser scrapers
+const FORBIDDEN_SCRAPERS = [
+  'curl',
+  'wget',
+  'python-requests',
+  'python-urllib',
+  'scrapy',
+  'httrack',
+  'beautifulsoup',
+  'headlesschrome',
+  'puppeteer',
+  'selenium',
+  'phantomjs',
+  'postmanruntime',
+  'insomnia',
+  'apache-httpclient',
+  'go-http-client',
+  'okhttp',
+  'aiohttp',
+  'httpclient',
+  'libwww-perl',
+  'winhttp',
+  'webcopier',
+  'teleport',
+  'offline explorer',
+  'site-sniffer',
+  'page-ripper',
+  'superbot',
+];
+
+// Allowed legitimate search engine crawlers & social card bots
+const ALLOWED_CRAWLERS = [
+  'googlebot',
+  'bingbot',
+  'duckduckbot',
+  'slurp',
+  'baiduspider',
+  'yandexbot',
+  'facebookexternalhit',
+  'whatsapp',
+  'telegrambot',
+  'twitterbot',
+];
+
 // Exploit paths probed by automated Linux bots / scanners
 const BLOCKED_PATH_PATTERNS = [
   /\/\.env/i,
@@ -37,15 +81,73 @@ export function proxy(request: NextRequest) {
     request.headers.get('x-real-ip') ||
     '127.0.0.1';
 
-  // ==================== 1. BLOCK MALICIOUS SCANNER USER-AGENTS ====================
-  if (SUSPICIOUS_USER_AGENTS.some((agent) => userAgent.includes(agent))) {
-    return new NextResponse(
-      JSON.stringify({ error: 'Access Denied: Malicious scanner signature detected.' }),
-      {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
+  // ==================== 1. BOT, SCRAPER & SCANNER DEFENSE SHIELD ====================
+  const isAllowedCrawler = ALLOWED_CRAWLERS.some((bot) => userAgent.includes(bot));
+
+  if (!isAllowedCrawler) {
+    // 1a. Block Malicious Penetration Scanners
+    if (SUSPICIOUS_USER_AGENTS.some((agent) => userAgent.includes(agent))) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Access Denied: Malicious scanner signature detected.' }),
+        {
+          status: 403,
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+    }
+
+    // 1b. Block Automated Code Scrapers & Headless Rippers
+    const isScraper = FORBIDDEN_SCRAPERS.some((sig) => userAgent.includes(sig));
+    const isEmptyUserAgent = !userAgent || userAgent.trim().length < 4;
+
+    if (isScraper || isEmptyUserAgent) {
+      if (pathname.startsWith('/api/')) {
+        return new NextResponse(
+          JSON.stringify({
+            error: 'Access Denied: Automated source code scraping is strictly prohibited on Saqib Visuals Hub.',
+            clientIp,
+            status: 403,
+          }),
+          {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
-    );
+
+      return new NextResponse(
+        `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>403 Forbidden — Security Shield Active</title>
+  <style>
+    body { background: #090d16; color: #f1f5f9; font-family: -apple-system, sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; padding: 20px; text-align: center; }
+    .card { background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(244, 63, 94, 0.4); border-radius: 20px; padding: 40px; max-width: 520px; box-shadow: 0 20px 50px rgba(0,0,0,0.6); backdrop-filter: blur(20px); }
+    h1 { color: #f43f5e; font-size: 26px; margin: 0 0 12px; font-weight: 900; }
+    p { font-size: 14px; color: #94a3b8; line-height: 1.6; margin: 0 0 20px; }
+    .badge { display: inline-block; background: rgba(244, 63, 94, 0.15); color: #fb7185; padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 800; margin-bottom: 20px; border: 1px solid rgba(244, 63, 94, 0.3); }
+    .footer { font-size: 11px; color: #64748b; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="badge">🛡️ ANTI-SCRAPING ACTIVE SHIELD</div>
+    <h1>403 Forbidden</h1>
+    <p>Automated scrapers, headless rippers, and unauthorized bots are strictly prohibited on Muhammad Saqib Visuals Hub. Please visit using a standard, secure web browser.</p>
+    <div class="footer">Client IP: ${clientIp} • Protected by Saqib Visuals Security</div>
+  </div>
+</body>
+</html>`,
+        {
+          status: 403,
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'X-Robots-Tag': 'noindex, nofollow, noarchive',
+          },
+        }
+      );
+    }
   }
 
   // ==================== 2. BLOCK PATH TRAVERSAL & PROBING ====================

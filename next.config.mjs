@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: false,
   compress: true,
   poweredByHeader: false,
+  productionBrowserSourceMaps: false,
   images: {
     unoptimized: true,
   },
@@ -64,6 +65,7 @@ const nextConfig = {
           },
           { key: 'X-Permitted-Cross-Domain-Policies', value: 'none' },
           { key: 'X-Download-Options', value: 'noopen' },
+          { key: 'X-Robots-Tag', value: 'noarchive, nosnippet' },
         ],
       },
     ];
