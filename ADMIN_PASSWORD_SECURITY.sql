@@ -83,7 +83,7 @@ TRUNCATE TABLE public.security_lockouts;
 -- =====================================================================
 -- 1. Dual-Layer Security: In-Memory (0ms) + Supabase security_lockouts table.
 -- 2. Max 3 consecutive failed password attempts are allowed.
--- 3. If 3 failed attempts occur, IP & username are locked for 15 minutes.
+-- 3. If 3 failed attempts occur, IP & username are locked for 1 HOUR (60 minutes / 3600 seconds).
 -- 4. Both Login (POST) and Password Change (PATCH) are protected.
 -- 5. If an admin deletes the lock record from Supabase, Next.js unlocks immediately!
 -- =====================================================================

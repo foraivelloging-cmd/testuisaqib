@@ -65,7 +65,7 @@ export async function POST(req: Request) {
             success: false,
             locked: true,
             remainingSeconds: state.remainingSeconds,
-            error: `Security Lockout Activated: 3 consecutive failed login attempts detected. Access locked for 15 minutes.`,
+            error: `Security Lockout Activated: 3 consecutive failed login attempts detected. Access locked for 1 hour (60 minutes).`,
           },
           {
             status: 429,
@@ -81,7 +81,7 @@ export async function POST(req: Request) {
           attemptsLeft: state.attemptsLeft,
           error: `Access Denied: Invalid Admin Credentials. (${state.attemptsLeft} attempt${
             state.attemptsLeft === 1 ? '' : 's'
-          } remaining before 15-minute security lockout)`,
+          } remaining before 1-hour security lockout)`,
         },
         { status: 401 }
       );
@@ -214,7 +214,7 @@ export async function PATCH(req: Request) {
               success: false,
               locked: true,
               remainingSeconds: state.remainingSeconds,
-              error: `Security Lockout Activated: 3 consecutive failed password change attempts. Password updating locked for 15 minutes.`,
+              error: `Security Lockout Activated: 3 consecutive failed password change attempts. Password updating locked for 1 hour (60 minutes).`,
             },
             {
               status: 429,
@@ -230,7 +230,7 @@ export async function PATCH(req: Request) {
             attemptsLeft: state.attemptsLeft,
             error: `${result.error} (${state.attemptsLeft} attempt${
               state.attemptsLeft === 1 ? '' : 's'
-            } remaining before 15-minute lockout)`,
+            } remaining before 1-hour lockout)`,
           },
           { status: 400 }
         );

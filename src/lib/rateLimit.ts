@@ -1,7 +1,7 @@
 // ============================================================================
 // RATE LIMITING & BRUTE FORCE DEFENSE SYSTEM
 // Dual-Layer Architecture: Fast In-Memory Cache + Persistent Supabase Database
-// 3-Attempt Lockout Timer + Sliding Window API Rate Limiter
+// 3-Attempt Lockout Timer (1 Hour) + Sliding Window API Rate Limiter
 // ============================================================================
 
 import { supabaseAdmin } from './supabaseAdmin';
@@ -22,8 +22,8 @@ const lockoutStore = new Map<string, LockoutRecord>();
 const apiRateStore = new Map<string, ApiRateRecord>();
 
 const MAX_FAILED_ATTEMPTS = 3;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 Minutes lockout
-const ATTEMPT_WINDOW_MS = 15 * 60 * 1000; // 15 Minutes sliding attempt window
+const LOCKOUT_DURATION_MS = 60 * 60 * 1000; // 1 Hour lockout (60 minutes / 3600 seconds)
+const ATTEMPT_WINDOW_MS = 60 * 60 * 1000; // 1 Hour sliding attempt window
 
 /**
  * Clean up stale records periodically to avoid memory growth
