@@ -2088,7 +2088,7 @@ export default function App({
             </button>
 
             <div
-              className="flex items-center gap-1.5 sm:gap-2 min-w-0 cursor-pointer"
+              className="flex items-center gap-1 sm:gap-2 min-w-0 cursor-pointer flex-shrink"
               onClick={() => {
                 switchTab('store');
                 triggerConfettiBurst();
@@ -2097,9 +2097,11 @@ export default function App({
               <span className="text-base sm:text-2xl flex-shrink-0">🚀</span>
               <div className="flex flex-col leading-none min-w-0">
                 <span className="font-extrabold text-slate-900 tracking-tight text-[11px] sm:text-sm truncate">
-                  MUHAMMAD SAQIB
+                  <span className="xs:hidden">SAQIB</span>
+                  <span className="hidden xs:inline sm:hidden">SAQIB VISUALS</span>
+                  <span className="hidden sm:inline">MUHAMMAD SAQIB</span>
                 </span>
-                <span className="text-[8px] sm:text-[10px] font-semibold text-pink-600 truncate">
+                <span className="text-[7.5px] sm:text-[10px] font-semibold text-pink-600 truncate hidden xs:block">
                   SAQIB VISUALS • {visibleServicesCatalog.length} SERVICES
                 </span>
               </div>
@@ -2240,10 +2242,13 @@ export default function App({
                 suppressHydrationWarning
               >
                 <i className="fa-solid fa-wallet text-sky-200 sm:text-sky-400"></i>
-                <span className="font-display tracking-wide whitespace-nowrap" suppressHydrationWarning>
+                <span className="font-display tracking-wide whitespace-nowrap hidden sm:inline" suppressHydrationWarning>
                   {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                 </span>
-                <span className="hidden xs:inline-block sm:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
+                <span className="font-display tracking-wide whitespace-nowrap sm:hidden text-[10px]" suppressHydrationWarning>
+                  {walletBalance >= 1000 ? `${(walletBalance / 1000).toFixed(walletBalance % 1000 === 0 ? 0 : 1)}k` : walletBalance}
+                </span>
+                <span className="hidden md:inline-block px-1.5 py-0.2 rounded-full bg-white/25 text-[8px] sm:text-[9px] font-extrabold">
                   {siteConfig.storeBars?.headerPillAddLabel || '+Add'}
                 </span>
               </button>
@@ -2271,22 +2276,15 @@ export default function App({
                 toggleLanguage();
               }}
               title={siteLang === 'en' ? 'Switch to Urdu (اردو زبان)' : 'Switch to English (انگریزی زبان)'}
-              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[11px] sm:text-xs shadow-md border-2 flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${
+              className={`px-2 sm:px-3 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[10px] sm:text-xs shadow-sm border flex items-center gap-1 sm:gap-1.5 transition-all hover:scale-105 cursor-pointer flex-shrink-0 ${
                 siteLang === 'ur'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-white shadow-emerald-500/30'
-                  : 'bg-white/95 hover:bg-white text-slate-900 border-pink-400 shadow-sm'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-emerald-400 shadow-emerald-500/20'
+                  : 'bg-white/95 hover:bg-white text-slate-900 border-pink-300 shadow-xs'
               }`}
             >
-              <span className="text-base leading-none">{siteLang === 'en' ? '🇵🇰' : '🇬🇧'}</span>
-              <span className="font-extrabold tracking-wide text-xs sm:text-sm">
+              <span className="text-xs sm:text-sm leading-none">{siteLang === 'en' ? '🇵🇰' : '🇬🇧'}</span>
+              <span className="font-extrabold tracking-wide text-[10px] sm:text-xs">
                 {siteLang === 'en' ? 'اردو' : 'English'}
-              </span>
-              <span
-                className={`text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase ${
-                  siteLang === 'ur' ? 'bg-white/25 text-white' : 'bg-pink-100 text-pink-700'
-                }`}
-              >
-                {siteLang === 'en' ? 'UR' : 'EN'}
               </span>
             </button>
 
@@ -2326,7 +2324,7 @@ export default function App({
                 setThemeModalOpen(true);
               }}
               title="Switch Website Theme (6 Themes: Neo Gray Dark, Neo Blue Dark, Astro, Pink, Gold, Jelly)"
-              className="px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full bg-white/90 hover:bg-white text-slate-800 text-[10px] sm:text-[11px] font-extrabold shadow-2xs border border-slate-300/80 flex items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer"
+              className="hidden sm:flex px-2 sm:px-2.5 py-1.5 rounded-xl sm:rounded-full bg-white/90 hover:bg-white text-slate-800 text-[10px] sm:text-[11px] font-extrabold shadow-2xs border border-slate-300/80 items-center gap-1 sm:gap-1.5 hover:scale-105 transition cursor-pointer"
             >
               <i className="fa-solid fa-palette text-pink-500 text-xs"></i>
               <span className="hidden sm:inline font-bold">Theme:</span>
@@ -2562,28 +2560,28 @@ export default function App({
                     },
                     {
                       id: 'about' as TabId,
-                      label: 'About Saqib',
+                      label: siteLang === 'ur' ? 'ثاقب کے بارے میں' : 'About Saqib',
                       icon: 'fa-solid fa-user-astronaut',
                       color: 'text-purple-600',
                       show: siteVisibility.showAboutTab
                     },
                     {
                       id: 'faqs' as TabId,
-                      label: 'FAQs & Help',
+                      label: siteLang === 'ur' ? 'سوالات و جوابات' : 'FAQs & Help',
                       icon: 'fa-solid fa-circle-question',
                       color: 'text-amber-600',
                       show: siteVisibility.showFaqsTab
                     },
                     {
                       id: 'contact' as TabId,
-                      label: 'Contact Support',
+                      label: siteLang === 'ur' ? 'رابطہ سپورٹ' : 'Contact Support',
                       icon: 'fa-solid fa-headset',
                       color: 'text-blue-600',
                       show: siteVisibility.showContactTab
                     },
                     {
                       id: 'login' as TabId,
-                      label: vipUser ? 'VIP Wallet' : 'VIP Login',
+                      label: vipUser ? (siteLang === 'ur' ? 'وی آئی پی والٹ' : 'VIP Wallet') : (siteLang === 'ur' ? 'وی آئی پی لاگ ان' : 'VIP Login'),
                       icon: 'fa-solid fa-crown',
                       color: 'text-rose-600',
                       show: siteVisibility.showLoginTab
@@ -5288,42 +5286,42 @@ export default function App({
             {[
               {
                 id: 'store' as TabId,
-                label: 'Store',
+                label: t.navStore,
                 icon: 'fa-solid fa-fire-flame-curved',
                 activeColor: 'from-pink-500 to-rose-500',
                 show: true
               },
               {
                 id: 'siminfo' as TabId,
-                label: 'Tools',
+                label: t.navTools,
                 icon: 'fa-solid fa-screwdriver-wrench',
                 activeColor: 'from-emerald-500 to-teal-600',
                 show: siteVisibility.showToolsTab
               },
               {
                 id: 'about' as TabId,
-                label: 'About',
+                label: t.navAbout,
                 icon: 'fa-solid fa-user-astronaut',
                 activeColor: 'from-purple-500 to-indigo-600',
                 show: siteVisibility.showAboutTab
               },
               {
                 id: 'faqs' as TabId,
-                label: 'FAQs',
+                label: t.navFaqs,
                 icon: 'fa-solid fa-circle-question',
                 activeColor: 'from-amber-500 to-orange-500',
                 show: siteVisibility.showFaqsTab
               },
               {
                 id: 'contact' as TabId,
-                label: 'Contact',
+                label: t.navContact,
                 icon: 'fa-solid fa-headset',
                 activeColor: 'from-blue-500 to-cyan-600',
                 show: siteVisibility.showContactTab
               },
               {
                 id: 'login' as TabId,
-                label: vipUser ? 'VIP' : 'Login',
+                label: vipUser ? (siteLang === 'ur' ? 'وی آئی پی' : 'VIP') : (siteLang === 'ur' ? 'لاگ ان' : 'Login'),
                 icon: 'fa-solid fa-crown',
                 activeColor: 'from-rose-500 to-pink-600',
                 show: siteVisibility.showLoginTab
