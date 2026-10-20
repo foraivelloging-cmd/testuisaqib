@@ -63,6 +63,8 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
   const [userNote, setUserNote] = useState<string>('');
   const [screenshotDataUrl, setScreenshotDataUrl] = useState<string>('');
   const [uploadFileName, setUploadFileName] = useState<string>('');
+  const [ssMode, setSsMode] = useState<'upload' | 'url'>('upload');
+  const [directUrlInput, setDirectUrlInput] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
   const [justSubmitted, setJustSubmitted] = useState<boolean>(false);
 
@@ -575,15 +577,41 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
             <div className="space-y-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <label className="block text-[11px] font-extrabold text-slate-800">
-                  Upload Payment Screenshot (SS) — پیمنٹ کا اسکرین شاٹ لگائیں *
+                  Payment Screenshot (SS) / رسید کی تصویر *
                 </label>
-                <button
-                  type="button"
-                  onClick={handleGenerateSampleSS}
-                  className="px-2.5 py-1 rounded-full bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 text-[10px] font-extrabold transition cursor-pointer"
-                >
-                  <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>Use Sample Receipt SS (Demo Test)
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <div className="bg-slate-100 p-0.5 rounded-xl border border-slate-200 flex items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setSsMode('upload')}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition cursor-pointer flex items-center gap-1 ${
+                        ssMode === 'upload'
+                          ? 'bg-white text-slate-900 shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <i className="fa-solid fa-cloud-arrow-up"></i> Upload File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSsMode('url')}
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition cursor-pointer flex items-center gap-1 ${
+                        ssMode === 'url'
+                          ? 'bg-white text-slate-900 shadow-xs'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <i className="fa-solid fa-link"></i> Paste URL
+                    </button>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleGenerateSampleSS}
+                    className="px-2.5 py-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 text-[10px] font-extrabold transition cursor-pointer"
+                  >
+                    <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>Sample SS
+                  </button>
+                </div>
               </div>
 
               <input
@@ -595,29 +623,63 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
               />
 
               {!screenshotDataUrl ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-pink-400 hover:border-purple-600 bg-pink-50/50 hover:bg-pink-50 rounded-2xl p-5 text-center cursor-pointer transition space-y-2"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center mx-auto text-xl shadow-md">
-                    <i className="fa-solid fa-cloud-arrow-up"></i>
+                ssMode === 'upload' ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-pink-400 hover:border-purple-600 bg-pink-50/50 hover:bg-pink-50 rounded-2xl p-5 text-center cursor-pointer transition space-y-2"
+                  >
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center mx-auto text-xl shadow-md">
+                      <i className="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                      Click to Select Payment Screenshot from Gallery / Files
+                    </div>
+                    <div className="text-[10px] font-semibold text-slate-600">
+                      Supports JPG, PNG, WEBP from EasyPaisa, JazzCash, Nayapay, SadaPay or Bank App
+                    </div>
                   </div>
-                  <div className="text-xs sm:text-sm font-extrabold text-slate-900">
-                    Click to Upload Payment Screenshot (SS)
+                ) : (
+                  <div className="p-4 rounded-2xl bg-slate-50 border-2 border-dashed border-indigo-300 space-y-2.5">
+                    <div className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <i className="fa-solid fa-link text-indigo-600"></i>
+                      <span>Paste Public Screenshot Image URL (Imgur, PostImages, Google Drive, WhatsApp Link)</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={directUrlInput}
+                        onChange={(e) => setDirectUrlInput(e.target.value)}
+                        placeholder="https://example.com/payment-screenshot.jpg"
+                        className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border border-slate-300 text-xs font-mono-code text-slate-900 focus:outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const trimmed = directUrlInput.trim();
+                          if (trimmed) {
+                            setScreenshotDataUrl(trimmed);
+                            setUploadFileName('Online Screenshot URL');
+                            setFormError(null);
+                          } else {
+                            setFormError('Please enter a valid Image URL');
+                          }
+                        }}
+                        className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-extrabold cursor-pointer"
+                      >
+                        Apply Link
+                      </button>
+                    </div>
                   </div>
-                  <div className="text-[10px] font-semibold text-slate-600">
-                    Supports JPG, PNG, WEBP Screenshot from EasyPaisa, JazzCash or Bank App
-                  </div>
-                </div>
+                )
               ) : (
                 <div className="p-3 rounded-2xl bg-emerald-50/90 border-2 border-emerald-400 flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
                     <img
                       src={screenshotDataUrl}
                       alt="Payment Screenshot Preview"
                       className="w-16 h-20 object-cover rounded-xl border-2 border-white shadow-md bg-white flex-shrink-0"
                     />
-                    <div>
+                    <div className="min-w-0">
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold">
                         <i className="fa-solid fa-check"></i> SCREENSHOT ATTACHED
                       </span>
@@ -627,13 +689,25 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                       <div className="text-[10px] font-semibold text-emerald-800">
                         Ready to send to Admin for Rs. {numericAmount.toLocaleString()} balance approval
                       </div>
+                      {screenshotDataUrl.startsWith('http') && (
+                        <div className="text-[10px] font-mono-code text-indigo-700 truncate mt-0.5">
+                          {screenshotDataUrl}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3 py-1.5 rounded-xl bg-white text-slate-800 border border-slate-300 text-[11px] font-extrabold cursor-pointer"
+                      onClick={() => {
+                        if (ssMode === 'upload') {
+                          fileInputRef.current?.click();
+                        } else {
+                          setScreenshotDataUrl('');
+                          setDirectUrlInput('');
+                        }
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-white text-slate-800 border border-slate-300 text-[11px] font-extrabold cursor-pointer hover:bg-slate-50"
                     >
                       Change SS
                     </button>
@@ -642,8 +716,9 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                       onClick={() => {
                         setScreenshotDataUrl('');
                         setUploadFileName('');
+                        setDirectUrlInput('');
                       }}
-                      className="px-2.5 py-1.5 rounded-xl bg-rose-100 text-rose-700 text-[11px] font-extrabold cursor-pointer"
+                      className="px-2.5 py-1.5 rounded-xl bg-rose-100 text-rose-700 text-[11px] font-extrabold cursor-pointer hover:bg-rose-200"
                     >
                       <i className="fa-solid fa-trash"></i>
                     </button>
@@ -1033,14 +1108,55 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                     </div>
                   )}
 
+                  {/* Direct Screenshot URL Bar with Copy & Open Link */}
+                  {proof.screenshotUrl && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <i className="fa-solid fa-link text-indigo-500 text-xs flex-shrink-0"></i>
+                        <span
+                          className="text-[10px] font-mono-code text-slate-600 truncate max-w-full sm:max-w-xs"
+                          title={proof.screenshotUrl}
+                        >
+                          {proof.screenshotUrl.startsWith('data:')
+                            ? 'Embedded Base64 Image Receipt'
+                            : proof.screenshotUrl}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-auto">
+                        <button
+                          type="button"
+                          onClick={() => onCopyText(proof.screenshotUrl, 'Screenshot URL copied!')}
+                          className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-[10px] font-extrabold shadow-xs cursor-pointer flex items-center gap-1"
+                          title="Copy Screenshot URL"
+                        >
+                          <i className="fa-regular fa-copy text-[9px]"></i>
+                          <span>Copy URL</span>
+                        </button>
+                        {proof.screenshotUrl.startsWith('http') && (
+                          <a
+                            href={proof.screenshotUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-extrabold shadow-xs flex items-center gap-1"
+                            title="Open Screenshot in New Tab"
+                          >
+                            <i className="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                            <span>Open</span>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Admin Action Buttons */}
                   <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => onPreviewScreenshot(proof)}
-                      className="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer"
+                      className="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
                     >
-                      <i className="fa-solid fa-expand mr-1"></i>View Full SS
+                      <i className="fa-solid fa-expand"></i>
+                      <span>Inspect SS</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
@@ -1048,10 +1164,10 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                         <button
                           type="button"
                           onClick={() => onApproveProof(proof.id)}
-                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer flex items-center gap-1"
+                          className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer flex items-center gap-1.5"
                         >
                           <i className="fa-solid fa-check-double"></i>
-                          <span>Approve (+Rs. {proof.amount.toLocaleString()})</span>
+                          <span>Approve &amp; Add +Rs. {proof.amount.toLocaleString()}</span>
                         </button>
                       )}
 

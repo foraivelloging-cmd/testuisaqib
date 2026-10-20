@@ -5503,13 +5503,57 @@ export default function App({
                 </button>
               </div>
 
-              <div className="overflow-hidden rounded-2xl max-h-[62vh] flex items-center justify-center bg-slate-900/10 border border-white">
+              {/* Direct Screenshot URL Bar with Copy & Open */}
+              {previewScreenshotProof.screenshotUrl && (
+                <div className="p-2.5 rounded-xl bg-slate-100/90 border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <i className="fa-solid fa-link text-indigo-600 text-xs flex-shrink-0"></i>
+                    <span
+                      className="text-[10px] font-mono-code text-slate-700 truncate max-w-full sm:max-w-xs"
+                      title={previewScreenshotProof.screenshotUrl}
+                    >
+                      {previewScreenshotProof.screenshotUrl.startsWith('data:')
+                        ? 'Direct Base64 Screenshot Image'
+                        : previewScreenshotProof.screenshotUrl}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        copyText(previewScreenshotProof.screenshotUrl, 'Screenshot URL Copied!')
+                      }
+                      className="px-2.5 py-1 rounded-lg bg-white hover:bg-slate-50 text-slate-800 border border-slate-300 text-[10px] font-extrabold shadow-xs cursor-pointer flex items-center gap-1"
+                    >
+                      <i className="fa-regular fa-copy text-[9px]"></i> Copy URL
+                    </button>
+                    {previewScreenshotProof.screenshotUrl.startsWith('http') && (
+                      <a
+                        href={previewScreenshotProof.screenshotUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-[10px] font-extrabold shadow-xs flex items-center gap-1"
+                      >
+                        <i className="fa-solid fa-arrow-up-right-from-square text-[9px]"></i> Open
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="overflow-hidden rounded-2xl max-h-[58vh] flex items-center justify-center bg-slate-900/10 border border-white">
                 <img
                   src={previewScreenshotProof.screenshotUrl}
                   alt="Payment Proof Screenshot"
-                  className="w-full h-auto max-h-[62vh] object-contain rounded-2xl"
+                  className="w-full h-auto max-h-[58vh] object-contain rounded-2xl shadow-inner"
                 />
               </div>
+
+              {previewScreenshotProof.userNote && (
+                <div className="text-[11px] font-medium text-slate-700 px-3 py-1.5 rounded-xl bg-white/80 border border-pink-100">
+                  User Note: &ldquo;{previewScreenshotProof.userNote}&rdquo;
+                </div>
+              )}
 
               {activeTab === 'saqibadmb' && previewScreenshotProof.status !== 'approved' && (
                 <button
