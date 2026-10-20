@@ -2880,43 +2880,45 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   return (
                     <div
                       key={cat.id}
-                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                      className={`p-3 sm:p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs transition ${
                         isHidden
                           ? 'bg-slate-100/90 border-slate-300 opacity-75'
                           : 'bg-white/95 border-pink-100 hover:border-pink-400'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      {/* Top Details (Full width on mobile) */}
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0 shadow-2xs overflow-hidden">
                           {renderCategoryIcon(cat.id, `w-5 h-5 ${cat.iconColor}`, cat)}
                         </div>
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <div className="flex flex-wrap items-center gap-1.5">
                             <span className="text-xs sm:text-sm font-extrabold text-slate-900 truncate">
                               {cat.shortLabel}
                             </span>
-                            <span className="px-2 py-0.2 rounded-full bg-pink-50 text-pink-700 border border-pink-200 text-[9px] font-extrabold">
+                            <span className="px-2 py-0.5 rounded-full bg-pink-50 text-pink-700 border border-pink-200 text-[10px] font-extrabold whitespace-nowrap">
                               {count} Products
                             </span>
                             {isHidden && (
-                              <span className="px-2 py-0.2 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[9px] font-extrabold">
+                              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-[10px] font-extrabold whitespace-nowrap">
                                 🙈 HIDDEN
                               </span>
                             )}
                           </div>
-                          <div className="text-[10px] font-semibold text-slate-500 truncate">
+                          <div className="text-[10px] sm:text-[11px] font-semibold text-slate-500 truncate mt-0.5">
                             {cat.label} • ID: <span className="font-mono-code">{cat.id}</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1 flex-shrink-0">
+                      {/* Bottom Actions Toolbar on mobile, Right aligned on desktop */}
+                      <div className="flex items-center justify-end sm:justify-start gap-1.5 flex-wrap sm:flex-nowrap pt-2 sm:pt-0 border-t border-slate-100 sm:border-0 w-full sm:w-auto">
                         {cat.id !== 'all' && (
                           <button
                             type="button"
                             onClick={() => toggleCategoryHidden(cat.id, cat.shortLabel)}
                             title={isHidden ? 'Unhide / Show Category on Storefront' : 'Hide Category from Storefront'}
-                            className={`px-2.5 py-1.5 rounded-xl text-[10px] font-extrabold cursor-pointer flex items-center gap-1 border transition ${
+                            className={`px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold cursor-pointer flex items-center gap-1 border transition ${
                               isHidden
                                 ? 'bg-amber-100 hover:bg-amber-200 text-amber-900 border-amber-300'
                                 : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
@@ -2940,7 +2942,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           onClick={() => handleMoveCategory(idx, -1)}
                           disabled={idx === 0}
                           title="Move Category Left / Up"
-                          className="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 text-[10px] font-extrabold cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 text-xs font-extrabold cursor-pointer"
                         >
                           ↑
                         </button>
@@ -2949,14 +2951,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           onClick={() => handleMoveCategory(idx, 1)}
                           disabled={idx === activeCategories.length - 1}
                           title="Move Category Right / Down"
-                          className="px-2 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 text-[10px] font-extrabold cursor-pointer"
+                          className="px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 disabled:opacity-40 text-slate-700 text-xs font-extrabold cursor-pointer"
                         >
                           ↓
                         </button>
                         <button
                           type="button"
                           onClick={() => startEditCategoryInWizard(cat)}
-                          className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
+                          className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 text-xs font-extrabold cursor-pointer flex items-center gap-1"
                         >
                           <FaPenToSquare className="w-3 h-3" />
                           <span>Edit</span>
@@ -2966,7 +2968,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             type="button"
                             onClick={() => handleDeleteCategory(cat)}
                             title="Delete Category"
-                            className="px-2.5 py-1.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer"
+                            className="p-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-extrabold cursor-pointer flex items-center justify-center"
                           >
                             <FaTrashCan className="w-3.5 h-3.5" />
                           </button>
@@ -3722,7 +3724,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-1.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
+                      <div className="flex items-center justify-end sm:justify-start gap-1.5 flex-wrap sm:flex-nowrap pt-2 sm:pt-0 border-t border-slate-100 sm:border-0 w-full sm:w-auto">
                         {toggleServiceHidden && (
                           <button
                             type="button"
@@ -4224,7 +4226,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         </div>
                       </div>
 
-                      <div className="flex items-center justify-end gap-1.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
+                      <div className="flex items-center justify-end sm:justify-start gap-1.5 flex-wrap sm:flex-nowrap pt-2 sm:pt-0 border-t border-slate-100 sm:border-0 w-full sm:w-auto">
                         {toggleToolHidden && (
                           <button
                             type="button"
