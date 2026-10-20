@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { authenticateAdmin, verifyAdminRequest, updateAdminCredentials } from '@/src/lib/serverSecurity';
 import {
-  checkAdminLockout,
-  recordFailedAttempt,
-  resetFailedAttempts,
+  checkAdminLockoutAsync,
+  recordFailedAttemptAsync,
+  resetFailedAttemptsAsync,
 } from '@/src/lib/rateLimit';
 
 export async function POST(req: Request) {
@@ -20,9 +20,9 @@ export async function POST(req: Request) {
     const lockoutKey = `admin_lock:${clientIp}:${username.toLowerCase() || 'unknown'}`;
     const ipLockoutKey = `admin_ip_lock:${clientIp}`;
 
-    // 1. Check if Account or IP is currently locked out
-    const accountLock = checkAdminLockout(lockoutKey);
-    const ipLock = checkAdminLockout(ipLockoutKey);
+    // 1. Dual-Layer Check: In-Memory + Supabase security_lockouts Table
+    const accountLock = await checkAdminLockoutAsync(lockoutKey);
+    const ipLock = await checkAdminLockoutAsync(ipLockoutKey);
 
     const activeLock = accountLock.locked ? accountLock : ipLock.locked ? ipLock : null;
 
@@ -56,8 +56,8 @@ export async function POST(req: Request) {
 
     // 4. On Failure: Increment failed attempts counter and check 3-attempt limit
     if (!authResult.success || !authResult.token) {
-      const state = recordFailedAttempt(lockoutKey);
-      recordFailedAttempt(ipLockoutKey);
+      const state = await recordFailedAttemptAsync(lockoutKey);
+      await recordFailedAttemptAsync(ipLockoutKey);
 
       if (state.locked) {
         return NextResponse.json(
@@ -87,18 +87,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // 5. On Success: Reset all failed attempt records
-    resetFailedAttempts(lockoutKey);
-    resetFailedAttempts(ipLockoutKey);
+    // 5. On Success: Reset all failed attempt records in memory and Supabase DB
+    await resetFailedAttemptsAsync(lockoutKey);
+    await resetFailedAttemptsAsync(ipLockoutKey);
 
     const response = NextResponse.json({
       success: true,
-      message: 'Admin authentication verified (PBKDF2 + HMAC-SHA256)!',
       token: authResult.token,
-      role: 'admin',
+      username: username,
+      message: 'Admin authorization successful',
     });
 
-    // Set secure HTTP-Only cookie with strict security flags
     response.cookies.set({
       name: 'saqib_admin_jwt',
       value: authResult.token,
@@ -106,7 +105,7 @@ export async function POST(req: Request) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
       path: '/',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return response;
@@ -117,19 +116,40 @@ export async function POST(req: Request) {
 }
 
 export async function GET(req: Request) {
-  const check = verifyAdminRequest(req);
-  return NextResponse.json({
-    authenticated: check.authorized,
-    role: check.authorized ? 'admin' : null,
-  });
+  try {
+    const auth = verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json({ authenticated: false, role: null }, { status: 200 });
+    }
+
+    return NextResponse.json({
+      authenticated: true,
+      role: auth.payload?.role || 'admin',
+      username: auth.payload?.username || 'saqib',
+    });
+  } catch {
+    return NextResponse.json({ authenticated: false, role: null }, { status: 200 });
+  }
 }
 
 export async function DELETE() {
-  const response = NextResponse.json({ success: true, message: 'Admin logged out' });
-  response.cookies.delete('saqib_admin_jwt');
+  const response = NextResponse.json({
+    success: true,
+    message: 'Admin logged out successfully',
+  });
+
+  response.cookies.set({
+    name: 'saqib_admin_jwt',
+    value: '',
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 0,
+  });
+
   return response;
 }
-
 
 export async function PATCH(req: Request) {
   try {
@@ -141,7 +161,7 @@ export async function PATCH(req: Request) {
     const auth = verifyAdminRequest(req);
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin privileges required to update credentials.' },
+        { success: false, error: 'Unauthorized: Admin session required to update credentials' },
         { status: 401 }
       );
     }
@@ -150,9 +170,9 @@ export async function PATCH(req: Request) {
     const patchLockoutKey = `admin_pwd_change_lock:${clientIp}:${currentAdminUser.toLowerCase()}`;
     const ipLockoutKey = `admin_pwd_ip_lock:${clientIp}`;
 
-    // 1. Check if Account or IP is currently locked out from password changes
-    const accountLock = checkAdminLockout(patchLockoutKey);
-    const ipLock = checkAdminLockout(ipLockoutKey);
+    // 1. Dual-Layer Check: In-Memory + Supabase security_lockouts Table
+    const accountLock = await checkAdminLockoutAsync(patchLockoutKey);
+    const ipLock = await checkAdminLockoutAsync(ipLockoutKey);
     const activeLock = accountLock.locked ? accountLock : ipLock.locked ? ipLock : null;
 
     if (activeLock && activeLock.locked) {
@@ -185,8 +205,8 @@ export async function PATCH(req: Request) {
     // 2. On Failure: Check if wrong current password and record failed attempts
     if (!result.success) {
       if (result.error?.toLowerCase().includes('current password')) {
-        const state = recordFailedAttempt(patchLockoutKey);
-        recordFailedAttempt(ipLockoutKey);
+        const state = await recordFailedAttemptAsync(patchLockoutKey);
+        await recordFailedAttemptAsync(ipLockoutKey);
 
         if (state.locked) {
           return NextResponse.json(
@@ -219,9 +239,9 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
-    // 3. On Success: Reset all failed password attempt records
-    resetFailedAttempts(patchLockoutKey);
-    resetFailedAttempts(ipLockoutKey);
+    // 3. On Success: Reset all failed password attempt records in memory and Supabase DB
+    await resetFailedAttemptsAsync(patchLockoutKey);
+    await resetFailedAttemptsAsync(ipLockoutKey);
 
     const response = NextResponse.json({
       success: true,

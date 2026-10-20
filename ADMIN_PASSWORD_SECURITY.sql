@@ -3,7 +3,7 @@
 -- 🔐 ADMIN PASSWORD & VAULT SECURITY CHEAT-SHEET (SAFE BACKEND QUERIES)
 -- =====================================================================
 -- Description: Safe SQL queries to view, reset, and manage admin credentials
--- with zero risk of duplicate key errors or locking issues.
+-- and security lockouts with zero risk of duplicate key errors.
 -- Compatible with: Supabase SQL Editor / PostgreSQL
 -- =====================================================================
 
@@ -53,11 +53,37 @@ SELECT username, updated_at
 FROM public.admin_vault 
 WHERE username IN ('saqib', 'saqibadmin');
 
+-- ---------------------------------------------------------------------
+-- 5. VIEW CURRENTLY LOCKED OUT IPs & USERNAMES:
+-- ---------------------------------------------------------------------
+SELECT 
+  id, 
+  identifier, 
+  failed_attempts, 
+  locked_until, 
+  last_attempt_at 
+FROM public.security_lockouts
+WHERE locked_until > timezone('utc'::text, now())
+ORDER BY last_attempt_at DESC;
+
+-- ---------------------------------------------------------------------
+-- 6. INSTANTLY UNLOCK A SPECIFIC IP OR USERNAME:
+-- (Example: Agar aap ghalti se 3 wrong passwords daal kar lock ho jayein)
+-- ---------------------------------------------------------------------
+DELETE FROM public.security_lockouts 
+WHERE identifier LIKE '%saqib%' OR identifier LIKE '%127.0.0.1%';
+
+-- ---------------------------------------------------------------------
+-- 7. CLEAR ALL LOCKOUTS (FULL UNLOCK ALL IPs):
+-- ---------------------------------------------------------------------
+TRUNCATE TABLE public.security_lockouts;
+
 -- =====================================================================
 -- 🛡️ RATE LIMITING PROTECTION POLICY SUMMARY:
 -- =====================================================================
--- 1. Max 3 consecutive failed password attempts are allowed.
--- 2. If 3 failed attempts occur, IP & username are locked out for 15 minutes.
--- 3. Both Login (POST) and Password Change (PATCH) are protected by this lock.
--- 4. After a successful password entry, the failed counter is reset to 0.
+-- 1. Dual-Layer Security: In-Memory (0ms) + Supabase security_lockouts table.
+-- 2. Max 3 consecutive failed password attempts are allowed.
+-- 3. If 3 failed attempts occur, IP & username are locked for 15 minutes.
+-- 4. Both Login (POST) and Password Change (PATCH) are protected.
+-- 5. If an admin deletes the lock record from Supabase, Next.js unlocks immediately!
 -- =====================================================================

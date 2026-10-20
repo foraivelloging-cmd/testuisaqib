@@ -174,6 +174,16 @@ CREATE TABLE IF NOT EXISTS public.admin_vault (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
+-- 3.10 SECURITY LOCKOUTS & BRUTE FORCE DEFENSE TABLE
+CREATE TABLE IF NOT EXISTS public.security_lockouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    identifier TEXT NOT NULL UNIQUE,
+    failed_attempts INTEGER DEFAULT 1,
+    locked_until TIMESTAMPTZ,
+    last_attempt_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
+);
+
 -- ---------------------------------------------------------------------
 -- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
 -- ---------------------------------------------------------------------
@@ -280,6 +290,8 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
 
 -- 6.4 Admin Security Vault — ZERO Public / Client Access
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
+ALTER TABLE public.security_lockouts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "No Public Access to Lockouts" ON public.security_lockouts FOR ALL TO anon, authenticated USING (false);
 
 -- Grant privileges
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
