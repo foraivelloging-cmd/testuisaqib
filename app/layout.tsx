@@ -2,11 +2,23 @@ import type { Metadata, Viewport } from 'next';
 import '../src/index.css';
 import { AntiScrapeProtectionShield } from '@/src/components/AntiScrapeProtectionShield';
 import { AntiCloneSecurityKillswitch } from '@/src/components/AntiCloneSecurityKillswitch';
+import { PwaInstallPrompt } from '@/src/components/PwaInstallPrompt';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || 'https://mrsaqib242.vercel.app'),
   title: 'Muhammad Saqib | Saqib Visuals — SMM Store, CapCut, AI & SIM Info Hub',
   description: 'SMM Store, CapCut Pro, AI Tools & SIM Info Hub by Muhammad Saqib.',
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/favicon-32x32.png',
+    shortcut: '/favicon-16x16.png',
+    apple: '/icons/apple-touch-icon.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Saqib Visuals',
+  },
   openGraph: {
     title: 'Muhammad Saqib | Saqib Visuals — SMM Store, CapCut, AI & SIM Info Hub',
     description: 'SMM Store, CapCut Pro, AI Tools & SIM Info Hub by Muhammad Saqib.',
@@ -57,6 +69,14 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* PWA Core Configuration */}
+        <link rel="manifest" href="/manifest.json" />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="application-name" content="Saqib Visuals" />
+
         {/* Sonic-speed preconnect & dns-prefetch to zero out network latency */}
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -98,6 +118,7 @@ export default function RootLayout({
           disableKillswitch={disableKillswitch}
         />
         <AntiScrapeProtectionShield />
+        <PwaInstallPrompt />
         {children}
       </body>
     </html>

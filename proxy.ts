@@ -75,6 +75,17 @@ const BLOCKED_PATH_PATTERNS = [
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+
+  // Fast bypass for PWA assets & Service Worker
+  if (
+    pathname === '/sw.js' ||
+    pathname === '/manifest.json' ||
+    pathname === '/manifest.webmanifest' ||
+    pathname.startsWith('/icons/')
+  ) {
+    return NextResponse.next();
+  }
+
   const userAgent = (request.headers.get('user-agent') || '').toLowerCase();
   const clientIp =
     request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -290,9 +301,9 @@ export const config = {
      * Match all request paths except for:
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico, sitemap.xml, robots.txt
-     * - static asset extensions (.svg, .png, .jpg, .jpeg, .gif, .webp, .ico)
+     * - favicon.ico, sitemap.xml, robots.txt, manifest.json, manifest.webmanifest, sw.js
+     * - static asset extensions (.svg, .png, .jpg, .jpeg, .gif, .webp, .ico, .webmanifest)
      */
-    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|manifest.json|manifest.webmanifest|sw.js|icons/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|webmanifest)$).*)',
   ],
 };

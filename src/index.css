@@ -2740,3 +2740,34 @@ body.rgb-light-on .hero-rgb-card {
   animation: authBadgePulseGlow 3.2s ease-in-out infinite;
 }
 
+
+
+/* ============================================================================ */
+/* PWA MODAL & INSTALL ANIMATIONS                                               */
+/* ============================================================================ */
+@keyframes pwaFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pwaScaleUp {
+  from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes pwaBounceSubtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-fade-in {
+  animation: pwaFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-scale-up {
+  animation: pwaScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-bounce-subtle {
+  animation: pwaBounceSubtle 3s ease-in-out infinite;
+}
