@@ -876,6 +876,40 @@ ON CONFLICT (username) DO UPDATE SET
 -- )
 -- WHERE id = 'default';
 
+-- [I] Storefront Promo & Welcome 20% Discount Popup Modal Controls:
+-- -- 1. Turn ON 20% Discount Promo Popup:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   config,
+--   '{promoPopup}',
+--   jsonb_build_object(
+--     'enabled', true,
+--     'popupType', 'discount',
+--     'badgeText', '🔥 SPECIAL 20% DISCOUNT',
+--     'title', 'Limited Time Flash Offer — Save 20% Today!',
+--     'description', 'Order any AI Pro Tool, CapCut Pro, or TikTok Agency Account right now and enjoy an instant 20% discount on your first order. WhatsApp Saqib directly!',
+--     'imageUrl', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+--     'showImage', true,
+--     'couponCode', 'SAQIB20',
+--     'showCoupon', true,
+--     'countdownMinutes', 15,
+--     'showCountdown', true,
+--     'primaryBtnText', 'Claim 20% Off on WhatsApp',
+--     'primaryBtnAction', 'whatsapp',
+--     'secondaryBtnText', 'Maybe Later',
+--     'showOncePerSession', true
+--   ),
+--   true
+-- ),
+-- updated_at = now()
+-- WHERE id = 'default';
+
+-- -- 2. Turn OFF / Disable Popup:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(config, '{promoPopup,enabled}', 'false', true),
+-- updated_at = now()
+-- WHERE id = 'default';
+
 -- =====================================================================
 -- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
 -- =====================================================================
