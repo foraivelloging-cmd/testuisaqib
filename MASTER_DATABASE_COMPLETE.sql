@@ -810,14 +810,14 @@ ON CONFLICT (id) DO UPDATE SET
   badge = EXCLUDED.badge;
 
 -- ---------------------------------------------------------------------
--- 10. SEED DATA: ADMIN & VIP PROFILES
+-- 10. SEED DATA: ADMIN & VIP PROFILES (DISABLED: Clean database for real users)
 -- ---------------------------------------------------------------------
-INSERT INTO public.profiles (id, full_name, email, phone, role, balance)
-VALUES 
-  ('+92 347 8936242', 'Muhammad Saqib (Official Admin)', 'support@saqibvisuals.com', '+92 347 8936242', 'admin', 50000),
-  ('03478936242', 'Muhammad Saqib', 'admin@saqibvisuals.com', '03478936242', 'admin', 50000),
-  ('vip_member', 'VIP Reseller Partner', 'reseller@saqibvisuals.com', '03120000000', 'reseller', 5000)
-ON CONFLICT (id) DO NOTHING;
+-- INSERT INTO public.profiles (id, full_name, email, phone, role, balance)
+-- VALUES 
+--   ('+92 347 8936242', 'Muhammad Saqib (Official Admin)', 'support@saqibvisuals.com', '+92 347 8936242', 'admin', 50000),
+--   ('03478936242', 'Muhammad Saqib', 'admin@saqibvisuals.com', '03478936242', 'admin', 50000),
+--   ('vip_member', 'VIP Reseller Partner', 'reseller@saqibvisuals.com', '03120000000', 'reseller', 5000)
+-- ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------
 -- 11. SEED DATA: VERIFIED CUSTOMER REVIEWS
