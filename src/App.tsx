@@ -20,6 +20,12 @@ import {
 import { ShowcaseSections } from './components/ShowcaseSections';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
+  SupportedLang,
+  TRANSLATIONS,
+  getInitialLanguage,
+  saveLanguage
+} from './lib/translations';
+import {
   PaymentProofRequest,
   DEFAULT_PAYMENT_PROOFS,
   UserAddFundsExperience
@@ -447,6 +453,23 @@ export default function App({
 
   // Other Modals & Mobile Grid Layout State (Defaults to 2-Column Mobile Grid)
   const [cartModalOpen, setCartModalOpen] = useState<boolean>(false);
+
+  // Internationalization: Language Switcher (English 'en' vs Urdu 'ur')
+  const [siteLang, setSiteLang] = useState<SupportedLang>('en');
+
+  useEffect(() => {
+    const saved = getInitialLanguage();
+    setSiteLang(saved);
+  }, []);
+
+  const toggleLanguage = () => {
+    const nextLang = siteLang === 'en' ? 'ur' : 'en';
+    setSiteLang(nextLang);
+    saveLanguage(nextLang);
+    showToast(nextLang === 'ur' ? '🇵🇰 اردو زبان فعال کر دی گئی!' : '🇬🇧 Switched to English mode!');
+  };
+
+  const t = TRANSLATIONS[siteLang];
   const [posterModalOpen, setPosterModalOpen] = useState<boolean>(false);
   const [mobileGridCols, setMobileGridCols] = useState<2 | 1>(2);
 
@@ -2098,7 +2121,7 @@ export default function App({
                   activeTab === 'store' ? 'text-white' : 'text-pink-500'
                 }`}
               ></i>
-              Store ({visibleServicesCatalog.length})
+              {t.navStore} ({visibleServicesCatalog.length})
             </button>
             {siteVisibility.showToolsTab && (
               <button
@@ -2114,7 +2137,7 @@ export default function App({
                     activeTab === 'siminfo' ? 'text-white' : 'text-emerald-600'
                   }`}
                 ></i>
-                Web Tools ({visibleWebToolsCatalog.length})
+                {t.navTools} ({visibleWebToolsCatalog.length})
               </button>
             )}
             {siteVisibility.showAboutTab && (
@@ -2182,7 +2205,7 @@ export default function App({
                     activeTab === 'login' ? 'text-white' : 'text-emerald-600'
                   }`}
                 ></i>
-                {vipUser ? 'VIP Wallet' : 'Wallet / Login'}
+                {vipUser ? t.navVipWallet : t.navWallet}
               </button>
             )}
           </div>
@@ -2417,6 +2440,44 @@ export default function App({
               </div>
 
               {/* Wallet Quick Strip inside Mobile Menu */}
+              {/* Mobile Drawer Language Switcher Bar */}
+              <div className="p-2.5 rounded-2xl bg-white/95 border border-pink-200/90 shadow-xs flex items-center justify-between gap-2">
+                <div className="flex items-center gap-1.5">
+                  <i className="fa-solid fa-language text-pink-600 text-sm"></i>
+                  <span className="text-xs font-extrabold text-slate-800">{t.langToggleLabel}</span>
+                </div>
+                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(700);
+                      if (siteLang !== 'en') toggleLanguage();
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer flex items-center gap-1 ${
+                      siteLang === 'en'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <span>🇬🇧</span> English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      playPopSound(700);
+                      if (siteLang !== 'ur') toggleLanguage();
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer flex items-center gap-1 ${
+                      siteLang === 'ur'
+                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-xs'
+                        : 'text-slate-500 hover:text-slate-800'
+                    }`}
+                  >
+                    <span>🇵🇰</span> اردو
+                  </button>
+                </div>
+              </div>
+
               <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-3 flex items-center justify-between gap-2 shadow-md">
                 <div>
                   <div className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-300">
@@ -3044,7 +3105,7 @@ export default function App({
                       onChange={(e) => {
                         setStoreSearchQuery(e.target.value);
                       }}
-                      placeholder="Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)..."
+                      placeholder={t.searchPlaceholder}
                       className="w-full bg-transparent border-none outline-none font-bold text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 placeholder:font-medium"
                     />
                     {storeSearchQuery && (
