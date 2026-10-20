@@ -4741,18 +4741,7 @@ export default function App({
                             <div className="h-px bg-pink-200 flex-grow"></div>
                           </div>
 
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                            <button
-                              type="button"
-                              onClick={() =>
-                                openExternalWhatsApp(
-                                  'Assalam-o-Alaikum Saqib Bhai! Please send me my VIP Reseller Portal OTP / Login credentials.'
-                                )
-                              }
-                              className="py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 transition hover:scale-[1.02] active:scale-95 cursor-pointer"
-                            >
-                              <i className="fa-brands fa-whatsapp text-sm"></i> Get WA OTP
-                            </button>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                             <button
                               type="button"
                               onClick={() => triggerDemoVipLogin()}
