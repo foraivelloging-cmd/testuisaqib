@@ -7,8 +7,13 @@ export function AntiScrapeProtectionShield() {
   const pathname = usePathname();
   const [warningToast, setWarningToast] = useState<string | null>(null);
 
-  // Admin route bypass: Do not restrict inside /saqibadmin for developer convenience
-  const isAdminRoute = pathname?.startsWith('/saqibadmin');
+  // Admin route bypass: Do not restrict inside /saqibadmin or admin sessions
+  const isAdminRoute =
+    pathname?.startsWith('/saqibadmin') ||
+    (typeof window !== 'undefined' &&
+      (window.location.hash.includes('admin') ||
+        window.location.hash.includes('saqibadmb') ||
+        window.location.pathname.includes('saqibadmin')));
 
   useEffect(() => {
     if (isAdminRoute) return;
@@ -26,9 +31,10 @@ export function AntiScrapeProtectionShield() {
 
     // 2. Keyboard Inspection & Save Shortcut Interception
     const handleKeyDown = (e: KeyboardEvent) => {
-      const isCtrlOrCmd = e.ctrlKey || e.metaKey;
-      const key = e.key.toLowerCase();
-      const code = e.code;
+      if (!e) return;
+      const isCtrlOrCmd = Boolean(e.ctrlKey || e.metaKey);
+      const key = (e.key || '').toLowerCase();
+      const code = e.code || '';
 
       // F12 (DevTools)
       if (code === 'F12' || e.keyCode === 123) {
