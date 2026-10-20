@@ -85,6 +85,7 @@ CREATE TABLE IF NOT EXISTS public.web_tools (
     tool_url TEXT NOT NULL,
     icon_url TEXT,
     badge TEXT NOT NULL DEFAULT 'ONLINE',
+    button_label TEXT NOT NULL DEFAULT 'Open Live Tool',
     icon_type TEXT NOT NULL DEFAULT 'wand',
     orb_grad TEXT NOT NULL DEFAULT 'from-indigo-600 to-purple-600',
     plush TEXT NOT NULL DEFAULT 'plush-website',
@@ -289,83 +290,374 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
 -- ---------------------------------------------------------------------
 -- 7. SEED DATA: COMPLETE SITE CONFIGURATION
--- (Includes WhatsApp Popup Widget & 10+ Social Platforms)
+-- (Includes WhatsApp Popup Widget, 10+ Social Platforms, All Payment Methods, Categories & SEO)
 -- ---------------------------------------------------------------------
 INSERT INTO public.site_config (id, config, updated_at)
 VALUES (
   'default',
   '{
-    "banner": {
-      "showHeroBanner": true,
-      "showTopStrip": true,
-      "showTopStripWhatsapp": true,
-      "rgbBorderEnabled": true,
-      "topStripTitle": "MUHAMMAD SAQIB • VISUALS HUB",
-      "showPortraitPhoto": true,
-      "portraitUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
-      "showPortraitOrbitBadges": true,
-      "orbitBadge1Enabled": true,
-      "orbitBadge1Title": "CapCut & Lovable",
-      "orbitBadge1Sub": "PRO UNLOCKED",
-      "orbitBadge2Enabled": true,
-      "orbitBadge2Title": "AI Suite",
-      "orbitBadge2Sub": "GEMINI • CLAUDE",
-      "orbitBadge3Enabled": true,
-      "orbitBadge3Title": "TikTok UK/USA",
-      "orbitBadge3Sub": "ADS & BOOST",
-      "orbitBadge4Enabled": true,
-      "orbitBadge4Title": "SIM & NADRA",
-      "orbitBadge4Sub": "CDR • FRC • LIVE",
-      "showBadgeText": true,
-      "badgeText": "🔥 ALL DIGITAL, AI, SMM & NADRA SERVICES LIVE 24/7 (VERIFIED ACTIVE)",
-      "showMainTitle": "Muhammad Saqib",
-      "highlightTitle": "— Saqib Visuals",
-      "showDescription": true,
-      "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
-      "showHeroFeaturePills": true
+  "seo": {
+    "author": "Muhammad Saqib",
+    "ogType": "website",
+    "ogTitle": "Muhammad Saqib — Saqib Visuals | AI Accounts & SMM Services",
+    "keywords": "Muhammad Saqib, Saqib Visuals, CapCut Pro Pakistan, SMM Panel Pakistan, Lovable Pro Account, Gemini 18M Pro, ChatGPT Plus & Claude, Pak SIM Database Live, SIM Tracker 2026, NADRA Verification FRC, TikTok Agency Accounts UK USA, Fast USDT EasyPaisa Delivery",
+    "metaTitle": "Muhammad Saqib — Saqib Visuals | AI Accounts, SMM & Digital Services",
+    "ogImageUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
+    "schemaType": "WebApplication",
+    "robotsIndex": true,
+    "twitterCard": "summary_large_image",
+    "canonicalUrl": "https://mrsaqib242.vercel.app",
+    "robotsFollow": true,
+    "ogDescription": "Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.",
+    "twitterCreator": "@mrsaqib242",
+    "metaDescription": "Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib."
+  },
+  "banner": {
+    "badgeText": "🔥 ALL DIGITAL, AI, SMM & NADRA SERVICES LIVE 24/7 (VERIFIED ACTIVE)",
+    "mainTitle": "Muhammad Saqib",
+    "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
+    "portraitUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
+    "showTopStrip": true,
+    "showBadgeText": true,
+    "showMainTitle": true,
+    "topStripTitle": "MUHAMMAD SAQIB • VISUALS HUB",
+    "highlightTitle": "— Saqib Visuals",
+    "orbitBadge1Sub": "PRO UNLOCKED",
+    "orbitBadge2Sub": "GEMINI • CLAUDE",
+    "orbitBadge3Sub": "ADS & BOOST",
+    "orbitBadge4Sub": "CDR • FRC • LIVE",
+    "showHeroBanner": true,
+    "showDescription": true,
+    "orbitBadge1Title": "CapCut & Lovable",
+    "orbitBadge2Title": "AI Suite",
+    "orbitBadge3Title": "TikTok UK/USA",
+    "orbitBadge4Title": "SIM & NADRA",
+    "rgbBorderEnabled": true,
+    "showPortraitPhoto": true,
+    "orbitBadge1Enabled": true,
+    "orbitBadge2Enabled": true,
+    "orbitBadge3Enabled": true,
+    "orbitBadge4Enabled": true,
+    "showHeroFeaturePills": true,
+    "showTopStripWhatsapp": true,
+    "showPortraitOrbitBadges": true
+  },
+  "footer": {
+    "brandName": "🚀 Muhammad Saqib",
+    "showQuickLinks": true,
+    "copyrightTagline": "24/7 Instant Delivery • 100% Full Replacement Warranty"
+  },
+  "contact": {
+    "supportEmail": "support@saqibvisuals.com",
+    "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
+    "whatsappWidgetName": "Muhammad Saqib",
+    "whatsappNumberClean": "923478936242",
+    "officialWebsiteLabel": "mrsaqib242.vercel.app",
+    "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
+    "whatsappNumberDisplay": "+92 347 8936242",
+    "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
+    "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to Saqib Visuals Hub.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?"
+  },
+  "socials": {
+    "platforms": [
+      {
+        "id": "instagram",
+        "url": "https://instagram.com/mrsaqib242",
+        "icon": "fa-brands fa-instagram",
+        "label": "Instagram",
+        "handle": "@mrsaqib242",
+        "enabled": true,
+        "platform": "instagram",
+        "colorGrad": "from-amber-300 via-pink-500 to-purple-600"
+      },
+      {
+        "id": "tiktok",
+        "url": "https://tiktok.com/@mrsaqib242",
+        "icon": "fa-brands fa-tiktok",
+        "label": "TikTok",
+        "handle": "@mrsaqib242",
+        "enabled": true,
+        "platform": "tiktok",
+        "colorGrad": "from-slate-900 to-slate-800"
+      },
+      {
+        "id": "facebook",
+        "url": "https://facebook.com/mrsaqib242",
+        "icon": "fa-brands fa-facebook-f",
+        "label": "Facebook",
+        "handle": "Muhammad Saqib",
+        "enabled": true,
+        "platform": "facebook",
+        "colorGrad": "from-blue-600 to-indigo-600"
+      },
+      {
+        "id": "snapchat",
+        "url": "https://snapchat.com/add/mrsaqib242",
+        "icon": "fa-brands fa-snapchat",
+        "label": "Snapchat",
+        "handle": "mrsaqib242",
+        "enabled": true,
+        "platform": "snapchat",
+        "colorGrad": "from-amber-400 to-yellow-500"
+      },
+      {
+        "id": "youtube",
+        "url": "https://youtube.com/mrsaqib242",
+        "icon": "fa-brands fa-youtube",
+        "label": "YouTube",
+        "handle": "@saqibvisuals",
+        "enabled": true,
+        "platform": "youtube",
+        "colorGrad": "from-red-500 to-rose-600"
+      },
+      {
+        "id": "telegram",
+        "url": "https://t.me/mrsaqib242",
+        "icon": "fa-brands fa-telegram",
+        "label": "Telegram",
+        "handle": "@mrsaqib242",
+        "enabled": true,
+        "platform": "telegram",
+        "colorGrad": "from-sky-400 to-blue-500"
+      },
+      {
+        "id": "whatsapp_channel",
+        "url": "https://whatsapp.com/channel/saqibvisuals",
+        "icon": "fa-brands fa-whatsapp",
+        "label": "WhatsApp Channel",
+        "handle": "Saqib Visuals VIP",
+        "enabled": true,
+        "platform": "whatsapp_channel",
+        "colorGrad": "from-emerald-500 to-teal-600"
+      },
+      {
+        "id": "github",
+        "url": "https://github.com/mrsaqib242",
+        "icon": "fa-brands fa-github",
+        "label": "GitHub",
+        "handle": "@mrsaqib242",
+        "enabled": false,
+        "platform": "github",
+        "colorGrad": "from-slate-800 to-slate-950"
+      },
+      {
+        "id": "twitter",
+        "url": "https://x.com/mrsaqib242",
+        "icon": "fa-brands fa-x-twitter",
+        "label": "X (Twitter)",
+        "handle": "@mrsaqib242",
+        "enabled": false,
+        "platform": "twitter",
+        "colorGrad": "from-zinc-800 to-black"
+      },
+      {
+        "id": "discord",
+        "url": "https://discord.gg/saqibvisuals",
+        "icon": "fa-brands fa-discord",
+        "label": "Discord Server",
+        "handle": "Saqib Community",
+        "enabled": false,
+        "platform": "discord",
+        "colorGrad": "from-indigo-500 to-purple-600"
+      }
+    ],
+    "tiktokUrl": "https://tiktok.com/",
+    "facebookUrl": "https://facebook.com/",
+    "snapchatUrl": "https://snapchat.com/",
+    "facebookName": "Muhammad Saqib",
+    "instagramUrl": "https://instagram.com/",
+    "tiktokHandle": "@mrsaqib242",
+    "snapchatHandle": "mrsaqib242",
+    "instagramHandle": "@mrsaqib242"
+  },
+  "branding": {
+    "brandName": "Saqib Visuals Hub"
+  },
+  "storeBars": {
+    "chip1Label": "AI Pro Server:",
+    "chip1Value": "3 Min Avg",
+    "chip2Label": "SMM Turbo API:",
+    "chip2Value": "Instant Start",
+    "chip3Label": "2026 SIM/NADRA Desk:",
+    "chip3Value": "15 Min PDF",
+    "showMarquee": true,
+    "chip1Enabled": true,
+    "chip2Enabled": true,
+    "chip3Enabled": true,
+    "showSearchBox": true,
+    "showWalletBar": true,
+    "currencyPrefix": "Rs.",
+    "showHistoryBtn": true,
+    "historyBtnLabel": "History",
+    "hotSearchesList": "CapCut Pro, Lovable Pro, Gemini 18M, Muse AI 1B, ElevenLabs 300k, TikTok UK/USA, Ad Agency, Call CDR, NADRA FRC, Hostinger 12M, BTC / USDT",
+    "showHotSearches": true,
+    "minDepositAmount": 50,
+    "showCategoryTabs": true,
+    "statusPanelBadge": "ALL 3 SERVERS 99.9% ONLINE",
+    "statusPanelTitle": "SAQIB VISUALS LIVE PANEL STATUS:",
+    "depositModalTitle": "Add Funds / Top-Up Wallet Balance",
+    "searchPlaceholder": "Search any service (e.g. Lovable Pro, Gemini 18M, ElevenLabs, CDR, NADRA, Hostinger, USDT)...",
+    "showAddPaymentBtn": true,
+    "addPaymentBtnLabel": "+ Add Payment / Balance",
+    "headerPillAddLabel": "+Add",
+    "showStatusPulseBar": true,
+    "walletBalanceLabel": "● LIVE ACCOUNT BALANCE:",
+    "depositModalSubtitle": "Enter Amount → Select EasyPaisa/JazzCash → Submit Account Name & Screenshot",
+    "showHeaderWalletPill": true,
+    "acceptedGatewaysTitle": "Accepted Payment Gateways",
+    "showPendingProofBadge": true,
+    "showWalletInstruction": true,
+    "walletInstructionText": "Add balance via EasyPaisa / JazzCash / Bank (Enter Amount → Select Method → Upload SS → Instant Balance!)",
+    "showServicesCountBadge": true,
+    "acceptedGatewaysSubtitle": "100% Secure Local & Crypto Verification",
+    "showAcceptedGatewaysCard": true,
+    "showAccountNumbersInCard": true,
+    "showGatewaysWhatsappButton": true
+  },
+  "categories": [
+    {
+      "id": "all",
+      "label": "All Services",
+      "iconType": "layer-group",
+      "iconClass": "fa-solid fa-layer-group",
+      "iconColor": "text-pink-500",
+      "shortLabel": "All"
     },
-    "contact": {
-      "whatsappNumberClean": "923478936242",
-      "whatsappNumberDisplay": "+92 347 8936242",
-      "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
-      "supportEmail": "support@saqibvisuals.com",
-      "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
-      "officialWebsiteLabel": "mrsaqib242.vercel.app",
-      "whatsappWidgetEnabled": true,
-      "whatsappWidgetName": "Muhammad Saqib",
-      "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
-      "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to <b>Saqib Visuals Hub</b>.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?",
-      "whatsappWidgetGreetingUr": "السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟",
-      "whatsappWidgetStatus": "Typically replies in ~2 minutes ⚡"
+    {
+      "id": "capcut_ai",
+      "label": "AI, Pro Apps & Hosting",
+      "iconType": "gemini",
+      "iconClass": "fa-solid fa-wand-magic-sparkles",
+      "iconColor": "text-purple-600",
+      "shortLabel": "AI & Pro Apps"
     },
-    "socials": {
-      "instagramUrl": "https://instagram.com/mrsaqib242",
-      "instagramHandle": "@mrsaqib242",
-      "tiktokUrl": "https://tiktok.com/@mrsaqib242",
-      "tiktokHandle": "@mrsaqib242",
-      "facebookUrl": "https://facebook.com/mrsaqib242",
-      "facebookName": "Muhammad Saqib",
-      "snapchatUrl": "https://snapchat.com/add/mrsaqib242",
-      "snapchatHandle": "mrsaqib242",
-      "platforms": [
-        {"id":"instagram","platform":"instagram","label":"Instagram","handle":"@mrsaqib242","url":"https://instagram.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-instagram","colorGrad":"from-amber-300 via-pink-500 to-purple-600"},
-        {"id":"tiktok","platform":"tiktok","label":"TikTok","handle":"@mrsaqib242","url":"https://tiktok.com/@mrsaqib242","enabled":true,"icon":"fa-brands fa-tiktok","colorGrad":"from-slate-900 to-slate-800"},
-        {"id":"facebook","platform":"facebook","label":"Facebook","handle":"Muhammad Saqib","url":"https://facebook.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-facebook-f","colorGrad":"from-blue-600 to-indigo-600"},
-        {"id":"snapchat","platform":"snapchat","label":"Snapchat","handle":"mrsaqib242","url":"https://snapchat.com/add/mrsaqib242","enabled":true,"icon":"fa-brands fa-snapchat","colorGrad":"from-amber-400 to-yellow-500"},
-        {"id":"youtube","platform":"youtube","label":"YouTube Channel","handle":"@saqibvisuals","url":"https://youtube.com/@saqibvisuals","enabled":true,"icon":"fa-brands fa-youtube","colorGrad":"from-red-500 to-rose-600"},
-        {"id":"telegram","platform":"telegram","label":"Telegram Channel","handle":"@saqibvisuals","url":"https://t.me/saqibvisuals","enabled":true,"icon":"fa-brands fa-telegram","colorGrad":"from-sky-400 to-blue-500"},
-        {"id":"whatsapp_channel","platform":"whatsapp_channel","label":"WhatsApp VIP Channel","handle":"Saqib Visuals VIP","url":"https://whatsapp.com/channel/saqibvisuals","enabled":true,"icon":"fa-brands fa-whatsapp","colorGrad":"from-emerald-500 to-teal-600"},
-        {"id":"github","platform":"github","label":"GitHub Profile","handle":"@mrsaqib242","url":"https://github.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-github","colorGrad":"from-slate-800 to-slate-950"},
-        {"id":"twitter","platform":"twitter","label":"X (Twitter)","handle":"@mrsaqib242","url":"https://x.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-x-twitter","colorGrad":"from-zinc-800 to-black"},
-        {"id":"discord","platform":"discord","label":"Discord Community","handle":"Saqib Community","url":"https://discord.gg/saqibvisuals","enabled":false,"icon":"fa-brands fa-discord","colorGrad":"from-indigo-500 to-purple-600"}
-      ]
+    {
+      "id": "tiktok_fb",
+      "label": "Social Media & Ad Agency",
+      "iconType": "tiktok",
+      "iconClass": "fa-brands fa-tiktok",
+      "iconColor": "text-rose-500",
+      "shortLabel": "SMM & Ads"
     },
-    "footer": {
-      "brandName": "🚀 Muhammad Saqib",
-      "copyrightTagline": "24/7 Instant Delivery • 100% Full Replacement Warranty",
-      "showQuickLinks": true
+    {
+      "id": "franchise_sim",
+      "label": "Franchise & SIM Services",
+      "iconType": "satellite",
+      "iconClass": "fa-solid fa-satellite-dish",
+      "iconColor": "text-emerald-600",
+      "shortLabel": "Franchise & SIM"
+    },
+    {
+      "id": "nadra_records",
+      "label": "NADRA & Official Records",
+      "iconType": "id-card",
+      "iconClass": "fa-solid fa-id-card",
+      "iconColor": "text-blue-600",
+      "shortLabel": "NADRA & Records"
+    },
+    {
+      "id": "creative_crypto",
+      "label": "Editing, Design & Crypto",
+      "iconType": "binance",
+      "iconClass": "fa-solid fa-palette",
+      "iconColor": "text-amber-500",
+      "shortLabel": "Creative & Crypto"
     }
-  }'::jsonb,
+  ],
+  "visibility": {
+    "showFaqsTab": true,
+    "showAboutTab": true,
+    "showLoginTab": true,
+    "showToolsTab": true,
+    "showContactTab": true,
+    "showPromoBanners": true,
+    "showMarqueeBanner": true,
+    "showMobileQuickBar": true,
+    "showReviewsSection": true,
+    "showStoreWalletBar": true,
+    "showHeaderRgbToggle": true,
+    "showWebToolsOnStore": true,
+    "showFloatingWhatsApp": true,
+    "showHeaderCartButton": true,
+    "showHeaderWalletPill": true,
+    "showHeroFeaturePills": true,
+    "showMobileBottomDock": true,
+    "showFloatingScrollTop": true,
+    "showSimDatabaseTracker": true,
+    "showPortraitOrbitBadges": true,
+    "showSearchAndCategoryBar": true
+  },
+  "promoBanners": [
+    {
+      "id": "promo-deal-1",
+      "style": "rose",
+      "title": "Need Custom AI Credits, Ad Agency Accounts, NADRA/CDR Info, or USDT?",
+      "enabled": true,
+      "position": "below_services",
+      "badgeIcon": "fa-solid fa-bolt",
+      "badgeText": "ALL SERVICES AVAILABLE HERE",
+      "description": "Message Muhammad Saqib directly on WhatsApp (+92 347 8936242) for wholesale reseller rates, JazzCash / EasyPaisa payment, and instant delivery.",
+      "primaryBtnIcon": "fa-brands fa-whatsapp",
+      "primaryBtnText": "Deal on WhatsApp",
+      "primaryBtnAction": "whatsapp",
+      "secondaryBtnIcon": "fa-solid fa-screwdriver-wrench",
+      "secondaryBtnText": "Open Web Tools Hub",
+      "primaryBtnEnabled": true,
+      "secondaryBtnAction": "webtools",
+      "secondaryBtnEnabled": true
+    }
+  ],
+  "paymentMethods": [
+    {
+      "id": "EasyPaisa",
+      "grad": "from-emerald-500 to-green-600",
+      "icon": "fa-solid fa-mobile-screen-button",
+      "label": "EasyPaisa Mobile Account",
+      "badgeBg": "bg-emerald-100 text-emerald-800 border-emerald-300",
+      "enabled": true,
+      "shortTag": "⚡ Instant Auto-Verify",
+      "extraInfo": "Send via EasyPaisa App or *786# and take screenshot",
+      "accountTitle": "Muhammad Saqib",
+      "accountNumber": "0347-8936242"
+    },
+    {
+      "id": "JazzCash",
+      "grad": "from-rose-500 to-red-600",
+      "icon": "fa-solid fa-wallet",
+      "label": "JazzCash Mobile Account",
+      "badgeBg": "bg-rose-100 text-rose-800 border-rose-300",
+      "enabled": true,
+      "shortTag": "🔥 Fast Approval",
+      "extraInfo": "Send via JazzCash App or Raast ID (03478936242)",
+      "accountTitle": "Muhammad Saqib",
+      "accountNumber": "0347-8936242"
+    },
+    {
+      "id": "SadaPay / Bank",
+      "grad": "from-teal-500 to-cyan-600",
+      "icon": "fa-solid fa-building-columns",
+      "label": "SadaPay / NayaPay / Raast IBFT",
+      "badgeBg": "bg-cyan-100 text-cyan-800 border-cyan-300",
+      "enabled": true,
+      "shortTag": "🏦 0% Fee Raast",
+      "extraInfo": "Transfer from any Bank App via Raast / SadaPay / NayaPay",
+      "accountTitle": "Muhammad Saqib",
+      "accountNumber": "0347-8936242"
+    },
+    {
+      "id": "Binance / USDT",
+      "grad": "from-amber-500 to-orange-600",
+      "icon": "fa-brands fa-bitcoin",
+      "label": "Binance Pay / USDT (TRC20)",
+      "badgeBg": "bg-amber-100 text-amber-800 border-amber-300",
+      "enabled": true,
+      "shortTag": "💲 Crypto Top-Up",
+      "extraInfo": "Send USDT via Binance Pay UID or TRC20 & upload receipt SS",
+      "accountTitle": "Saqib Visuals Official",
+      "accountNumber": "WhatsApp +92 347 8936242 (Ask UID)"
+    }
+  ]
+}'::jsonb,
   timezone('utc'::text, now())
 )
 ON CONFLICT (id) DO UPDATE SET

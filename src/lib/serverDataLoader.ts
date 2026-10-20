@@ -5,7 +5,7 @@ import {
   StoreService,
   WebToolItem
 } from '../data/defaultCatalog';
-import { DEFAULT_SITE_CONFIG, SiteSettingsConfig } from '../types/siteConfig';
+import { DEFAULT_SITE_CONFIG, SiteSettingsConfig, deepMergeSiteConfig } from '../types/siteConfig';
 import { DEFAULT_REVIEWS } from '@/app/api/reviews/route';
 
 export interface ServerStoreData {
@@ -113,7 +113,7 @@ export async function getServerStoreData(): Promise<ServerStoreData> {
       .maybeSingle();
 
     if (cfgRow?.config) {
-      siteConfig = cfgRow.config as SiteSettingsConfig;
+      siteConfig = deepMergeSiteConfig(cfgRow.config);
     }
   } catch {
     // Fallback to default

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
-import { DEFAULT_SITE_CONFIG, SiteSettingsConfig } from '@/src/types/siteConfig';
+import { DEFAULT_SITE_CONFIG, SiteSettingsConfig, deepMergeSiteConfig } from '@/src/types/siteConfig';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 
 export async function GET() {
@@ -22,7 +22,7 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       source: 'supabase',
-      config: data.config as SiteSettingsConfig,
+      config: deepMergeSiteConfig(data.config),
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';

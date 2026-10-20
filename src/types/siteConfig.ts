@@ -496,3 +496,54 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
   visibility: DEFAULT_SITE_VISIBILITY,
   seo: DEFAULT_SITE_SEO
 };
+
+
+export function deepMergeSiteConfig(raw: unknown): SiteSettingsConfig {
+  if (!raw || typeof raw !== 'object') {
+    return DEFAULT_SITE_CONFIG;
+  }
+  const obj = raw as Partial<SiteSettingsConfig>;
+
+  return {
+    banner: {
+      ...DEFAULT_SITE_CONFIG.banner,
+      ...(obj.banner || {}),
+    },
+    promoBanners: Array.isArray(obj.promoBanners) && obj.promoBanners.length > 0 
+      ? obj.promoBanners 
+      : DEFAULT_SITE_CONFIG.promoBanners,
+    storeBars: {
+      ...DEFAULT_SITE_CONFIG.storeBars,
+      ...(obj.storeBars || {}),
+    },
+    contact: {
+      ...DEFAULT_SITE_CONFIG.contact,
+      ...(obj.contact || {}),
+    },
+    socials: {
+      ...DEFAULT_SITE_CONFIG.socials,
+      ...(obj.socials || {}),
+      platforms: Array.isArray(obj.socials?.platforms) && obj.socials.platforms.length > 0
+        ? obj.socials.platforms
+        : DEFAULT_SOCIAL_PLATFORMS,
+    },
+    footer: {
+      ...DEFAULT_SITE_CONFIG.footer,
+      ...(obj.footer || {}),
+    },
+    paymentMethods: Array.isArray(obj.paymentMethods) && obj.paymentMethods.length > 0
+      ? obj.paymentMethods
+      : DEFAULT_SITE_CONFIG.paymentMethods,
+    categories: Array.isArray(obj.categories) && obj.categories.length > 0
+      ? obj.categories
+      : DEFAULT_SITE_CONFIG.categories,
+    visibility: {
+      ...DEFAULT_SITE_CONFIG.visibility,
+      ...(obj.visibility || {}),
+    },
+    seo: {
+      ...DEFAULT_SITE_CONFIG.seo,
+      ...(obj.seo || {}),
+    },
+  };
+}
