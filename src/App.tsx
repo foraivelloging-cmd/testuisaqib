@@ -629,8 +629,18 @@ export default function App({
         const path = window.location.pathname.toLowerCase();
         const hash = window.location.hash.toLowerCase();
         const search = window.location.search.toLowerCase();
-        if (path.includes('saqibadmb') || hash.includes('saqibadmb') || search.includes('saqibadmb')) {
+        if (path.includes('saqibadmb') || hash.includes('saqibadmb') || search.includes('saqibadmb') || path.includes('saqibadmin')) {
           setActiveTab('saqibadmb');
+        } else if (path.includes('contact')) {
+          setActiveTab('contact');
+        } else if (path.includes('login')) {
+          setActiveTab('login');
+        } else if (path.includes('about')) {
+          setActiveTab('about');
+        } else if (path.includes('faqs') || path.includes('faq')) {
+          setActiveTab('faqs');
+        } else if (path.includes('siminfo')) {
+          setActiveTab('siminfo');
         }
 
         const savedToken = localStorage.getItem('saqib_admin_token');
@@ -922,15 +932,25 @@ export default function App({
     const handlePopState = () => {
       const path = window.location.pathname.toLowerCase();
       const hash = window.location.hash.toLowerCase();
-      if (path.includes('saqibadmb') || hash.includes('saqibadmb')) {
+      if (path.includes('saqibadmb') || hash.includes('saqibadmb') || path.includes('saqibadmin')) {
         setActiveTab('saqibadmb');
-      } else if (activeTab === 'saqibadmb') {
+      } else if (path.includes('contact')) {
+        setActiveTab('contact');
+      } else if (path.includes('login')) {
+        setActiveTab('login');
+      } else if (path.includes('about')) {
+        setActiveTab('about');
+      } else if (path.includes('faqs') || path.includes('faq')) {
+        setActiveTab('faqs');
+      } else if (path.includes('siminfo')) {
+        setActiveTab('siminfo');
+      } else {
         setActiveTab('store');
       }
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
-  }, [activeTab]);
+  }, []);
 
   const switchTab = (tab: TabId, scroll = true) => {
     playPopSound(600);
@@ -938,12 +958,16 @@ export default function App({
     if (tab === 'login') {
       setLoginPortalSection('auth');
     }
-    if (tab !== 'saqibadmb' && window.location.pathname.toLowerCase().includes('saqibadmb')) {
-      try {
+    try {
+      if (tab === 'store') {
         window.history.pushState({}, '', '/');
-      } catch {
-        // Ignore
+      } else if (tab === 'saqibadmb') {
+        window.history.pushState({}, '', '/saqibadmin');
+      } else {
+        window.history.pushState({}, '', '/' + tab);
       }
+    } catch {
+      // Ignore
     }
     setActiveTab(tab);
     if (scroll) {

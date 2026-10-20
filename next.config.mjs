@@ -7,6 +7,35 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ['lucide-react', 'react-icons', 'motion'],
   },
+  async redirects() {
+    return [
+      {
+        source: '/conatact',
+        destination: '/contact',
+        permanent: true,
+      },
+      {
+        source: '/support',
+        destination: '/contact',
+        permanent: true,
+      },
+      {
+        source: '/signin',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/auth',
+        destination: '/login',
+        permanent: true,
+      },
+      {
+        source: '/faq',
+        destination: '/faqs',
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {
