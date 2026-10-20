@@ -1,11 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  compress: true,
+  poweredByHeader: false,
   images: {
     unoptimized: true,
   },
   experimental: {
-    optimizePackageImports: ['lucide-react', 'react-icons', 'motion'],
+    optimizePackageImports: [
+      'lucide-react',
+      'react-icons',
+      'react-icons/fa6',
+      'react-icons/si',
+      'motion',
+      'canvas-confetti',
+    ],
   },
   async redirects() {
     return [

@@ -3215,7 +3215,7 @@ export default function App({
                     <div
                       key={srv.id}
                       data-scroll="up"
-                      className={`min-w-0 overflow-hidden acrylic-frame acrylic-interactive rounded-[20px] sm:rounded-[30px] p-1 sm:p-2.5 flex flex-col justify-between ${staggerClass}`}
+                      className={`min-w-0 overflow-hidden acrylic-frame acrylic-interactive rounded-[20px] sm:rounded-[30px] p-1 sm:p-2.5 flex flex-col justify-between content-visibility-auto ${staggerClass}`}
                     >
                       <div
                         className={`min-w-0 plush-pillow ${srv.plush} rounded-[15px] sm:rounded-[23px] p-2.5 sm:p-4 flex flex-col h-full justify-between space-y-2 sm:space-y-3.5`}
@@ -3503,7 +3503,7 @@ export default function App({
                       <div
                         key={tool.id}
                         data-scroll="zoom"
-                        className={`min-w-0 overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/90 border border-pink-100 shadow-xs flex flex-col justify-between space-y-2.5 ${
+                        className={`min-w-0 overflow-hidden p-2.5 sm:p-3 rounded-2xl bg-white/90 border border-pink-100 shadow-xs flex flex-col justify-between space-y-2.5 content-visibility-auto ${
                           idx % 3 === 1 ? 'scroll-delay-1' : idx % 3 === 2 ? 'scroll-delay-2' : ''
                         }`}
                       >

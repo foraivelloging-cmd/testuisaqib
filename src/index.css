@@ -583,6 +583,28 @@ header nav.acrylic-frame {
 .scroll-delay-2 { transition-delay: 130ms; }
 .scroll-delay-3 { transition-delay: 195ms; }
 
+/* ===================================================================== */
+/* ULTRA-SONIC SPEED & 60/120FPS HARDWARE ACCELERATION ENGINE            */
+/* ===================================================================== */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 0 320px;
+}
+
+.gpu-accelerated,
+.acrylic-interactive,
+.plush-pillow,
+.fluffy-orb {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  content-visibility: auto;
+  image-rendering: -webkit-optimize-contrast;
+}
+
 /* Neon Top Scroll Progress Bar */
 .scroll-progress-bar {
   background: linear-gradient(90deg, #ec4899 0%, #8b5cf6 45%, #10b981 100%);
