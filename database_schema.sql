@@ -174,7 +174,43 @@ CREATE TABLE IF NOT EXISTS public.admin_vault (
 );
 
 -- ---------------------------------------------------------------------
--- 4. ULTRA-FAST PERFORMANCE INDEXES
+-- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
+-- ---------------------------------------------------------------------
+CREATE OR REPLACE FUNCTION public.handle_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = timezone('utc'::text, now());
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS set_timestamp_services ON public.services;
+CREATE TRIGGER set_timestamp_services
+BEFORE UPDATE ON public.services
+FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS set_timestamp_web_tools ON public.web_tools;
+CREATE TRIGGER set_timestamp_web_tools
+BEFORE UPDATE ON public.web_tools
+FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS set_timestamp_profiles ON public.profiles;
+CREATE TRIGGER set_timestamp_profiles
+BEFORE UPDATE ON public.profiles
+FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS set_timestamp_orders ON public.orders;
+CREATE TRIGGER set_timestamp_orders
+BEFORE UPDATE ON public.orders
+FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+DROP TRIGGER IF EXISTS set_timestamp_site_config ON public.site_config;
+CREATE TRIGGER set_timestamp_site_config
+BEFORE UPDATE ON public.site_config
+FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
+
+-- ---------------------------------------------------------------------
+-- 5. ULTRA-FAST PERFORMANCE INDEXES
 -- ---------------------------------------------------------------------
 CREATE INDEX IF NOT EXISTS idx_services_category_hidden ON public.services(category, hidden, sort_order);
 CREATE INDEX IF NOT EXISTS idx_services_sort ON public.services(sort_order);
@@ -186,7 +222,7 @@ CREATE INDEX IF NOT EXISTS idx_payment_proofs_created ON public.payment_proofs(c
 CREATE INDEX IF NOT EXISTS idx_reviews_verified_created ON public.reviews(verified, created_at DESC);
 
 -- ---------------------------------------------------------------------
--- 5. ROW LEVEL SECURITY (RLS) POLICIES — PRODUCTION HARDENED
+-- 6. ROW LEVEL SECURITY (RLS) POLICIES — PRODUCTION HARDENED
 -- ---------------------------------------------------------------------
 ALTER TABLE public.site_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
@@ -213,14 +249,14 @@ DROP POLICY IF EXISTS "Users Read Own Profile" ON public.profiles;
 DROP POLICY IF EXISTS "Users Insert Own Profile" ON public.profiles;
 DROP POLICY IF EXISTS "No Direct Public Access to Admin Vault" ON public.admin_vault;
 
--- 5.1 Public Read Store Data
+-- 6.1 Public Read Store Data
 CREATE POLICY "Public Read Services" ON public.services FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Web Tools" ON public.web_tools FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Site Config" ON public.site_config FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT TO anon, authenticated USING (verified = true);
 CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT TO anon, authenticated WITH CHECK (true);
 
--- 5.2 Public Insert Orders & Proofs
+-- 6.2 Public Insert Orders & Proofs
 CREATE POLICY "Public Insert Orders" ON public.orders FOR INSERT TO anon, authenticated WITH CHECK (true);
 CREATE POLICY "Users Read Own Orders" ON public.orders FOR SELECT TO anon, authenticated USING (
   user_id = coalesce(auth.uid()::text, '') OR user_id = current_setting('request.jwt.claim.sub', true)
@@ -233,7 +269,7 @@ CREATE POLICY "Users Read Own Payment Proofs" ON public.payment_proofs FOR SELEC
 
 CREATE POLICY "Public Insert Contact Inquiries" ON public.contact_inquiries FOR INSERT TO anon, authenticated WITH CHECK (true);
 
--- 5.3 Profile RLS
+-- 6.3 Profile RLS
 CREATE POLICY "Users Read Own Profile" ON public.profiles FOR SELECT TO anon, authenticated USING (
   id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
 );
@@ -241,7 +277,7 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
   id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
 );
 
--- 5.4 Admin Security Vault — ZERO Public / Client Access
+-- 6.4 Admin Security Vault — ZERO Public / Client Access
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
 
 -- Grant privileges
@@ -252,7 +288,7 @@ GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
 -- ---------------------------------------------------------------------
--- 6. SEED DATA: COMPLETE SITE CONFIGURATION
+-- 7. SEED DATA: COMPLETE SITE CONFIGURATION
 -- (Includes WhatsApp Popup Widget & 10+ Social Platforms)
 -- ---------------------------------------------------------------------
 INSERT INTO public.site_config (id, config, updated_at)
@@ -282,8 +318,7 @@ VALUES (
       "orbitBadge4Sub": "CDR • FRC • LIVE",
       "showBadgeText": true,
       "badgeText": "🔥 ALL DIGITAL, AI, SMM & NADRA SERVICES LIVE 24/7 (VERIFIED ACTIVE)",
-      "showMainTitle": true,
-      "mainTitle": "Muhammad Saqib",
+      "showMainTitle": "Muhammad Saqib",
       "highlightTitle": "— Saqib Visuals",
       "showDescription": true,
       "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
@@ -338,7 +373,7 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = timezone('utc'::text, now());
 
 -- ---------------------------------------------------------------------
--- 7. SEED DATA: ALL 32+ DIGITAL & PRO SERVICES
+-- 8. SEED DATA: ALL 32+ DIGITAL & PRO SERVICES
 -- ---------------------------------------------------------------------
 INSERT INTO public.services (
   id, category, badge, title, "desc", plush, orb_grad, icon_type, custom_icon_url, direct_tool_url, input_label, placeholder, tiers, hidden, sort_order
@@ -384,7 +419,7 @@ ON CONFLICT (id) DO UPDATE SET
   sort_order = EXCLUDED.sort_order;
 
 -- ---------------------------------------------------------------------
--- 8. SEED DATA: 7 LIVE WEB TOOLS
+-- 9. SEED DATA: 7 LIVE WEB TOOLS
 -- ---------------------------------------------------------------------
 INSERT INTO public.web_tools (
   id, title, "desc", tool_url, icon_url, badge, icon_type, orb_grad, plush, hidden, sort_order
@@ -404,7 +439,7 @@ ON CONFLICT (id) DO UPDATE SET
   badge = EXCLUDED.badge;
 
 -- ---------------------------------------------------------------------
--- 9. SEED DATA: ADMIN & VIP PROFILES
+-- 10. SEED DATA: ADMIN & VIP PROFILES
 -- ---------------------------------------------------------------------
 INSERT INTO public.profiles (id, full_name, email, phone, role, balance)
 VALUES 
@@ -414,7 +449,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------
--- 10. SEED DATA: VERIFIED CUSTOMER REVIEWS
+-- 11. SEED DATA: VERIFIED CUSTOMER REVIEWS
 -- ---------------------------------------------------------------------
 INSERT INTO public.reviews (id, name, service, rating, comment, verified)
 VALUES
@@ -425,7 +460,7 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- ---------------------------------------------------------------------
--- 11. SEED DATA: ADMIN SECURITY VAULT
+-- 12. SEED DATA: ADMIN SECURITY VAULT
 -- (Pass: saqibadmin / deleefue - PBKDF2 SHA-512)
 -- ---------------------------------------------------------------------
 INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm)
@@ -455,7 +490,7 @@ ON CONFLICT (username) DO UPDATE SET
 -- 🛠️ USEFUL ADMIN MAINTENANCE CHEAT-SHEET QUERIES
 -- =====================================================================
 
--- [A] WhatsApp DP, Name, Status & Greetings Update Query:
+-- [A] WhatsApp DP, Name, Status & Greetings Update:
 -- UPDATE public.site_config
 -- SET config = jsonb_set(
 --   jsonb_set(
@@ -489,9 +524,21 @@ ON CONFLICT (username) DO UPDATE SET
 -- )
 -- WHERE id = 'default';
 
--- [C] Approve Payment Proof & Credit User Wallet Query:
+-- [C] Approve Payment Proof & Credit User Wallet:
 -- UPDATE public.payment_proofs SET status = 'approved', reviewed_at = now() WHERE id = 'YOUR_PROOF_ID';
 -- UPDATE public.profiles SET balance = balance + 1000 WHERE id = 'USER_PHONE_OR_ID';
+
+-- [D] Check Latest Orders with Customer Details:
+-- SELECT id, user_id, service_title, package_tier, price, status, created_at
+-- FROM public.orders
+-- ORDER BY created_at DESC
+-- LIMIT 20;
+
+-- [E] Check Pending Payment Proofs:
+-- SELECT id, user_id, amount, method, sender_account_name, trx_id, status, created_at
+-- FROM public.payment_proofs
+-- WHERE status = 'pending'
+-- ORDER BY created_at DESC;
 
 -- =====================================================================
 -- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
