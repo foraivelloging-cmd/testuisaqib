@@ -1389,12 +1389,12 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
               {activeScreen !== 'home' && (
                 <button
                   type="button"
                   onClick={() => openSettingsScreen('home')}
-                  className="px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 text-slate-950 font-extrabold text-xs shadow-md flex items-center gap-1.5 cursor-pointer transition"
+                  className="col-span-2 sm:col-span-1 px-3.5 py-2 rounded-xl bg-sky-400 hover:bg-sky-300 text-slate-950 font-extrabold text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition w-full sm:w-auto"
                 >
                   <FaArrowLeft className="w-3.5 h-3.5" />
                   <span>All Settings Menu</span>
@@ -1418,7 +1418,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   );
                 }}
                 title="Admin Control: Turn Soft Light RGB Borders ON or OFF across the entire website"
-                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer flex items-center gap-2 transition shadow-md ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-extrabold cursor-pointer flex items-center justify-center gap-2 transition shadow-md w-full sm:w-auto ${
                   siteConfig.banner.rgbBorderEnabled !== false
                     ? 'rgb-pill-active text-slate-900'
                     : 'bg-white/15 hover:bg-white/25 text-slate-200 border border-white/25'
@@ -1432,7 +1432,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   }`}
                 ></span>
                 <span>
-                  🌈 RGB Light: {siteConfig.banner.rgbBorderEnabled !== false ? 'ON' : 'OFF'}
+                  RGB Light: {siteConfig.banner.rgbBorderEnabled !== false ? 'ON' : 'OFF'}
                 </span>
               </button>
 
@@ -1452,7 +1452,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     'Full Website Backup JSON Copied!'
                   )
                 }
-                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-extrabold cursor-pointer flex items-center gap-1.5"
+                className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-extrabold cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto"
               >
                 <FaCopy className="w-3 h-3 text-sky-300" />
                 <span>Backup JSON</span>
@@ -1460,7 +1460,9 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               <button
                 type="button"
                 onClick={exitSecretAdminPortal}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-extrabold shadow-md cursor-pointer flex items-center gap-1.5"
+                className={`px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-extrabold shadow-md cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto ${
+                  activeScreen === 'home' ? 'col-span-2 sm:col-span-1' : ''
+                }`}
               >
                 <FaEye className="w-3.5 h-3.5" />
                 <span>View Live Store</span>
@@ -1469,7 +1471,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           </div>
 
           {/* Quick Pill Navigation Strip (Always accessible like TikTok top tabs) */}
-          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-white/15 scrollbar-none">
+          <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-white/15 scrollbar-none pr-8 overscroll-x-contain pb-1">
             {[
               { id: 'home' as const, label: '⚙️ Settings Menu', badge: 'Home' },
               {
@@ -1766,14 +1768,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: 1-Tap Hide / Show Anything Master Studio */}
                     <div
                       onClick={() => openSettingsScreen('visibility')}
-                      className="p-3.5 sm:p-4 bg-gradient-to-r from-slate-900/5 via-indigo-50/70 to-pink-50/70 hover:bg-pink-50 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 bg-gradient-to-r from-slate-900/5 via-indigo-50/70 to-pink-50/70 hover:bg-pink-50 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-900 via-indigo-800 to-purple-700 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaEyeSlash className="w-4 h-4 text-sky-300" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             👁️ Hide / Show Anything (Services, Sections, Categories &amp; Tabs)
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1781,7 +1783,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-slate-900 text-sky-300 text-[10px] font-extrabold">
                           {hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount > 0
                             ? `${hiddenServicesCount + hiddenToolsCount + hiddenCategoriesCount} Hidden`
@@ -1794,14 +1796,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Store Categories & Custom Icons Manager */}
                     <div
                       onClick={() => openSettingsScreen('categories', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-fuchsia-600 to-purple-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaLayerGroup className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Store Categories &amp; Tab Icons (Add / Edit / Delete)
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1809,7 +1811,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-fuchsia-100 text-fuchsia-800 text-[10px] font-extrabold">
                           {activeCategories.length} Tabs
                         </span>
@@ -1820,14 +1822,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Store Services / Products */}
                     <div
                       onClick={() => openSettingsScreen('services', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaBagShopping className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Store Products, Descriptions &amp; Pricing Plans
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1835,7 +1837,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-pink-100 text-pink-800 text-[10px] font-extrabold">
                           {servicesCatalog.length} Items
                         </span>
@@ -1846,14 +1848,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Jump directly to Pricing Plans Builder */}
                     <div
                       onClick={() => openSettingsScreen('services', 2)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaSliders className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Package Plans &amp; Price List Builder
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1861,7 +1863,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold">
                           Step 2
                         </span>
@@ -1872,14 +1874,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Live Web Tools */}
                     <div
                       onClick={() => openSettingsScreen('tools', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 to-cyan-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaScrewdriverWrench className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Live Web Tools &amp; Custom Tool Icons
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1887,7 +1889,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">
                           {webToolsCatalog.length} Tools
                         </span>
@@ -1915,14 +1917,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Show / Hide Hero Banner + Drilldown */}
                     <div
                       onClick={() => openSettingsScreen('banner', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-rose-500 to-amber-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaPanorama className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Show Hero Banner &amp; Edit Banner Text
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1930,7 +1932,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {renderToggleSwitch(
                           siteConfig.banner.showHeroBanner,
                           () => {
@@ -1954,14 +1956,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Top Header Strip Toggle */}
                     <div
                       onClick={() => openSettingsScreen('banner', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-500 to-blue-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaBolt className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Top Header Strip &amp; WhatsApp Pill
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -1969,7 +1971,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {renderToggleSwitch(
                           siteConfig.banner.showTopStrip,
                           () => {
@@ -1991,14 +1993,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: 🎯 2 No Promo & Deal Banners Manager */}
                     <div
                       onClick={() => openSettingsScreen('promo_banners', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-fuchsia-500 to-pink-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaBullhorn className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1.5 leading-snug">
                             <span>🎯 2 No Promo Banners Manager</span>
                             <span className="px-1.5 py-0.2 rounded-full bg-pink-100 text-pink-700 text-[9px] font-black">
                               {currentPromoBanners.length} Banners
@@ -2009,7 +2011,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {renderToggleSwitch(
                           activeVisibility.showPromoBanners ?? true,
                           () => toggleSiteVisibilityKey('showPromoBanners', '2 No Promo Banners'),
@@ -2033,24 +2035,31 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             : '⚪ Soft Light RGB Borders Turned OFF!'
                         );
                       }}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-sky-400 via-purple-500 to-pink-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaWandMagicSparkles className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
-                            Soft Light RGB Border (Portfolio &amp; All Cards)
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2 leading-snug">
+                            <span>Soft Light RGB Borders</span>
+                            <span
+                              className={`px-1.5 py-0.2 rounded-full text-[9px] font-black ${
+                                siteConfig.banner.rgbBorderEnabled !== false
+                                  ? 'bg-sky-100 text-sky-800'
+                                  : 'bg-slate-200 text-slate-600'
+                              }`}
+                            >
+                              {siteConfig.banner.rgbBorderEnabled !== false ? 'ON' : 'OFF'}
+                            </span>
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
-                            {siteConfig.banner.rgbBorderEnabled !== false
-                              ? '🌈 Active: Soft Pastel RGB Light Ring on Portfolio & Borders'
-                              : '⚪ Off: Standard Clean Card Borders'}
+                            Soft animated cyan/pink ambient light around cards &amp; showcase frames
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <div className="flex items-center gap-2.5 flex-shrink-0 pl-13 sm:pl-0">
                         {renderToggleSwitch(
                           siteConfig.banner.rgbBorderEnabled !== false,
                           () => {
@@ -2073,14 +2082,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Storefront Bars & Live Wallet */}
                     <div
                       onClick={() => openSettingsScreen('store_bars', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <i className="fa-solid fa-store text-sm"></i>
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Storefront Bars, Live Wallet &amp; Status Telemetry
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2088,7 +2097,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-indigo-100 text-indigo-800 text-[10px] font-extrabold">
                           Customize
                         </span>
@@ -2099,14 +2108,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Themes & Font Studio */}
                     <div
                       onClick={() => openSettingsScreen('ui')}
-                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-pink-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-teal-500 to-emerald-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaWandMagicSparkles className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             UI Theme &amp; Font Typography Studio
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2114,7 +2123,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
                           6 Themes • 6 Fonts
                         </span>
@@ -2142,14 +2151,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Edit Payment Methods */}
                     <div
                       onClick={() => openSettingsScreen('payment_methods')}
-                      className="p-3.5 sm:p-4 hover:bg-emerald-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-emerald-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-green-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaBuildingColumns className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Payment Methods &amp; Account Numbers
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2157,7 +2166,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
                           {siteConfig.paymentMethods[0]?.accountNumber || '0347-8936242'}
                         </span>
@@ -2168,14 +2177,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Verify Payment Proofs & User Balance */}
                     <div
                       onClick={() => openSettingsScreen('payments')}
-                      className="p-3.5 sm:p-4 hover:bg-emerald-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-emerald-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaCreditCard className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             User Payment Proofs &amp; Wallet Balance
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2183,7 +2192,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span
                           className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                             pendingProofsCount > 0
@@ -2202,12 +2211,12 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       onClick={toggleSound}
                       className="p-3.5 sm:p-4 hover:bg-emerald-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-slate-700 to-slate-900 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaVolumeHigh className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Tactile UI Sound Effects
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2240,14 +2249,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Primary WhatsApp Number */}
                     <div
                       onClick={() => openSettingsScreen('contact_footer', 1)}
-                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <SiWhatsapp className="w-5 h-5" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Primary WhatsApp Number &amp; Contact Info
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2255,7 +2264,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono-code font-extrabold">
                           Edit WA
                         </span>
@@ -2266,14 +2275,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Social Media Links */}
                     <div
                       onClick={() => openSettingsScreen('contact_footer', 2)}
-                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-pink-500 via-purple-500 to-indigo-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaShareNodes className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Social Media Links &amp; Handles
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2281,7 +2290,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-pink-100 text-pink-800 text-[10px] font-extrabold">
                           4 Socials
                         </span>
@@ -2292,14 +2301,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row: Footer Links & Branding */}
                     <div
                       onClick={() => openSettingsScreen('contact_footer', 3)}
-                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-indigo-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaGlobe className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Footer Brand Name &amp; Quick Links
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2307,7 +2316,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2.5 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {renderToggleSwitch(
                           siteConfig.footer.showQuickLinks,
                           () => {
@@ -2346,14 +2355,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row 1: Manage SEO Title & Meta Description */}
                     <div
                       onClick={() => openSettingsScreen('seo')}
-                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaGlobe className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Google Meta Title, Description &amp; Canonical URL
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2361,7 +2370,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold">
                           Manage SEO
                         </span>
@@ -2372,14 +2381,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row 2: Open Graph & Twitter Social Share Cards */}
                     <div
                       onClick={() => openSettingsScreen('seo')}
-                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-600 to-cyan-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaShareNodes className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             OpenGraph (WhatsApp/Facebook) &amp; Twitter / X Cards
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2387,7 +2396,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
                           Cards &amp; Previews
                         </span>
@@ -2398,14 +2407,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                     {/* Row 3: Custom SEO Keywords & Schema.org JSON-LD */}
                     <div
                       onClick={() => openSettingsScreen('seo')}
-                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex items-center justify-between gap-3 cursor-pointer"
+                      className="p-3.5 sm:p-4 hover:bg-blue-50/60 transition flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 cursor-pointer"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-600 via-fuchsia-600 to-indigo-600 text-white flex items-center justify-center shadow-sm flex-shrink-0">
                           <FaTags className="w-4 h-4" />
                         </div>
-                        <div className="min-w-0">
-                          <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug break-words">
                             Custom Keywords &amp; Schema.org Structured Data (JSON-LD)
                           </div>
                           <div className="text-[11px] font-semibold text-slate-600 truncate">
@@ -2413,7 +2422,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
+                      <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         <span className="px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 text-[10px] font-extrabold">
                           Keywords &amp; JSON-LD
                         </span>

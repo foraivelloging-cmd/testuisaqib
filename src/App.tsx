@@ -2293,7 +2293,7 @@ export default function App({
                 setMobileMenuOpen((prev) => !prev);
               }}
               title="Open 3-Line Mobile Menu"
-              className={`md:hidden px-2.5 py-1.5 rounded-xl font-extrabold text-[10px] flex items-center gap-1 transition cursor-pointer border shadow-sm ${
+              className={`hidden sm:flex md:hidden px-2.5 py-1.5 rounded-xl font-extrabold text-[10px] items-center gap-1 transition cursor-pointer border shadow-sm ${
                 mobileMenuOpen
                   ? 'bg-slate-900 text-white border-pink-400'
                   : 'bg-white/95 text-slate-900 border-pink-200'
@@ -2307,7 +2307,7 @@ export default function App({
 
         {/* ==================== MOBILE UPPER QUICK-BUTTON BAR (CATEGORIES + TOOLS + GRID) ==================== */}
         {siteVisibility.showMobileQuickBar && (
-          <div className="md:hidden acrylic-frame rounded-2xl px-2 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+          <div className="md:hidden acrylic-frame rounded-2xl px-2.5 py-1.5 flex items-center gap-1.5 overflow-x-auto scrollbar-none pr-8 overscroll-x-contain">
             <button
               type="button"
               onClick={() => {
@@ -5123,7 +5123,7 @@ export default function App({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           title="Scroll Back to Top"
-          className={`fixed bottom-34 md:bottom-22 right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
+          className={`fixed ${activeTab === 'saqibadmb' ? 'bottom-20 md:bottom-6' : 'bottom-34 md:bottom-22'} right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
             showScrollTopBtn
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 translate-y-6 scale-75 pointer-events-none'
@@ -5134,7 +5134,7 @@ export default function App({
       )}
 
       {/* ==================== FLOATING 1-TAP WHATSAPP QUICK ORDER ORB ==================== */}
-      {siteVisibility.showFloatingWhatsApp && (
+      {siteVisibility.showFloatingWhatsApp && activeTab !== 'saqibadmb' && (
         <a
           href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
             siteConfig.contact.whatsappDefaultMessage

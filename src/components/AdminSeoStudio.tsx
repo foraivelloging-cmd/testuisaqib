@@ -181,7 +181,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -193,7 +193,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                   updateSeoField('ogImageUrl', siteConfig.banner.portraitUrl);
                   showToast('✨ Auto-filled SEO tags from Hero Banner!');
                 }}
-                className="px-3 py-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-2 rounded-xl bg-white hover:bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs w-full sm:w-auto"
               >
                 <FaWandMagicSparkles className="w-3.5 h-3.5 text-blue-600" />
                 <span>Auto-Fill from Hero</span>
@@ -209,7 +209,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                   }));
                   showToast('↺ SEO settings restored to defaults!');
                 }}
-                className="px-3 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                className="px-3 py-2 rounded-xl bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer shadow-2xs w-full sm:w-auto"
               >
                 <FaRotateLeft className="w-3.5 h-3.5" />
                 <span>Restore Defaults</span>
@@ -218,7 +218,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
               <button
                 type="button"
                 onClick={onReturnHome}
-                className="px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-extrabold flex items-center gap-1.5 cursor-pointer shadow-md"
+                className="col-span-2 sm:col-span-1 px-3.5 py-2 rounded-xl bg-slate-900 text-white text-xs font-extrabold flex items-center justify-center gap-1.5 cursor-pointer shadow-md w-full sm:w-auto"
               >
                 <FaArrowLeft className="w-3.5 h-3.5" />
                 <span>Settings Menu</span>
@@ -269,7 +269,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                     playPopSound(620);
                     setActiveSubTab(tab.id);
                   }}
-                  className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${
+                  className={`p-3 rounded-2xl border text-left transition cursor-pointer flex flex-col justify-between ${tab.id === 'code' ? 'col-span-2 sm:col-span-1' : ''} ${
                     isAct
                       ? 'bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white border-white shadow-md scale-[1.01]'
                       : 'bg-white/90 hover:bg-white text-slate-800 border-indigo-100 shadow-2xs'
