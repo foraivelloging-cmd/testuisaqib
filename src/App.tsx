@@ -2263,6 +2263,33 @@ export default function App({
               </button>
             )}
 
+            {/* PROMINENT LANGUAGE SWITCHER PILL (URDU 🇵🇰 / ENGLISH 🇬🇧) */}
+            <button
+              type="button"
+              onClick={() => {
+                playPopSound(720);
+                toggleLanguage();
+              }}
+              title={siteLang === 'en' ? 'Switch to Urdu (اردو زبان)' : 'Switch to English (انگریزی زبان)'}
+              className={`px-2.5 sm:px-3.5 py-1.5 rounded-xl sm:rounded-full font-extrabold text-[11px] sm:text-xs shadow-md border-2 flex items-center gap-1.5 transition-all hover:scale-105 cursor-pointer ${
+                siteLang === 'ur'
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-700 text-white border-white shadow-emerald-500/30'
+                  : 'bg-white/95 hover:bg-white text-slate-900 border-pink-400 shadow-sm'
+              }`}
+            >
+              <span className="text-base leading-none">{siteLang === 'en' ? '🇵🇰' : '🇬🇧'}</span>
+              <span className="font-extrabold tracking-wide text-xs sm:text-sm">
+                {siteLang === 'en' ? 'اردو' : 'English'}
+              </span>
+              <span
+                className={`text-[9px] px-1.5 py-0.5 rounded-full font-black uppercase ${
+                  siteLang === 'ur' ? 'bg-white/25 text-white' : 'bg-pink-100 text-pink-700'
+                }`}
+              >
+                {siteLang === 'en' ? 'UR' : 'EN'}
+              </span>
+            </button>
+
             {/* SOFT LIGHT RGB BORDER ON/OFF TOGGLE (ADMIN MODE ONLY) */}
             {activeTab === 'saqibadmb' && (
               <button
@@ -2746,6 +2773,19 @@ export default function App({
                 </div>
                 {siteConfig.banner.showTopStripWhatsapp !== false && (
                   <div className="flex items-center gap-1.5 flex-shrink-0">
+                    {/* Language Switcher in Top Strip */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        playPopSound(720);
+                        toggleLanguage();
+                      }}
+                      title={siteLang === 'en' ? 'اردو زبان میں دیکھیں' : 'View in English'}
+                      className="acrylic-frame acrylic-interactive rounded-full px-2.5 sm:px-3 py-1 sm:py-1.5 flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold text-slate-900 whitespace-nowrap cursor-pointer hover:scale-105 transition border border-pink-300"
+                    >
+                      <span className="text-sm">{siteLang === 'en' ? '🇵🇰' : '🇬🇧'}</span>
+                      <span className="font-extrabold">{siteLang === 'en' ? 'اردو زبان' : 'English'}</span>
+                    </button>
                     <a
                       href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
                         siteConfig.contact.whatsappDefaultMessage
