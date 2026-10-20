@@ -97,7 +97,7 @@ export function verifyAdminJwt(token: string): { authorized: boolean; payload?: 
 }
 
 // ==================== 3. REQUEST VALIDATOR FOR MUTATION APIS ====================
-export function verifyAdminRequest(req: Request): { authorized: boolean; reason?: string } {
+export function verifyAdminRequest(req: Request): { authorized: boolean; reason?: string; payload?: { username: string; role: string } } {
   // Check Authorization Bearer Header
   const authHeader = req.headers.get('authorization') || '';
   if (authHeader.startsWith('Bearer ')) {
@@ -171,4 +171,111 @@ export async function authenticateAdmin(
   }
 
   return { success: false, error: 'Invalid admin credentials' };
+}
+
+// ==================== 5. UPDATE ADMIN CREDENTIALS ====================
+export async function updateAdminCredentials(
+  currentPasswordInput: string,
+  newUsernameInput: string,
+  newPasswordInput: string,
+  adminUsernameHint?: string
+): Promise<{ success: boolean; message?: string; error?: string; token?: string; username?: string }> {
+  const cleanCurrentPass = (currentPasswordInput || '').trim();
+  const cleanNewUser = (newUsernameInput || '').trim().toLowerCase();
+  const cleanNewPass = (newPasswordInput || '').trim();
+
+  if (!cleanCurrentPass) {
+    return { success: false, error: 'Current password is required to authorize changes.' };
+  }
+  if (!cleanNewUser || cleanNewUser.length < 3) {
+    return { success: false, error: 'New username must be at least 3 characters long.' };
+  }
+  if (!cleanNewPass || cleanNewPass.length < 6) {
+    return { success: false, error: 'New password must be at least 6 characters long.' };
+  }
+
+  // Find the existing record to verify current password
+  let currentMatchedUser: string | null = null;
+
+  try {
+    // If username hint is provided, try that first
+    if (adminUsernameHint) {
+      const { data: rec } = await supabaseAdmin
+        .from('admin_vault')
+        .select('*')
+        .eq('username', adminUsernameHint.toLowerCase())
+        .maybeSingle();
+      if (rec && verifyPbkdf2Password(cleanCurrentPass, rec.salt, rec.password_hash, rec.iterations || 100000)) {
+        currentMatchedUser = rec.username;
+      }
+    }
+
+    // Otherwise check all admin_vault records
+    if (!currentMatchedUser) {
+      const { data: allAdmins } = await supabaseAdmin
+        .from('admin_vault')
+        .select('*');
+      if (allAdmins && allAdmins.length > 0) {
+        for (const admin of allAdmins) {
+          if (verifyPbkdf2Password(cleanCurrentPass, admin.salt, admin.password_hash, admin.iterations || 100000)) {
+            currentMatchedUser = admin.username;
+            break;
+          }
+        }
+      }
+    }
+  } catch {
+    // Database query failed
+  }
+
+  // If not found in DB, check fallback credentials
+  if (!currentMatchedUser) {
+    if (verifyPbkdf2Password(cleanCurrentPass, FALLBACK_SALT, FALLBACK_HASH, FALLBACK_ITERATIONS)) {
+      currentMatchedUser = FALLBACK_USERNAME;
+    }
+  }
+
+  if (!currentMatchedUser) {
+    return { success: false, error: 'Current password is incorrect. Authorization denied.' };
+  }
+
+  // Generate new cryptographic salt and PBKDF2 hash
+  const newSalt = crypto.randomBytes(32).toString('hex');
+  const newHash = hashPasswordPbkdf2(cleanNewPass, newSalt, 100000);
+
+  // If username changed, delete old admin record from database
+  try {
+    if (currentMatchedUser && currentMatchedUser !== cleanNewUser) {
+      await supabaseAdmin
+        .from('admin_vault')
+        .delete()
+        .eq('username', currentMatchedUser);
+    }
+
+    const { error: upsertErr } = await supabaseAdmin
+      .from('admin_vault')
+      .upsert({
+        username: cleanNewUser,
+        password_hash: newHash,
+        salt: newSalt,
+        iterations: 100000,
+        algorithm: 'sha512',
+        updated_at: new Date().toISOString(),
+      });
+
+    if (upsertErr) {
+      return { success: false, error: `Database update failed: ${upsertErr.message}` };
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : 'Unknown database error';
+    return { success: false, error: `Failed to save to admin vault: ${msg}` };
+  }
+
+  const newToken = signAdminJwt({ username: cleanNewUser, role: 'admin' });
+  return {
+    success: true,
+    message: `Admin credentials updated successfully! New username: "${cleanNewUser}"`,
+    token: newToken,
+    username: cleanNewUser,
+  };
 }

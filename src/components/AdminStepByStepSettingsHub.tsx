@@ -69,6 +69,7 @@ import {
   FaPalette
 } from 'react-icons/fa6';
 import { AdminSeoStudio } from './AdminSeoStudio';
+import { AdminSecurityCredentialsStudio } from './AdminSecurityCredentialsStudio';
 import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
 
 export {

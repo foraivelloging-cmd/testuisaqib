@@ -832,6 +832,36 @@ ON CONFLICT (username) DO UPDATE SET
 -- WHERE status = 'pending'
 -- ORDER BY created_at DESC;
 
+
+-- [F] Change Website Name, Brand Title & Top Strip Announcement:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   jsonb_set(
+--     jsonb_set(
+--       config,
+--       '{banner,mainTitle}',
+--       '"Muhammad Saqib"'
+--     ),
+--     '{banner,highlightTitle}',
+--     '"— Saqib Visuals"'
+--   ),
+--   '{footer,brandName}',
+--   '"🚀 Muhammad Saqib"'
+-- )
+-- WHERE id = 'default';
+
+-- [G] Reset or Change Admin Password & Username (PBKDF2 SHA-512):
+-- -- To set Username = 'saqib' and Password = 'saqibadmin':
+-- UPDATE public.admin_vault
+-- SET 
+--   username = 'saqib',
+--   password_hash = 'f195d908c20941fc855a591ebb1f51c35bfc901443149fe091cb7201c924dbf7c7e88e68c629b5dddc612e843e10a4d6dec320e0961c849699604be04c2074b7',
+--   salt = 'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2',
+--   iterations = 100000,
+--   algorithm = 'sha512',
+--   updated_at = now()
+-- WHERE username = 'saqib' OR true;
+
 -- =====================================================================
 -- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
 -- =====================================================================

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { authenticateAdmin, verifyAdminRequest } from '@/src/lib/serverSecurity';
+import { authenticateAdmin, verifyAdminRequest, updateAdminCredentials } from '@/src/lib/serverSecurity';
 import {
   checkAdminLockout,
   recordFailedAttempt,
@@ -128,4 +128,55 @@ export async function DELETE() {
   const response = NextResponse.json({ success: true, message: 'Admin logged out' });
   response.cookies.delete('saqib_admin_jwt');
   return response;
+}
+
+
+export async function PATCH(req: Request) {
+  try {
+    const auth = verifyAdminRequest(req);
+    if (!auth.authorized) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized: Admin privileges required to update credentials.' },
+        { status: 401 }
+      );
+    }
+
+    const body = await req.json().catch(() => ({}));
+    const { currentPassword, newUsername, newPassword } = body;
+
+    const result = await updateAdminCredentials(
+      currentPassword,
+      newUsername,
+      newPassword,
+      auth.payload?.username
+    );
+
+    if (!result.success) {
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
+    }
+
+    const response = NextResponse.json({
+      success: true,
+      message: result.message,
+      username: result.username,
+      token: result.token,
+    });
+
+    if (result.token) {
+      response.cookies.set({
+        name: 'saqib_admin_jwt',
+        value: result.token,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 7 * 24 * 60 * 60,
+      });
+    }
+
+    return response;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ success: false, error: message }, { status: 500 });
+  }
 }
