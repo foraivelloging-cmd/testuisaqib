@@ -306,7 +306,7 @@ VALUES (
     "schemaType": "WebApplication",
     "robotsIndex": true,
     "twitterCard": "summary_large_image",
-    "canonicalUrl": "https://mrsaqib242.vercel.app",
+    "canonicalUrl": "https://testuisaqib.vercel.app",
     "robotsFollow": true,
     "ogDescription": "Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.",
     "twitterCreator": "@mrsaqib242",
@@ -349,11 +349,11 @@ VALUES (
   },
   "contact": {
     "supportEmail": "support@saqibvisuals.com",
-    "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
+    "officialWebsiteUrl": "https://testuisaqib.vercel.app",
     "whatsappWidgetName": "Muhammad Saqib",
     "whatsappNumberClean": "923478936242",
-    "officialWebsiteLabel": "mrsaqib242.vercel.app",
-    "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
+    "officialWebsiteLabel": "testuisaqib.vercel.app",
+    "whatsappWidgetAvatar": "https://testuisaqib.vercel.app/saqib-pic.png",
     "whatsappNumberDisplay": "+92 347 8936242",
     "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
     "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to Saqib Visuals Hub.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?"
@@ -660,6 +660,7 @@ VALUES (
   "authorizedDomains": [
     "localhost",
     "127.0.0.1",
+    "testuisaqib.vercel.app",
     "mrsaqib242.vercel.app"
   ]
 }'::jsonb,
