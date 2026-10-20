@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
-import { authenticateAdmin, verifyAdminRequest, updateAdminCredentials } from '@/src/lib/serverSecurity';
+import {
+  authenticateAdmin,
+  verifyAdminRequest,
+  verifyAdminRequestAsync,
+  updateAdminCredentials,
+} from '@/src/lib/serverSecurity';
 import {
   checkAdminLockoutAsync,
   recordFailedAttemptAsync,
@@ -94,7 +99,9 @@ export async function POST(req: Request) {
     const response = NextResponse.json({
       success: true,
       token: authResult.token,
-      username: username,
+      username: authResult.username || username,
+      role: authResult.role || 'subadmin',
+      permissions: authResult.permissions || null,
       message: 'Admin authorization successful',
     });
 
@@ -117,15 +124,25 @@ export async function POST(req: Request) {
 
 export async function GET(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req);
     if (!auth.authorized) {
-      return NextResponse.json({ authenticated: false, role: null }, { status: 200 });
+      return NextResponse.json(
+        {
+          authenticated: false,
+          role: null,
+          revoked: auth.revoked || false,
+          reason: auth.reason || 'Unauthorized',
+        },
+        { status: auth.revoked ? 401 : 200 }
+      );
     }
 
     return NextResponse.json({
       authenticated: true,
       role: auth.payload?.role || 'admin',
       username: auth.payload?.username || 'saqib',
+      permissions: auth.payload?.permissions || null,
+      token_version: auth.payload?.token_version || 1,
     });
   } catch {
     return NextResponse.json({ authenticated: false, role: null }, { status: 200 });

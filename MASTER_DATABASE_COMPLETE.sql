@@ -165,7 +165,7 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 PROTECTED)
+-- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 + RBAC MULTI-ADMIN PROTECTED)
 CREATE TABLE IF NOT EXISTS public.admin_vault (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username TEXT UNIQUE NOT NULL,
@@ -173,6 +173,11 @@ CREATE TABLE IF NOT EXISTS public.admin_vault (
     salt TEXT NOT NULL,
     iterations INTEGER NOT NULL DEFAULT 100000,
     algorithm TEXT NOT NULL DEFAULT 'sha512',
+    role TEXT NOT NULL DEFAULT 'subadmin',
+    permissions JSONB NOT NULL DEFAULT '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":false,"view_telemetry":false,"manage_site_config":false,"manage_admins":false}'::jsonb,
+    token_version INTEGER NOT NULL DEFAULT 1,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_by TEXT DEFAULT 'superadmin',
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );

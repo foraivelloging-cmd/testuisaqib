@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
-import { verifyAdminRequest } from '@/src/lib/serverSecurity';
+import { verifyAdminRequest, verifyAdminRequestAsync } from '@/src/lib/serverSecurity';
 
 // Helper to parse User Agent into Device, OS and Browser details
 function parseUserAgentDetails(userAgent: string) {
@@ -162,9 +162,16 @@ export async function POST(req: Request) {
 // ==================== 2. GET: ADMIN VISITOR TELEMETRY DASHBOARD ====================
 export async function GET(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'view_telemetry');
     if (!auth.authorized) {
-      return NextResponse.json({ success: false, error: 'Unauthorized admin access required' }, { status: 401 });
+      return NextResponse.json(
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: "view_telemetry" permission required',
+        },
+        { status: auth.revoked ? 401 : 403 }
+      );
     }
 
     const { data: visitors, error } = await supabaseAdmin

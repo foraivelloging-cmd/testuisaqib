@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StoreService, WebToolItem, CategoryId, CATEGORY_META } from '../data/defaultCatalog';
 import { SiteSettingsConfig, AdminSettingsScreenId } from './AdminStepByStepSettingsHub';
 import { PaymentProofRequest } from './WalletAndAdminPayments';
 import { AdminVisitorTelemetryView } from './AdminVisitorTelemetryView';
 import { AdminUserManagementView } from './AdminUserManagementView';
+import { AdminSubAdminManagerView } from './AdminSubAdminManagerView';
+import { AdminPermissions } from '@/src/lib/serverSecurity';
 import {
   FaChartPie,
   FaBolt,
@@ -83,9 +85,44 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
   copyText,
   exitSecretAdminPortal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users'>('users');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users' | 'admins'>('users');
   const [featureFilter, setFeatureFilter] = useState<FeatureCategory>('all');
   const [featureSearch, setFeatureSearch] = useState<string>('');
+
+  // Current Admin Identity & Permissions State
+  const [currentAdminRole, setCurrentAdminRole] = useState<'superadmin' | 'subadmin' | 'admin'>('superadmin');
+  const [currentAdminUser, setCurrentAdminUser] = useState<string>('saqib');
+  const [adminPermissions, setAdminPermissions] = useState<AdminPermissions>({
+    manage_services: true,
+    manage_tools: true,
+    manage_orders: true,
+    manage_users: true,
+    view_telemetry: true,
+    manage_site_config: true,
+    manage_admins: true,
+  });
+
+  useEffect(() => {
+    async function loadAdminSession() {
+      try {
+        const storedToken = localStorage.getItem('saqib_admin_token');
+        const headers: Record<string, string> = {};
+        if (storedToken) headers['Authorization'] = `Bearer ${storedToken}`;
+        const res = await fetch('/api/admin/auth', { headers });
+        const data = await res.json();
+        if (data.authenticated) {
+          if (data.role) setCurrentAdminRole(data.role);
+          if (data.username) setCurrentAdminUser(data.username);
+          if (data.permissions) setAdminPermissions(data.permissions);
+        }
+      } catch {
+        // Fallback default
+      }
+    }
+    loadAdminSession();
+  }, []);
+
+  const isSuperadmin = currentAdminRole === 'superadmin' || currentAdminUser.toLowerCase() === 'saqib';
 
   // 1. CALCULATE CORE CATALOG METRICS
   const totalProducts = servicesCatalog.length;
@@ -790,12 +827,27 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
       {/* ==================== 3. DASHBOARD SUB-NAVIGATION TABS ==================== */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {[
-          { id: 'users' as const, label: '👥 User Accounts & Wallets', badge: 'Users & Bans' },
-          { id: 'visitors' as const, label: '🕵️ Live Visitors & Devices', badge: 'Live Telemetry' },
-          { id: 'matrix' as const, label: `⚡ Live Feature Matrix (${totalFeaturesCount})`, badge: `${activeFeaturesCount} ON` },
-          { id: 'products' as const, label: `🛍️ Products Catalog (${totalProducts})`, badge: `${liveProducts} Live` },
-          { id: 'tools' as const, label: `🛠️ Web Tools Deck (${totalTools})`, badge: `${liveTools} Live` },
-          { id: 'financials' as const, label: `💳 Financials & Proofs (${totalProofs})`, badge: `${pendingProofs} New` },
+          ...(isSuperadmin
+            ? [{ id: 'admins' as const, label: '🛡️ Admin Team & RBAC', badge: 'Superadmin' }]
+            : []),
+          ...(isSuperadmin || adminPermissions.manage_users
+            ? [{ id: 'users' as const, label: '👥 User Accounts & Wallets', badge: 'Users & Bans' }]
+            : []),
+          ...(isSuperadmin || adminPermissions.view_telemetry
+            ? [{ id: 'visitors' as const, label: '🕵️ Live Visitors & Devices', badge: 'Live Telemetry' }]
+            : []),
+          ...(isSuperadmin || adminPermissions.manage_site_config
+            ? [{ id: 'matrix' as const, label: `⚡ Live Feature Matrix (${totalFeaturesCount})`, badge: `${activeFeaturesCount} ON` }]
+            : []),
+          ...(isSuperadmin || adminPermissions.manage_services
+            ? [{ id: 'products' as const, label: `🛍️ Products Catalog (${totalProducts})`, badge: `${liveProducts} Live` }]
+            : []),
+          ...(isSuperadmin || adminPermissions.manage_tools
+            ? [{ id: 'tools' as const, label: `🛠️ Web Tools Deck (${totalTools})`, badge: `${liveTools} Live` }]
+            : []),
+          ...(isSuperadmin || adminPermissions.manage_orders
+            ? [{ id: 'financials' as const, label: `💳 Financials & Proofs (${totalProofs})`, badge: `${pendingProofs} New` }]
+            : []),
           { id: 'tech' as const, label: '🚀 Tech Stack & SEO Specs', badge: 'Next.js 16' },
         ].map((tab) => {
           const isAct = activeTab === tab.id;
@@ -825,6 +877,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
           );
         })}
       </div>
+
+      {/* ==================== TAB: SUPERADMIN TEAM & RBAC MANAGEMENT ==================== */}
+      {activeTab === 'admins' && (
+        <AdminSubAdminManagerView
+          showToast={showToast}
+          copyText={copyText}
+          playPopSound={playPopSound}
+        />
+      )}
 
       {/* ==================== TAB: USER ACCOUNTS & VIP WALLETS ==================== */}
       {activeTab === 'users' && (

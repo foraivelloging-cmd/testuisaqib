@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { DEFAULT_WEB_TOOLS, WebToolItem } from '@/src/data/defaultCatalog';
-import { verifyAdminRequest } from '@/src/lib/serverSecurity';
+import { verifyAdminRequestAsync } from '@/src/lib/serverSecurity';
 
 export async function GET() {
   try {
@@ -49,11 +49,15 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'manage_tools');
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin privileges required.' },
-        { status: 401 }
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: "manage_tools" permission required.',
+        },
+        { status: auth.revoked ? 401 : 403 }
       );
     }
 
@@ -97,11 +101,15 @@ export async function POST(req: Request) {
 
 export async function DELETE(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'manage_tools');
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin privileges required.' },
-        { status: 401 }
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: "manage_tools" permission required.',
+        },
+        { status: auth.revoked ? 401 : 403 }
       );
     }
 

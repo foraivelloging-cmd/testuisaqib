@@ -1,15 +1,19 @@
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
-import { verifyAdminRequest } from '@/src/lib/serverSecurity';
+import { verifyAdminRequestAsync } from '@/src/lib/serverSecurity';
 
 // ==================== 1. GET: LIST ALL REGISTERED USERS & WALLETS ====================
 export async function GET(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'manage_users');
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin authentication required' },
-        { status: 401 }
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: Admin authentication required',
+        },
+        { status: auth.revoked ? 401 : 403 }
       );
     }
 
@@ -80,11 +84,15 @@ export async function GET(req: Request) {
 // ==================== 2. PATCH: BAN / UNBAN / ADJUST BALANCE ====================
 export async function PATCH(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'manage_users');
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin authentication required' },
-        { status: 401 }
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: Admin authentication required',
+        },
+        { status: auth.revoked ? 401 : 403 }
       );
     }
 
@@ -241,11 +249,15 @@ export async function PATCH(req: Request) {
 // ==================== 3. DELETE: REMOVE USER PROFILE ====================
 export async function DELETE(req: Request) {
   try {
-    const auth = verifyAdminRequest(req);
+    const auth = await verifyAdminRequestAsync(req, 'manage_users');
     if (!auth.authorized) {
       return NextResponse.json(
-        { success: false, error: 'Unauthorized: Admin authentication required' },
-        { status: 401 }
+        {
+          success: false,
+          revoked: auth.revoked || false,
+          error: auth.reason || 'Unauthorized: Admin authentication required',
+        },
+        { status: auth.revoked ? 401 : 403 }
       );
     }
 

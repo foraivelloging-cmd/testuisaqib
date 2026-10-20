@@ -36,7 +36,7 @@ export default function AdminPortalClient({
   initialTools,
   initialConfig,
 }: AdminPortalClientProps) {
-  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -75,6 +75,10 @@ export default function AdminPortalClient({
         if (active) {
           if (data.authenticated) {
             setIsAuthenticated(true);
+          } else if (data.revoked) {
+            localStorage.removeItem('saqib_admin_token');
+            setIsAuthenticated(false);
+            setErrorMessage(data.reason || 'Admin session revoked by Superadmin.');
           }
           setIsCheckingAuth(false);
         }
@@ -89,6 +93,41 @@ export default function AdminPortalClient({
       active = false;
     };
   }, []);
+
+  // Active Session Heartbeat: checks every 6 seconds for instant revocation
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const checkHeartbeat = async () => {
+      try {
+        const storedToken = localStorage.getItem('saqib_admin_token');
+        if (!storedToken) return;
+
+        const res = await fetch('/api/admin/auth', {
+          headers: { Authorization: `Bearer ${storedToken}` },
+        });
+        const data = await res.json();
+
+        if (res.status === 401 || data.revoked || !data.authenticated) {
+          localStorage.removeItem('saqib_admin_token');
+          setIsAuthenticated(false);
+          setErrorMessage(
+            data.reason || '🚨 Your admin session was revoked by Superadmin. You have been forcibly logged out.'
+          );
+        }
+      } catch {
+        // Ignore transient offline errors
+      }
+    };
+
+    const interval = setInterval(checkHeartbeat, 6000);
+    window.addEventListener('focus', checkHeartbeat);
+
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('focus', checkHeartbeat);
+    };
+  }, [isAuthenticated]);
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -117,6 +156,8 @@ export default function AdminPortalClient({
       if (res.ok && data.success && data.token) {
         try {
           localStorage.setItem('saqib_admin_token', data.token);
+          if (data.role) localStorage.setItem('saqib_admin_role', data.role);
+          if (data.username) localStorage.setItem('saqib_admin_username', data.username);
         } catch {
           // Ignore local storage quota limits
         }
