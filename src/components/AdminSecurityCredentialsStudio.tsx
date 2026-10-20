@@ -163,13 +163,12 @@ WHERE id = 'default';`;
 -- (Username: saqib | Password: saqibadmin)
 UPDATE public.admin_vault
 SET 
-  username = 'saqib',
   password_hash = 'f195d908c20941fc855a591ebb1f51c35bfc901443149fe091cb7201c924dbf7c7e88e68c629b5dddc612e843e10a4d6dec320e0961c849699604be04c2074b7',
   salt = 'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2',
   iterations = 100000,
   algorithm = 'sha512',
   updated_at = now()
-WHERE username = 'saqib' OR true;`;
+WHERE username = 'saqib';`;
 
   return (
     <div className="space-y-6 max-w-5xl mx-auto pb-16">
