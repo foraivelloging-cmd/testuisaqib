@@ -94,6 +94,9 @@ import {
   SiteContactConfig,
   SiteSocialsConfig,
   SiteFooterConfig,
+  SocialPlatformItem,
+  DEFAULT_SOCIAL_PLATFORMS,
+  getActiveSocialPlatforms,
   SiteVisibilityConfig,
   DEFAULT_SITE_VISIBILITY,
   SiteSeoConfig,
@@ -8431,140 +8434,359 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               </div>
             )}
 
-            {contactStep === 2 && (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                  <div className="p-3 rounded-2xl bg-white/90 border border-pink-200 space-y-2">
-                    <div className="text-xs font-extrabold text-pink-700">Instagram Profile</div>
-                    <input
-                      type="text"
-                      value={siteConfig.socials.instagramHandle}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, instagramHandle: e.target.value }
-                        }))
-                      }
-                      placeholder="@mrsaqib242"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
-                    />
-                    <input
-                      type="text"
-                      value={siteConfig.socials.instagramUrl}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, instagramUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://instagram.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900"
-                    />
+            {contactStep === 2 && (() => {
+              const platformsList = getActiveSocialPlatforms(siteConfig.socials);
+              const activeCount = platformsList.filter((p) => p.enabled !== false).length;
+
+              const handleUpdatePlatform = (id: string, updates: Partial<SocialPlatformItem>) => {
+                onUpdateSiteConfig((prev) => {
+                  const current = getActiveSocialPlatforms(prev.socials);
+                  const updated = current.map((p) => (p.id === id ? { ...p, ...updates } : p));
+                  const legacyUpdates: Partial<SiteSocialsConfig> = { platforms: updated };
+
+                  if (id === 'instagram') {
+                    if (updates.url !== undefined) legacyUpdates.instagramUrl = updates.url;
+                    if (updates.handle !== undefined) legacyUpdates.instagramHandle = updates.handle;
+                  } else if (id === 'tiktok') {
+                    if (updates.url !== undefined) legacyUpdates.tiktokUrl = updates.url;
+                    if (updates.handle !== undefined) legacyUpdates.tiktokHandle = updates.handle;
+                  } else if (id === 'facebook') {
+                    if (updates.url !== undefined) legacyUpdates.facebookUrl = updates.url;
+                    if (updates.handle !== undefined) legacyUpdates.facebookName = updates.handle;
+                  } else if (id === 'snapchat') {
+                    if (updates.url !== undefined) legacyUpdates.snapchatUrl = updates.url;
+                    if (updates.handle !== undefined) legacyUpdates.snapchatHandle = updates.handle;
+                  }
+
+                  return {
+                    ...prev,
+                    socials: {
+                      ...prev.socials,
+                      ...legacyUpdates
+                    }
+                  };
+                });
+              };
+
+              const handleTogglePlatform = (id: string) => {
+                const target = platformsList.find((p) => p.id === id);
+                if (!target) return;
+                const nextState = !target.enabled;
+                handleUpdatePlatform(id, { enabled: nextState });
+                showToast(
+                  nextState
+                    ? `✅ ${target.label} enabled! Showing on Contact page.`
+                    : `⏸️ ${target.label} disabled. Hidden from website.`
+                );
+              };
+
+              const handleAddPlatform = (presetKey: string) => {
+                const presets: Record<string, Omit<SocialPlatformItem, 'id'>> = {
+                  youtube: {
+                    platform: 'youtube',
+                    label: 'YouTube Channel',
+                    handle: '@saqibvisuals',
+                    url: 'https://youtube.com/@saqibvisuals',
+                    enabled: true,
+                    icon: 'fa-brands fa-youtube',
+                    colorGrad: 'from-red-500 to-rose-600'
+                  },
+                  telegram: {
+                    platform: 'telegram',
+                    label: 'Telegram Channel',
+                    handle: '@saqibvisuals',
+                    url: 'https://t.me/saqibvisuals',
+                    enabled: true,
+                    icon: 'fa-brands fa-telegram',
+                    colorGrad: 'from-sky-400 to-blue-500'
+                  },
+                  whatsapp_channel: {
+                    platform: 'whatsapp_channel',
+                    label: 'WhatsApp Channel',
+                    handle: 'Saqib Visuals VIP',
+                    url: 'https://whatsapp.com/channel/saqibvisuals',
+                    enabled: true,
+                    icon: 'fa-brands fa-whatsapp',
+                    colorGrad: 'from-emerald-500 to-teal-600'
+                  },
+                  github: {
+                    platform: 'github',
+                    label: 'GitHub Profile',
+                    handle: '@mrsaqib242',
+                    url: 'https://github.com/mrsaqib242',
+                    enabled: true,
+                    icon: 'fa-brands fa-github',
+                    colorGrad: 'from-slate-800 to-slate-950'
+                  },
+                  twitter: {
+                    platform: 'twitter',
+                    label: 'X (Twitter)',
+                    handle: '@mrsaqib242',
+                    url: 'https://x.com/mrsaqib242',
+                    enabled: true,
+                    icon: 'fa-brands fa-x-twitter',
+                    colorGrad: 'from-zinc-800 to-black'
+                  },
+                  discord: {
+                    platform: 'discord',
+                    label: 'Discord Community',
+                    handle: 'Saqib Visuals Server',
+                    url: 'https://discord.gg/saqibvisuals',
+                    enabled: true,
+                    icon: 'fa-brands fa-discord',
+                    colorGrad: 'from-indigo-500 to-purple-600'
+                  },
+                  linkedin: {
+                    platform: 'linkedin',
+                    label: 'LinkedIn Profile',
+                    handle: 'Muhammad Saqib',
+                    url: 'https://linkedin.com/in/mrsaqib242',
+                    enabled: true,
+                    icon: 'fa-brands fa-linkedin-in',
+                    colorGrad: 'from-blue-700 to-sky-700'
+                  },
+                  custom: {
+                    platform: 'custom',
+                    label: 'Custom Website Link',
+                    handle: 'My Link',
+                    url: 'https://',
+                    enabled: true,
+                    icon: 'fa-solid fa-globe',
+                    colorGrad: 'from-teal-500 to-emerald-600'
+                  }
+                };
+
+                const preset = presets[presetKey] || presets.custom;
+                const newId = `${presetKey}_${Date.now()}`;
+
+                onUpdateSiteConfig((prev) => {
+                  const current = getActiveSocialPlatforms(prev.socials);
+                  return {
+                    ...prev,
+                    socials: {
+                      ...prev.socials,
+                      platforms: [...current, { id: newId, ...preset }]
+                    }
+                  };
+                });
+                showToast(`Added ${preset.label}! Remember to save changes.`);
+              };
+
+              const handleRemovePlatform = (id: string) => {
+                onUpdateSiteConfig((prev) => {
+                  const current = getActiveSocialPlatforms(prev.socials);
+                  return {
+                    ...prev,
+                    socials: {
+                      ...prev.socials,
+                      platforms: current.filter((p) => p.id !== id)
+                    }
+                  };
+                });
+                showToast('Platform link removed!');
+              };
+
+              return (
+                <div className="space-y-4">
+                  {/* Top Bar with Stats & Add Preset Dropdown */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 rounded-2xl bg-white/95 border border-indigo-200 shadow-xs">
+                    <div>
+                      <div className="text-xs font-extrabold text-slate-900 flex items-center gap-2">
+                        <span>🌐 10+ Social Platforms &amp; Community Channels</span>
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-mono-code font-extrabold">
+                          {activeCount} of {platformsList.length} Active
+                        </span>
+                      </div>
+                      <p className="text-[10px] font-semibold text-slate-600 mt-0.5">
+                        Toggle any platform ON or OFF with 1-click. Only enabled platforms appear on the Contact page.
+                      </p>
+                    </div>
+
+                    {/* Quick Add Platform Menu */}
+                    <div className="flex items-center gap-1.5 w-full sm:w-auto">
+                      <select
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleAddPlatform(e.target.value);
+                            e.target.value = '';
+                          }
+                        }}
+                        defaultValue=""
+                        className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-sm cursor-pointer border-none outline-none"
+                      >
+                        <option value="" disabled className="text-slate-900 bg-white">
+                          + Add New Platform...
+                        </option>
+                        <option value="youtube" className="text-slate-900 bg-white">
+                          🔴 YouTube Channel
+                        </option>
+                        <option value="telegram" className="text-slate-900 bg-white">
+                          🔵 Telegram Channel / Group
+                        </option>
+                        <option value="whatsapp_channel" className="text-slate-900 bg-white">
+                          🟢 WhatsApp VIP Channel
+                        </option>
+                        <option value="github" className="text-slate-900 bg-white">
+                          🐙 GitHub Profile
+                        </option>
+                        <option value="discord" className="text-slate-900 bg-white">
+                          💜 Discord Community
+                        </option>
+                        <option value="twitter" className="text-slate-900 bg-white">
+                          ✖️ X (Twitter)
+                        </option>
+                        <option value="linkedin" className="text-slate-900 bg-white">
+                          💼 LinkedIn Profile
+                        </option>
+                        <option value="custom" className="text-slate-900 bg-white">
+                          🌐 Custom Website Link
+                        </option>
+                      </select>
+                    </div>
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-white/90 border border-rose-200 space-y-2">
-                    <div className="text-xs font-extrabold text-rose-700">TikTok Profile</div>
-                    <input
-                      type="text"
-                      value={siteConfig.socials.tiktokHandle}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, tiktokHandle: e.target.value }
-                        }))
-                      }
-                      placeholder="@mrsaqib242"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
-                    />
-                    <input
-                      type="text"
-                      value={siteConfig.socials.tiktokUrl}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, tiktokUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://tiktok.com/@..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900"
-                    />
+                  {/* Dynamic 10+ Platforms Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                    {platformsList.map((item) => (
+                      <div
+                        key={item.id}
+                        className={`p-3.5 rounded-2xl border-2 transition-all space-y-2.5 ${
+                          item.enabled !== false
+                            ? 'bg-white border-emerald-400 shadow-sm'
+                            : 'bg-slate-50/90 border-slate-200 opacity-70'
+                        }`}
+                      >
+                        {/* Platform Header: Icon + Name + ON/OFF Switch */}
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className={`w-7 h-7 rounded-xl bg-gradient-to-tr ${
+                                item.colorGrad || 'from-indigo-600 to-purple-600'
+                              } text-white flex items-center justify-center text-xs shadow-xs flex-shrink-0`}
+                            >
+                              <i className={item.icon || 'fa-solid fa-link'}></i>
+                            </span>
+                            <div className="min-w-0">
+                              <span className="font-extrabold text-xs text-slate-900 block truncate">
+                                {item.label}
+                              </span>
+                              <span
+                                className={`text-[9.5px] font-bold px-1.5 py-0.2 rounded-full inline-block uppercase ${
+                                  item.enabled !== false
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : 'bg-slate-200 text-slate-600'
+                                }`}
+                              >
+                                {item.enabled !== false ? '● Showing on Site' : '○ Hidden'}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Toggle ON / OFF Button */}
+                          <div className="flex items-center gap-1.5 flex-shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => handleTogglePlatform(item.id)}
+                              className={`px-2.5 py-1 rounded-xl font-extrabold text-[11px] transition cursor-pointer flex items-center gap-1 shadow-2xs ${
+                                item.enabled !== false
+                                  ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                                  : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                              }`}
+                            >
+                              <span>{item.enabled !== false ? 'Active' : 'Hidden'}</span>
+                              <i
+                                className={`fa-solid ${
+                                  item.enabled !== false ? 'fa-toggle-on' : 'fa-toggle-off'
+                                } text-xs`}
+                              ></i>
+                            </button>
+
+                            {/* Remove button (for added platforms) */}
+                            {item.id !== 'instagram' &&
+                              item.id !== 'tiktok' &&
+                              item.id !== 'facebook' &&
+                              item.id !== 'snapchat' && (
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemovePlatform(item.id)}
+                                  title="Delete platform"
+                                  className="w-7 h-7 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs flex items-center justify-center cursor-pointer transition"
+                                >
+                                  <i className="fa-solid fa-trash-can"></i>
+                                </button>
+                              )}
+                          </div>
+                        </div>
+
+                        {/* Platform Inputs: Handle & URL */}
+                        <div className="space-y-1.5">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-600 uppercase">
+                              Display Username / Handle
+                            </label>
+                            <input
+                              type="text"
+                              value={item.handle || ''}
+                              onChange={(e) =>
+                                handleUpdatePlatform(item.id, { handle: e.target.value })
+                              }
+                              placeholder="@username"
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 font-bold text-xs text-slate-900 focus:border-indigo-400 focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <label className="block text-[10px] font-bold text-slate-600 uppercase">
+                                Direct URL Link
+                              </label>
+                              {item.url && (
+                                <a
+                                  href={item.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-[10px] font-bold text-indigo-600 hover:underline flex items-center gap-0.5"
+                                >
+                                  <span>Test</span>
+                                  <i className="fa-solid fa-arrow-up-right-from-square text-[9px]"></i>
+                                </a>
+                              )}
+                            </div>
+                            <input
+                              type="text"
+                              value={item.url || ''}
+                              onChange={(e) =>
+                                handleUpdatePlatform(item.id, { url: e.target.value })
+                              }
+                              placeholder="https://..."
+                              className="w-full px-3 py-1.5 rounded-xl bg-white border border-slate-300 font-mono-code text-[11px] text-slate-900 focus:border-indigo-400 focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-white/90 border border-blue-200 space-y-2">
-                    <div className="text-xs font-extrabold text-blue-700">Facebook Page / Profile</div>
-                    <input
-                      type="text"
-                      value={siteConfig.socials.facebookName}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, facebookName: e.target.value }
-                        }))
-                      }
-                      placeholder="Muhammad Saqib"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
-                    />
-                    <input
-                      type="text"
-                      value={siteConfig.socials.facebookUrl}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, facebookUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://facebook.com/..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900"
-                    />
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-white/90 border border-amber-200 space-y-2">
-                    <div className="text-xs font-extrabold text-amber-700">Snapchat Profile</div>
-                    <input
-                      type="text"
-                      value={siteConfig.socials.snapchatHandle}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, snapchatHandle: e.target.value }
-                        }))
-                      }
-                      placeholder="mrsaqib242"
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
-                    />
-                    <input
-                      type="text"
-                      value={siteConfig.socials.snapchatUrl}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          socials: { ...prev.socials, snapchatUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://snapchat.com/add/..."
-                      className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900"
-                    />
+                  {/* Navigation Buttons */}
+                  <div className="flex justify-between pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setContactStep(1)}
+                      className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer hover:bg-slate-50 transition"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setContactStep(3)}
+                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs cursor-pointer hover:scale-105 transition shadow-sm"
+                    >
+                      Next: Footer Branding →
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setContactStep(1)}
-                    className="px-4 py-2.5 rounded-xl bg-white text-slate-700 border border-slate-300 font-extrabold text-xs cursor-pointer"
-                  >
-                    ← Back
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setContactStep(3)}
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs cursor-pointer"
-                  >
-                    Next: Footer Branding →
-                  </button>
-                </div>
-              </div>
-            )}
+              );
+            })()}
 
             {contactStep === 3 && (
               <div className="space-y-4">

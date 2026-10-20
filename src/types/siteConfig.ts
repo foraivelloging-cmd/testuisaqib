@@ -49,6 +49,17 @@ export interface SiteContactConfig {
   whatsappWidgetStatus?: string;
 }
 
+export interface SocialPlatformItem {
+  id: string;
+  platform: string;
+  label: string;
+  handle: string;
+  url: string;
+  enabled: boolean;
+  icon?: string;
+  colorGrad?: string;
+}
+
 export interface SiteSocialsConfig {
   instagramUrl: string;
   instagramHandle: string;
@@ -58,6 +69,117 @@ export interface SiteSocialsConfig {
   facebookName: string;
   snapchatUrl: string;
   snapchatHandle: string;
+  platforms?: SocialPlatformItem[];
+}
+
+export const DEFAULT_SOCIAL_PLATFORMS: SocialPlatformItem[] = [
+  {
+    id: 'instagram',
+    platform: 'instagram',
+    label: 'Instagram',
+    handle: '@mrsaqib242',
+    url: 'https://instagram.com/mrsaqib242',
+    enabled: true,
+    icon: 'fa-brands fa-instagram',
+    colorGrad: 'from-amber-300 via-pink-500 to-purple-600'
+  },
+  {
+    id: 'tiktok',
+    platform: 'tiktok',
+    label: 'TikTok',
+    handle: '@mrsaqib242',
+    url: 'https://tiktok.com/@mrsaqib242',
+    enabled: true,
+    icon: 'fa-brands fa-tiktok',
+    colorGrad: 'from-slate-900 to-slate-800'
+  },
+  {
+    id: 'facebook',
+    platform: 'facebook',
+    label: 'Facebook',
+    handle: 'Muhammad Saqib',
+    url: 'https://facebook.com/mrsaqib242',
+    enabled: true,
+    icon: 'fa-brands fa-facebook-f',
+    colorGrad: 'from-blue-600 to-indigo-600'
+  },
+  {
+    id: 'snapchat',
+    platform: 'snapchat',
+    label: 'Snapchat',
+    handle: 'mrsaqib242',
+    url: 'https://snapchat.com/add/mrsaqib242',
+    enabled: true,
+    icon: 'fa-brands fa-snapchat',
+    colorGrad: 'from-amber-400 to-yellow-500'
+  },
+  {
+    id: 'youtube',
+    platform: 'youtube',
+    label: 'YouTube',
+    handle: '@saqibvisuals',
+    url: 'https://youtube.com/@saqibvisuals',
+    enabled: true,
+    icon: 'fa-brands fa-youtube',
+    colorGrad: 'from-red-500 to-rose-600'
+  },
+  {
+    id: 'telegram',
+    platform: 'telegram',
+    label: 'Telegram',
+    handle: '@saqibvisuals',
+    url: 'https://t.me/saqibvisuals',
+    enabled: true,
+    icon: 'fa-brands fa-telegram',
+    colorGrad: 'from-sky-400 to-blue-500'
+  },
+  {
+    id: 'whatsapp_channel',
+    platform: 'whatsapp_channel',
+    label: 'WhatsApp Channel',
+    handle: 'Saqib Visuals VIP',
+    url: 'https://whatsapp.com/channel/saqibvisuals',
+    enabled: true,
+    icon: 'fa-brands fa-whatsapp',
+    colorGrad: 'from-emerald-500 to-teal-600'
+  },
+  {
+    id: 'github',
+    platform: 'github',
+    label: 'GitHub',
+    handle: '@mrsaqib242',
+    url: 'https://github.com/mrsaqib242',
+    enabled: false,
+    icon: 'fa-brands fa-github',
+    colorGrad: 'from-slate-800 to-slate-950'
+  },
+  {
+    id: 'twitter',
+    platform: 'twitter',
+    label: 'X (Twitter)',
+    handle: '@mrsaqib242',
+    url: 'https://x.com/mrsaqib242',
+    enabled: false,
+    icon: 'fa-brands fa-x-twitter',
+    colorGrad: 'from-zinc-800 to-black'
+  },
+  {
+    id: 'discord',
+    platform: 'discord',
+    label: 'Discord Server',
+    handle: 'Saqib Community',
+    url: 'https://discord.gg/saqibvisuals',
+    enabled: false,
+    icon: 'fa-brands fa-discord',
+    colorGrad: 'from-indigo-500 to-purple-600'
+  }
+];
+
+export function getActiveSocialPlatforms(socials?: SiteSocialsConfig): SocialPlatformItem[] {
+  if (socials?.platforms && Array.isArray(socials.platforms) && socials.platforms.length > 0) {
+    return socials.platforms;
+  }
+  return DEFAULT_SOCIAL_PLATFORMS;
 }
 
 export interface SiteFooterConfig {
@@ -361,7 +483,8 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     facebookUrl: 'https://facebook.com/',
     facebookName: 'Muhammad Saqib',
     snapchatUrl: 'https://snapchat.com/',
-    snapchatHandle: 'mrsaqib242'
+    snapchatHandle: 'mrsaqib242',
+    platforms: DEFAULT_SOCIAL_PLATFORMS
   },
   footer: {
     brandName: '🚀 Muhammad Saqib',

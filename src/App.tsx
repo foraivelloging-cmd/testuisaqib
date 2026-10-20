@@ -19,6 +19,7 @@ import {
 } from './data/defaultCatalog';
 import { ShowcaseSections } from './components/ShowcaseSections';
 import { WhatsAppChatWidget } from './components/WhatsAppChatWidget';
+import { getActiveSocialPlatforms } from './types/siteConfig';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
   SupportedLang,
@@ -4331,105 +4332,50 @@ export default function App({
                 </div>
               </div>
 
-              {/* 4-Column Tactile Plush Social Buttons */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3.5 pt-1">
-                {/* Instagram */}
-                <a
-                  href={siteConfig.socials.instagramUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    copyText(
-                      siteConfig.socials.instagramHandle,
-                      `Instagram (${siteConfig.socials.instagramHandle}) copied! Opening...`
-                    )
-                  }
-                  onMouseEnter={() => playPopSound(600)}
-                  className="acrylic-frame acrylic-interactive rounded-[28px] sm:rounded-[34px] p-2 sm:p-2.5 group flex flex-col items-center justify-center"
-                >
-                  <div className="plush-pillow plush-ig w-full h-24 sm:h-28 rounded-[22px] sm:rounded-[26px] flex flex-col items-center justify-center gap-1 relative py-2 sm:py-0">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr from-amber-300 via-pink-400 to-purple-500 p-0.5 shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <div className="w-full h-full rounded-[14px] bg-gradient-to-tr from-yellow-200 via-pink-300 to-purple-400 flex items-center justify-center border border-white/70">
-                        <i className="fa-brands fa-instagram text-xl sm:text-3xl text-pink-700 drop-shadow-sm"></i>
+              {/* Dynamic Tactile Plush Social Buttons (Up to 10+ Platforms Supported) */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-3.5 pt-1">
+                {getActiveSocialPlatforms(siteConfig.socials)
+                  .filter((item) => item.enabled !== false && item.url)
+                  .map((item) => (
+                    <a
+                      key={item.id}
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={() =>
+                        copyText(
+                          item.handle,
+                          `${item.label} (${item.handle}) copied! Opening...`
+                        )
+                      }
+                      onMouseEnter={() => playPopSound(650)}
+                      className="acrylic-frame acrylic-interactive rounded-[28px] sm:rounded-[34px] p-2 sm:p-2.5 group flex flex-col items-center justify-center cursor-pointer"
+                    >
+                      <div className="plush-pillow w-full h-24 sm:h-28 rounded-[22px] sm:rounded-[26px] flex flex-col items-center justify-center gap-1.5 relative py-2 sm:py-0 border border-white/60 bg-white/75 shadow-xs">
+                        <div
+                          className={`w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-tr ${
+                            item.colorGrad || 'from-indigo-500 to-purple-600'
+                          } p-0.5 shadow-md group-hover:scale-110 transition-transform flex items-center justify-center`}
+                        >
+                          <div className="w-full h-full rounded-[14px] bg-white/15 flex items-center justify-center border border-white/40">
+                            <i
+                              className={`${
+                                item.icon || 'fa-solid fa-link'
+                              } text-xl sm:text-2xl text-white drop-shadow`}
+                            ></i>
+                          </div>
+                        </div>
+                        <div className="text-center px-1 max-w-full">
+                          <div className="text-[11px] font-extrabold text-slate-900 truncate">
+                            {item.label}
+                          </div>
+                          <div className="text-[9.5px] font-bold text-slate-600 truncate">
+                            {item.handle}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                    <span className="text-[11px] font-bold text-amber-950/80 tracking-wide">
-                      Instagram ({siteConfig.socials.instagramHandle})
-                    </span>
-                  </div>
-                </a>
-
-                {/* TikTok */}
-                <a
-                  href={siteConfig.socials.tiktokUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    copyText(
-                      siteConfig.socials.tiktokHandle,
-                      `TikTok (${siteConfig.socials.tiktokHandle}) copied! Opening...`
-                    )
-                  }
-                  onMouseEnter={() => playPopSound(650)}
-                  className="acrylic-frame acrylic-interactive rounded-[28px] sm:rounded-[34px] p-2 sm:p-2.5 group flex flex-col items-center justify-center"
-                >
-                  <div className="plush-pillow plush-tiktok w-full h-24 sm:h-28 rounded-[22px] sm:rounded-[26px] flex flex-col items-center justify-center gap-1 relative py-2 sm:py-0">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white/50 border border-white/80 shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <i className="fa-brands fa-tiktok text-xl sm:text-3xl text-slate-800 drop-shadow-[2px_2px_0px_#ff4d79]"></i>
-                    </div>
-                    <span className="text-[11px] font-bold text-rose-950/80 tracking-wide">
-                      TikTok ({siteConfig.socials.tiktokHandle})
-                    </span>
-                  </div>
-                </a>
-
-                {/* Facebook */}
-                <a
-                  href={siteConfig.socials.facebookUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    copyText(
-                      siteConfig.socials.facebookName,
-                      `Facebook (${siteConfig.socials.facebookName}) copied! Opening...`
-                    )
-                  }
-                  onMouseEnter={() => playPopSound(700)}
-                  className="acrylic-frame acrylic-interactive rounded-[28px] sm:rounded-[34px] p-2 sm:p-2.5 group flex flex-col items-center justify-center"
-                >
-                  <div className="plush-pillow plush-fb w-full h-24 sm:h-28 rounded-[22px] sm:rounded-[26px] flex flex-col items-center justify-center gap-1 relative py-2 sm:py-0">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-gradient-to-b from-[#63a4ff] to-[#3b78e7] border-2 border-white/80 shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <i className="fa-brands fa-facebook-f text-xl sm:text-3xl text-white drop-shadow"></i>
-                    </div>
-                    <span className="text-[11px] font-bold text-blue-950/80 tracking-wide">
-                      Facebook ({siteConfig.socials.facebookName})
-                    </span>
-                  </div>
-                </a>
-
-                {/* Snapchat */}
-                <a
-                  href={siteConfig.socials.snapchatUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() =>
-                    copyText(
-                      siteConfig.socials.snapchatHandle,
-                      `Snapchat (${siteConfig.socials.snapchatHandle}) copied! Opening...`
-                    )
-                  }
-                  onMouseEnter={() => playPopSound(750)}
-                  className="acrylic-frame acrylic-interactive rounded-[28px] sm:rounded-[34px] p-2 sm:p-2.5 group flex flex-col items-center justify-center"
-                >
-                  <div className="plush-pillow plush-snap w-full h-24 sm:h-28 rounded-[22px] sm:rounded-[26px] flex flex-col items-center justify-center gap-1 relative py-2 sm:py-0">
-                    <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-b from-[#ffe94d] to-[#f5c400] border-2 border-white/90 shadow-md group-hover:scale-110 transition-transform flex items-center justify-center">
-                      <i className="fa-brands fa-snapchat text-xl sm:text-3xl text-white drop-shadow"></i>
-                    </div>
-                    <span className="text-[11px] font-bold text-purple-950/80 tracking-wide">
-                      Snapchat ({siteConfig.socials.snapchatHandle})
-                    </span>
-                  </div>
-                </a>
+                    </a>
+                  ))}
               </div>
             </section>
           </div>
