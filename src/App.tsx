@@ -2639,7 +2639,7 @@ export default function App({
         )}
       </header>
 
-      <main className="relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-2.5 sm:pt-5 pb-12 flex-grow">
+      <main className={`relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-2.5 sm:pt-5 ${activeTab === 'saqibadmb' ? 'pb-28 sm:pb-16' : 'pb-12'} flex-grow`}>
         {/* ==================== HERO SECTION (HIDDEN ON LOGIN & ADMIN TABS SO THEY STAY FIXED AT TOP) ==================== */}
         {activeTab !== 'login' &&
           activeTab !== 'saqibadmb' &&

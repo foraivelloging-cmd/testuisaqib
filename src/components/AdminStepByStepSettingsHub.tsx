@@ -2515,9 +2515,9 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 {/* 3-Step Progress Bar */}
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { step: 1 as const, label: '1. Category Name' },
-                    { step: 2 as const, label: '2. Category Icon & Color' },
-                    { step: 3 as const, label: '3. Preview & Save' }
+                    { step: 1 as const, label: '1. Category Name', short: '1. Name' },
+                    { step: 2 as const, label: '2. Category Icon & Color', short: '2. Icon' },
+                    { step: 3 as const, label: '3. Preview & Save', short: '3. Save' }
                   ].map((s) => {
                     const isCurr = catStep === s.step;
                     const isDone = catStep > s.step;
@@ -2538,7 +2538,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         }`}
                       >
                         {isDone && <FaCheck className="w-2.5 h-2.5 text-emerald-600" />}
-                        <span className="truncate">{s.label}</span>
+                        <span className="hidden sm:inline truncate">{s.label}</span>
+                        <span className="sm:hidden truncate">{s.short}</span>
                       </button>
                     );
                   })}
@@ -3023,10 +3024,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 {/* 4-Step Progress Bar */}
                 <div className="grid grid-cols-4 gap-1.5">
                   {[
-                    { step: 1 as const, label: '1. Info & Desc' },
-                    { step: 2 as const, label: '2. Plans & Price' },
-                    { step: 3 as const, label: '3. Icon & Badge' },
-                    { step: 4 as const, label: '4. Publish' }
+                    { step: 1 as const, label: '1. Info & Desc', short: '1. Info' },
+                    { step: 2 as const, label: '2. Plans & Price', short: '2. Plans' },
+                    { step: 3 as const, label: '3. Icon & Badge', short: '3. Icon' },
+                    { step: 4 as const, label: '4. Publish', short: '4. Save' }
                   ].map((s) => {
                     const isCurrent = productStep === s.step;
                     const isDone = productStep > s.step;
@@ -3047,7 +3048,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         }`}
                       >
                         {isDone && <FaCheck className="w-2.5 h-2.5 text-emerald-600" />}
-                        <span className="truncate">{s.label}</span>
+                        <span className="hidden sm:inline truncate">{s.label}</span>
+                        <span className="sm:hidden truncate">{s.short}</span>
                       </button>
                     );
                   })}
@@ -3688,13 +3690,13 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   return (
                     <div
                       key={srv.id}
-                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                      className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs transition ${
                         isHidden
                           ? 'bg-slate-100/90 border-slate-300 opacity-75'
                           : 'bg-white/90 border-pink-100 hover:border-pink-400'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div
                           className={`w-10 h-10 rounded-xl bg-gradient-to-br ${srv.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
                         >
@@ -3720,7 +3722,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="flex items-center justify-end gap-1.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {toggleServiceHidden && (
                           <button
                             type="button"
@@ -3807,10 +3809,10 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 {/* 4-Step Progress Pills */}
                 <div className="grid grid-cols-4 gap-1.5">
                   {[
-                    { step: 1 as const, label: '1. Tool Info' },
-                    { step: 2 as const, label: '2. URL & Mode' },
-                    { step: 3 as const, label: '3. Icon & Style' },
-                    { step: 4 as const, label: '4. Publish' }
+                    { step: 1 as const, label: '1. Tool Info', short: '1. Info' },
+                    { step: 2 as const, label: '2. URL & Mode', short: '2. URL' },
+                    { step: 3 as const, label: '3. Icon & Style', short: '3. Icon' },
+                    { step: 4 as const, label: '4. Publish', short: '4. Save' }
                   ].map((s) => {
                     const isCurr = toolStep === s.step;
                     const isDone = toolStep > s.step;
@@ -3831,7 +3833,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         }`}
                       >
                         {isDone && <FaCheck className="w-2.5 h-2.5 text-emerald-600" />}
-                        <span className="truncate">{s.label}</span>
+                        <span className="hidden sm:inline truncate">{s.label}</span>
+                        <span className="sm:hidden truncate">{s.short}</span>
                       </button>
                     );
                   })}
@@ -4189,13 +4192,13 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   return (
                     <div
                       key={tool.id}
-                      className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 shadow-xs transition ${
+                      className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-3 shadow-xs transition ${
                         isHidden
                           ? 'bg-slate-100/90 border-slate-300 opacity-75'
                           : 'bg-white/90 border-indigo-100 hover:border-indigo-400'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div
                           className={`w-10 h-10 rounded-xl bg-gradient-to-br ${tool.orbGrad} text-white flex items-center justify-center flex-shrink-0 shadow overflow-hidden`}
                         >
@@ -4221,7 +4224,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-1.5 flex-shrink-0">
+                      <div className="flex items-center justify-end gap-1.5 flex-shrink-0 pl-13 sm:pl-0 w-full sm:w-auto">
                         {toggleToolHidden && (
                           <button
                             type="button"
@@ -4312,7 +4315,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
             </div>
 
             {/* Top Switcher: Hero Banner (1 no) vs Promo Banners (2 no) */}
-            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
               <button
                 type="button"
                 onClick={() => setBannerStep(1)}
@@ -5313,7 +5316,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
             </div>
 
             {/* Top Switcher: Hero Banner (1 no) vs Promo Banners (2 no) */}
-            <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-1.5 rounded-2xl bg-white/70 border border-pink-200">
               <button
                 type="button"
                 onClick={() => openSettingsScreen('banner', 1)}
@@ -8137,9 +8140,9 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
             {/* 3-Step Selector */}
             <div className="grid grid-cols-3 gap-2">
               {[
-                { step: 1 as const, label: '1. WhatsApp & Website' },
-                { step: 2 as const, label: '2. Social Media Links' },
-                { step: 3 as const, label: '3. Footer & Tagline' }
+                { step: 1 as const, label: '1. WhatsApp & Website', short: '1. WhatsApp' },
+                { step: 2 as const, label: '2. Social Media Links', short: '2. Socials' },
+                { step: 3 as const, label: '3. Footer & Tagline', short: '3. Footer' }
               ].map((s) => (
                 <button
                   key={s.step}
@@ -8154,7 +8157,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       : 'bg-white/85 text-slate-700 border border-indigo-200'
                   }`}
                 >
-                  {s.label}
+                  <span className="hidden sm:inline truncate">{s.label}</span>
+                  <span className="sm:hidden truncate">{s.short}</span>
                 </button>
               ))}
             </div>

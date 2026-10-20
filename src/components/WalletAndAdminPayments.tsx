@@ -846,15 +846,15 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center bg-pink-50 border border-pink-300 rounded-xl px-3 py-1.5">
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center bg-pink-50 border border-pink-300 rounded-xl px-3 py-1.5 w-full sm:w-auto justify-between">
                 <span className="text-xs font-extrabold text-pink-600 mr-1.5">Rs.</span>
                 <input
                   type="number"
                   min={0}
                   value={manualBalanceInput}
                   onChange={(e) => setManualBalanceInput(e.target.value)}
-                  className="w-24 bg-transparent border-none outline-none font-display font-bold text-sm text-slate-900"
+                  className="w-full sm:w-24 bg-transparent border-none outline-none font-display font-bold text-sm text-slate-900"
                 />
               </div>
               <button
@@ -863,9 +863,9 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                   const val = Math.max(0, Number(manualBalanceInput) || 0);
                   onSetCustomBalance(val);
                 }}
-                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs shadow cursor-pointer"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-extrabold text-xs shadow cursor-pointer flex items-center justify-center w-full sm:w-auto"
               >
-                Set Exact Balance
+                Set Balance
               </button>
               <button
                 type="button"
@@ -874,7 +874,7 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                   setManualBalanceInput(String(next));
                   onSetCustomBalance(next);
                 }}
-                className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs shadow cursor-pointer flex items-center justify-center w-full sm:w-auto"
               >
                 +Rs. 1,000
               </button>
@@ -884,7 +884,7 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                   setManualBalanceInput('0');
                   onSetCustomBalance(0);
                 }}
-                className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 font-extrabold text-xs cursor-pointer flex items-center justify-center w-full sm:w-auto"
               >
                 Reset 0
               </button>
@@ -951,8 +951,8 @@ export const AdminPaymentApprovalStudio: React.FC<AdminPaymentStudioProps> = ({
                       : 'border-rose-300 opacity-85'
                   }`}
                 >
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex items-start gap-3 min-w-0">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
                       {/* Clickable Screenshot Thumbnail */}
                       <div
                         onClick={() => onPreviewScreenshot(proof)}

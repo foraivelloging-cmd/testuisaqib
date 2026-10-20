@@ -808,13 +808,13 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                     </p>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                     <select
                       value={seo.schemaType}
                       onChange={(e) =>
                         updateSeoField('schemaType', e.target.value as 'WebApplication' | 'Product' | 'Organization')
                       }
-                      className="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
+                      className="flex-1 sm:flex-initial px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-300 font-bold text-xs text-slate-900"
                     >
                       <option value="WebApplication">Schema: WebApplication</option>
                       <option value="Product">Schema: Product</option>
@@ -824,7 +824,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                     <button
                       type="button"
                       onClick={() => copyText(JSON.stringify(schemaJsonObj, null, 2), 'Schema.org JSON-LD Copied!')}
-                      className="px-3 py-1.5 rounded-xl bg-purple-600 text-white font-extrabold text-xs cursor-pointer flex items-center gap-1 shadow-2xs"
+                      className="px-3 py-1.5 rounded-xl bg-purple-600 text-white font-extrabold text-xs cursor-pointer flex items-center justify-center gap-1 shadow-2xs flex-shrink-0"
                     >
                       <FaCopy className="w-3 h-3" />
                       <span>Copy JSON-LD</span>

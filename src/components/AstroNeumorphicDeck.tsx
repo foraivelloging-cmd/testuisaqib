@@ -318,7 +318,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-center gap-2 w-full lg:w-auto">
               <button
                 type="button"
                 onClick={() => {
@@ -326,7 +326,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('astro-neu');
                   showToast('🚀 Theme 1: Astro-Neumorphic Store Theme Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'astro-neu'
                     ? 'space-navy-box text-sky-300 border border-sky-400 shadow-lg scale-[1.02]'
                     : 'bg-slate-900/90 text-slate-200 hover:bg-slate-900'
@@ -343,7 +343,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('pink-acrylic');
                   showToast('🌸 Theme 2: Classic Pink 3D Acrylic Store Theme Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'pink-acrylic'
                     ? 'bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white border border-white shadow-lg scale-[1.02]'
                     : 'bg-pink-500/90 text-white hover:bg-pink-600'
@@ -360,7 +360,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('liquid-champagne');
                   showToast('✨ Theme 3: 3D Liquid Glass Champagne & Gold Theme Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'liquid-champagne'
                     ? 'bg-gradient-to-r from-amber-600 via-yellow-500 to-emerald-600 text-white border border-white shadow-lg scale-[1.02]'
                     : 'bg-amber-500/90 text-white hover:bg-amber-600'
@@ -377,7 +377,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('pastel-jelly');
                   showToast('🫧 Theme 4: 3D Pastel Jelly Droplet OS Theme Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'pastel-jelly'
                     ? 'bg-gradient-to-r from-sky-400 via-indigo-400 to-pink-400 text-white border border-white shadow-lg scale-[1.02]'
                     : 'bg-sky-500/90 text-white hover:bg-sky-600'
@@ -394,14 +394,14 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('neo-gray-dark');
                   showToast('🌑 Theme 5: Neo Gray Dark (Slate Neumorphic) Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'neo-gray-dark'
                     ? 'bg-gradient-to-r from-slate-900 via-slate-800 to-slate-950 text-slate-100 border border-slate-400 shadow-xl scale-[1.02]'
                     : 'bg-slate-800/90 text-slate-300 hover:bg-slate-800'
                 }`}
               >
                 <FaMoon className="text-slate-300 w-3.5 h-3.5" />
-                <span>5. Neo Gray Dark</span>
+                <span>5. Neo Gray</span>
               </button>
 
               <button
@@ -411,14 +411,14 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
                   onChangeUiMode('neo-blue-dark');
                   showToast('⚡ Theme 6: Neo Blue Dark (Cyberpunk Obsidian) Applied!');
                 }}
-                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition cursor-pointer flex items-center justify-center gap-1.5 w-full ${
                   uiMode === 'neo-blue-dark'
                     ? 'bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-900 text-white border border-cyan-400 shadow-[0_0_15px_rgba(56,189,248,0.5)] scale-[1.02]'
                     : 'bg-blue-900/90 text-cyan-200 hover:bg-blue-800'
                 }`}
               >
                 <FaBolt className="text-cyan-400 w-3.5 h-3.5" />
-                <span>6. Neo Blue Dark</span>
+                <span>6. Neo Blue</span>
               </button>
             </div>
           </div>
@@ -1042,7 +1042,7 @@ export const AdminUiThemeSwitcherStudio: React.FC<{
             </div>
 
             {/* Quick 6-Font Pill Bar */}
-            <div className="flex flex-wrap items-center gap-1.5">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-center gap-1.5 w-full lg:w-auto">
               {STORE_FONT_PACKS.map((pack) => {
                 const isSelected = fontMode === pack.id;
                 return (
