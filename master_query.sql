@@ -1,15 +1,22 @@
 -- =====================================================================
--- MUHAMMAD SAQIB — SAQIB VISUALS HUB
--- COMPLETE CLOUD BACKEND SCHEMA & SEED FOR SUPABASE
--- 100% PRODUCTION READY (1-CLICK RUN IN SUPABASE SQL EDITOR)
+-- 🚀 MUHAMMAD SAQIB — SAQIB VISUALS HUB
+-- 👑 MASTER DATABASE SETUP & MIGRATION SCRIPT (100% PRODUCTION READY)
+-- =====================================================================
+-- Description: Complete schema, storage buckets, RLS security policies, 
+-- performance indexes, seed data for all 32+ services, 7+ web tools, 
+-- reviews, admin vault, interactive WhatsApp widget, and 10+ social platforms.
+-- Compatible with: Supabase SQL Editor / PostgreSQL 14+ / 15+ / 16+
 -- =====================================================================
 
+-- ---------------------------------------------------------------------
 -- 1. EXTENSIONS
+-- ---------------------------------------------------------------------
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- =====================================================================
--- 2. STORAGE BUCKETS & POLICIES (PAYMENT RECEIPTS & ASSETS)
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 2. STORAGE BUCKETS & POLICIES (PAYMENT RECEIPTS & SITE ASSETS)
+-- ---------------------------------------------------------------------
 INSERT INTO storage.buckets (id, name, public)
 VALUES 
   ('payment-proofs', 'payment-proofs', true),
@@ -38,9 +45,18 @@ CREATE POLICY "Public Upload Site Assets"
 ON storage.objects FOR INSERT
 WITH CHECK (bucket_id = 'site-assets');
 
--- =====================================================================
--- 3. SERVICES CATALOG TABLE (32+ DIGITAL, AI & SMM SERVICES)
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 3. CORE DATABASE TABLES (DDL)
+-- ---------------------------------------------------------------------
+
+-- 3.1 SITE CONFIGURATION TABLE
+CREATE TABLE IF NOT EXISTS public.site_config (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    config JSONB NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.2 DIGITAL & AI SERVICES CATALOG TABLE
 CREATE TABLE IF NOT EXISTS public.services (
     id TEXT PRIMARY KEY,
     category TEXT NOT NULL,
@@ -61,9 +77,7 @@ CREATE TABLE IF NOT EXISTS public.services (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 4. WEB TOOLS CATALOG TABLE (7+ ONLINE AI & GRAPHIC TOOLS)
--- =====================================================================
+-- 3.3 LIVE ONLINE WEB TOOLS TABLE
 CREATE TABLE IF NOT EXISTS public.web_tools (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL,
@@ -74,56 +88,27 @@ CREATE TABLE IF NOT EXISTS public.web_tools (
     icon_type TEXT NOT NULL DEFAULT 'wand',
     orb_grad TEXT NOT NULL DEFAULT 'from-indigo-600 to-purple-600',
     plush TEXT NOT NULL DEFAULT 'plush-website',
+    open_mode TEXT NOT NULL DEFAULT 'new_tab',
     hidden BOOLEAN NOT NULL DEFAULT false,
     sort_order INTEGER NOT NULL DEFAULT 0,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
-
--- =====================================================================
--- 5. SITE CONFIGURATION TABLE (HERO, BANNER, CONTACT, SEO, TOGGLES)
--- =====================================================================
-CREATE TABLE IF NOT EXISTS public.site_config (
-    id TEXT PRIMARY KEY DEFAULT 'default',
-    config JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 6. USER PROFILES & WALLETS TABLE (LOGIN / SIGNUP & BALANCE)
--- =====================================================================
+-- 3.4 USER PROFILES & VIP WALLETS TABLE
 CREATE TABLE IF NOT EXISTS public.profiles (
-    id TEXT PRIMARY KEY, -- Mobile Number or Email
+    id TEXT PRIMARY KEY, -- Mobile Number or Email or UUID
     full_name TEXT NOT NULL DEFAULT 'VIP Member',
     email TEXT,
     phone TEXT,
     password_hash TEXT,
     role TEXT NOT NULL DEFAULT 'member', -- member, reseller, admin
-    balance NUMERIC NOT NULL DEFAULT 0,
+    balance NUMERIC NOT NULL DEFAULT 0 CHECK (balance >= 0),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 7. PAYMENT PROOFS TABLE (EASYPAISA, JAZZCASH, SADAPAY, CRYPTO)
--- =====================================================================
-CREATE TABLE IF NOT EXISTS public.payment_proofs (
-    id TEXT PRIMARY KEY,
-    user_id TEXT NOT NULL,
-    amount NUMERIC NOT NULL,
-    method TEXT NOT NULL,
-    sender_account_name TEXT NOT NULL DEFAULT '',
-    sender_account_number TEXT NOT NULL DEFAULT '',
-    trx_id TEXT NOT NULL DEFAULT '',
-    screenshot_url TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'pending', -- pending, approved, rejected
-    user_note TEXT DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-    reviewed_at TIMESTAMPTZ
-);
-
--- =====================================================================
--- 8. ORDERS TABLE (LIVE ORDER TRACKING & PROCESSING)
--- =====================================================================
+-- 3.5 ORDERS TABLE
 CREATE TABLE IF NOT EXISTS public.orders (
     id TEXT PRIMARY KEY DEFAULT ('ORD-' || upper(substring(md5(random()::text) from 1 for 8))),
     user_id TEXT NOT NULL,
@@ -137,11 +122,25 @@ CREATE TABLE IF NOT EXISTS public.orders (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 9. CONTACT SUPPORT TICKETS TABLE
--- =====================================================================
-CREATE TABLE IF NOT EXISTS public.contact_inquiries (
+-- 3.6 PAYMENT PROOFS & MANUAL DEPOSITS TABLE
+CREATE TABLE IF NOT EXISTS public.payment_proofs (
     id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    method TEXT NOT NULL,
+    sender_account_name TEXT NOT NULL DEFAULT '',
+    sender_account_number TEXT NOT NULL DEFAULT '',
+    trx_id TEXT NOT NULL DEFAULT '',
+    screenshot_url TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending', -- pending, approved, rejected
+    user_note TEXT DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    reviewed_at TIMESTAMPTZ
+);
+
+-- 3.7 CONTACT INQUIRIES & SUPPORT TICKETS TABLE
+CREATE TABLE IF NOT EXISTS public.contact_inquiries (
+    id TEXT PRIMARY KEY DEFAULT ('TKT-' || upper(substring(md5(random()::text) from 1 for 8))),
     name TEXT NOT NULL,
     phone TEXT NOT NULL DEFAULT '',
     department TEXT NOT NULL DEFAULT 'General Support',
@@ -151,75 +150,90 @@ CREATE TABLE IF NOT EXISTS public.contact_inquiries (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 10. REVIEWS & TESTIMONIALS TABLE
--- =====================================================================
+-- 3.8 VERIFIED CUSTOMER REVIEWS & TESTIMONIALS TABLE
 CREATE TABLE IF NOT EXISTS public.reviews (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT ('REV-' || upper(substring(md5(random()::text) from 1 for 8))),
     name TEXT NOT NULL,
     service TEXT NOT NULL DEFAULT 'Digital Service',
-    rating INTEGER NOT NULL DEFAULT 5,
+    rating INTEGER NOT NULL DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
     comment TEXT NOT NULL,
     verified BOOLEAN NOT NULL DEFAULT true,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- =====================================================================
--- 11. ROW LEVEL SECURITY (RLS) POLICIES — HARDENED PRODUCTION DEFENSE
--- =====================================================================
+-- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 PROTECTED)
+CREATE TABLE IF NOT EXISTS public.admin_vault (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    iterations INTEGER NOT NULL DEFAULT 100000,
+    algorithm TEXT NOT NULL DEFAULT 'sha512',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- ---------------------------------------------------------------------
+-- 4. ULTRA-FAST PERFORMANCE INDEXES
+-- ---------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_services_category_hidden ON public.services(category, hidden, sort_order);
+CREATE INDEX IF NOT EXISTS idx_services_sort ON public.services(sort_order);
+CREATE INDEX IF NOT EXISTS idx_web_tools_hidden_sort ON public.web_tools(hidden, sort_order);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_orders_created ON public.orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payment_proofs_user_status ON public.payment_proofs(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_payment_proofs_created ON public.payment_proofs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reviews_verified_created ON public.reviews(verified, created_at DESC);
+
+-- ---------------------------------------------------------------------
+-- 5. ROW LEVEL SECURITY (RLS) POLICIES — PRODUCTION HARDENED
+-- ---------------------------------------------------------------------
+ALTER TABLE public.site_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.web_tools ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.site_config ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.payment_proofs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_proofs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.admin_vault ENABLE ROW LEVEL SECURITY;
 
--- Drop all outdated / permissive policies
+-- Drop obsolete policies to prevent duplication
 DROP POLICY IF EXISTS "Public Read Services" ON public.services;
 DROP POLICY IF EXISTS "Public Read Web Tools" ON public.web_tools;
 DROP POLICY IF EXISTS "Public Read Site Config" ON public.site_config;
-DROP POLICY IF EXISTS "Public Read Profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Public Upsert Profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Public Read Payment Proofs" ON public.payment_proofs;
-DROP POLICY IF EXISTS "Public Insert Payment Proofs" ON public.payment_proofs;
-DROP POLICY IF EXISTS "Public Read Orders" ON public.orders;
-DROP POLICY IF EXISTS "Public Insert Orders" ON public.orders;
-DROP POLICY IF EXISTS "Public Read Contact Inquiries" ON public.contact_inquiries;
-DROP POLICY IF EXISTS "Public Insert Contact Inquiries" ON public.contact_inquiries;
-DROP POLICY IF EXISTS "Public Read Reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Public Read Approved Reviews" ON public.reviews;
 DROP POLICY IF EXISTS "Public Insert Reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Public Insert Orders" ON public.orders;
+DROP POLICY IF EXISTS "Users Read Own Orders" ON public.orders;
+DROP POLICY IF EXISTS "Public Insert Payment Proofs" ON public.payment_proofs;
+DROP POLICY IF EXISTS "Users Read Own Payment Proofs" ON public.payment_proofs;
+DROP POLICY IF EXISTS "Public Insert Contact Inquiries" ON public.contact_inquiries;
+DROP POLICY IF EXISTS "Users Read Own Profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users Insert Own Profile" ON public.profiles;
 DROP POLICY IF EXISTS "No Direct Public Access to Admin Vault" ON public.admin_vault;
 
--- 11.1 SERVICES & TOOLS & CONFIG: Public can READ, but CANNOT MUTATE
+-- 5.1 Public Read Store Data
 CREATE POLICY "Public Read Services" ON public.services FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Web Tools" ON public.web_tools FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Site Config" ON public.site_config FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT TO anon, authenticated USING (verified = true);
+CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT TO anon, authenticated WITH CHECK (true);
 
--- 11.2 ORDERS: Public can insert their own orders. Cannot read or alter other users' orders.
+-- 5.2 Public Insert Orders & Proofs
 CREATE POLICY "Public Insert Orders" ON public.orders FOR INSERT TO anon, authenticated WITH CHECK (true);
 CREATE POLICY "Users Read Own Orders" ON public.orders FOR SELECT TO anon, authenticated USING (
   user_id = coalesce(auth.uid()::text, '') OR user_id = current_setting('request.jwt.claim.sub', true)
 );
 
--- 11.3 PAYMENT PROOFS: Public can upload payment receipts. Status is locked to 'pending'.
-CREATE POLICY "Public Insert Payment Proofs" ON public.payment_proofs FOR INSERT TO anon, authenticated WITH CHECK (
-  status = 'pending'
-);
+CREATE POLICY "Public Insert Payment Proofs" ON public.payment_proofs FOR INSERT TO anon, authenticated WITH CHECK (status = 'pending');
 CREATE POLICY "Users Read Own Payment Proofs" ON public.payment_proofs FOR SELECT TO anon, authenticated USING (
   user_id = coalesce(auth.uid()::text, '') OR user_id = current_setting('request.jwt.claim.sub', true)
 );
 
--- 11.4 CONTACT SUPPORT TICKETS: Public can submit tickets. Direct public reading is blocked for privacy.
 CREATE POLICY "Public Insert Contact Inquiries" ON public.contact_inquiries FOR INSERT TO anon, authenticated WITH CHECK (true);
 
--- 11.5 REVIEWS: Public can only view approved reviews. Can submit pending reviews.
-CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT TO anon, authenticated USING (verified = true);
-CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT TO anon, authenticated WITH CHECK (true);
-
--- 11.6 USER PROFILES: Users can only read/update their own profile
+-- 5.3 Profile RLS
 CREATE POLICY "Users Read Own Profile" ON public.profiles FOR SELECT TO anon, authenticated USING (
   id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
 );
@@ -227,19 +241,105 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
   id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
 );
 
--- 11.7 ADMIN VAULT: 100% BLOCKED FROM ANON & AUTHENTICATED (Zero Public/Client Access)
+-- 5.4 Admin Security Vault — ZERO Public / Client Access
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
 
--- Privileges: Grant standard usage, revoke dangerous mutation powers from anon
+-- Grant privileges
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
-GRANT SELECT ON public.services, public.web_tools, public.site_config TO anon, authenticated;
+GRANT SELECT ON public.services, public.web_tools, public.site_config, public.reviews TO anon, authenticated;
 GRANT INSERT ON public.orders, public.payment_proofs, public.contact_inquiries, public.reviews TO anon, authenticated;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
 
--- =====================================================================
--- 12. INITIAL SEED: ALL 32+ STORE SERVICES (INCLUDING REMINI PRO)
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 6. SEED DATA: COMPLETE SITE CONFIGURATION
+-- (Includes WhatsApp Popup Widget & 10+ Social Platforms)
+-- ---------------------------------------------------------------------
+INSERT INTO public.site_config (id, config, updated_at)
+VALUES (
+  'default',
+  '{
+    "banner": {
+      "showHeroBanner": true,
+      "showTopStrip": true,
+      "showTopStripWhatsapp": true,
+      "rgbBorderEnabled": true,
+      "topStripTitle": "MUHAMMAD SAQIB • VISUALS HUB",
+      "showPortraitPhoto": true,
+      "portraitUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
+      "showPortraitOrbitBadges": true,
+      "orbitBadge1Enabled": true,
+      "orbitBadge1Title": "CapCut & Lovable",
+      "orbitBadge1Sub": "PRO UNLOCKED",
+      "orbitBadge2Enabled": true,
+      "orbitBadge2Title": "AI Suite",
+      "orbitBadge2Sub": "GEMINI • CLAUDE",
+      "orbitBadge3Enabled": true,
+      "orbitBadge3Title": "TikTok UK/USA",
+      "orbitBadge3Sub": "ADS & BOOST",
+      "orbitBadge4Enabled": true,
+      "orbitBadge4Title": "SIM & NADRA",
+      "orbitBadge4Sub": "CDR • FRC • LIVE",
+      "showBadgeText": true,
+      "badgeText": "🔥 ALL DIGITAL, AI, SMM & NADRA SERVICES LIVE 24/7 (VERIFIED ACTIVE)",
+      "showMainTitle": true,
+      "mainTitle": "Muhammad Saqib",
+      "highlightTitle": "— Saqib Visuals",
+      "showDescription": true,
+      "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
+      "showHeroFeaturePills": true
+    },
+    "contact": {
+      "whatsappNumberClean": "923478936242",
+      "whatsappNumberDisplay": "+92 347 8936242",
+      "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
+      "supportEmail": "support@saqibvisuals.com",
+      "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
+      "officialWebsiteLabel": "mrsaqib242.vercel.app",
+      "whatsappWidgetEnabled": true,
+      "whatsappWidgetName": "Muhammad Saqib",
+      "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
+      "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to <b>Saqib Visuals Hub</b>.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?",
+      "whatsappWidgetGreetingUr": "السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟",
+      "whatsappWidgetStatus": "Typically replies in ~2 minutes ⚡"
+    },
+    "socials": {
+      "instagramUrl": "https://instagram.com/mrsaqib242",
+      "instagramHandle": "@mrsaqib242",
+      "tiktokUrl": "https://tiktok.com/@mrsaqib242",
+      "tiktokHandle": "@mrsaqib242",
+      "facebookUrl": "https://facebook.com/mrsaqib242",
+      "facebookName": "Muhammad Saqib",
+      "snapchatUrl": "https://snapchat.com/add/mrsaqib242",
+      "snapchatHandle": "mrsaqib242",
+      "platforms": [
+        {"id":"instagram","platform":"instagram","label":"Instagram","handle":"@mrsaqib242","url":"https://instagram.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-instagram","colorGrad":"from-amber-300 via-pink-500 to-purple-600"},
+        {"id":"tiktok","platform":"tiktok","label":"TikTok","handle":"@mrsaqib242","url":"https://tiktok.com/@mrsaqib242","enabled":true,"icon":"fa-brands fa-tiktok","colorGrad":"from-slate-900 to-slate-800"},
+        {"id":"facebook","platform":"facebook","label":"Facebook","handle":"Muhammad Saqib","url":"https://facebook.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-facebook-f","colorGrad":"from-blue-600 to-indigo-600"},
+        {"id":"snapchat","platform":"snapchat","label":"Snapchat","handle":"mrsaqib242","url":"https://snapchat.com/add/mrsaqib242","enabled":true,"icon":"fa-brands fa-snapchat","colorGrad":"from-amber-400 to-yellow-500"},
+        {"id":"youtube","platform":"youtube","label":"YouTube Channel","handle":"@saqibvisuals","url":"https://youtube.com/@saqibvisuals","enabled":true,"icon":"fa-brands fa-youtube","colorGrad":"from-red-500 to-rose-600"},
+        {"id":"telegram","platform":"telegram","label":"Telegram Channel","handle":"@saqibvisuals","url":"https://t.me/saqibvisuals","enabled":true,"icon":"fa-brands fa-telegram","colorGrad":"from-sky-400 to-blue-500"},
+        {"id":"whatsapp_channel","platform":"whatsapp_channel","label":"WhatsApp VIP Channel","handle":"Saqib Visuals VIP","url":"https://whatsapp.com/channel/saqibvisuals","enabled":true,"icon":"fa-brands fa-whatsapp","colorGrad":"from-emerald-500 to-teal-600"},
+        {"id":"github","platform":"github","label":"GitHub Profile","handle":"@mrsaqib242","url":"https://github.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-github","colorGrad":"from-slate-800 to-slate-950"},
+        {"id":"twitter","platform":"twitter","label":"X (Twitter)","handle":"@mrsaqib242","url":"https://x.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-x-twitter","colorGrad":"from-zinc-800 to-black"},
+        {"id":"discord","platform":"discord","label":"Discord Community","handle":"Saqib Community","url":"https://discord.gg/saqibvisuals","enabled":false,"icon":"fa-brands fa-discord","colorGrad":"from-indigo-500 to-purple-600"}
+      ]
+    },
+    "footer": {
+      "brandName": "🚀 Muhammad Saqib",
+      "copyrightTagline": "24/7 Instant Delivery • 100% Full Replacement Warranty",
+      "showQuickLinks": true
+    }
+  }'::jsonb,
+  timezone('utc'::text, now())
+)
+ON CONFLICT (id) DO UPDATE SET
+  config = EXCLUDED.config,
+  updated_at = timezone('utc'::text, now());
+
+-- ---------------------------------------------------------------------
+-- 7. SEED DATA: ALL 32+ DIGITAL & PRO SERVICES
+-- ---------------------------------------------------------------------
 INSERT INTO public.services (
   id, category, badge, title, "desc", plush, orb_grad, icon_type, custom_icon_url, direct_tool_url, input_label, placeholder, tiers, hidden, sort_order
 )
@@ -283,9 +383,9 @@ ON CONFLICT (id) DO UPDATE SET
   tiers = EXCLUDED.tiers,
   sort_order = EXCLUDED.sort_order;
 
--- =====================================================================
--- 13. INITIAL SEED: 7 WEB TOOLS (INCLUDING REMINI WEB)
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 8. SEED DATA: 7 LIVE WEB TOOLS
+-- ---------------------------------------------------------------------
 INSERT INTO public.web_tools (
   id, title, "desc", tool_url, icon_url, badge, icon_type, orb_grad, plush, hidden, sort_order
 )
@@ -303,19 +403,19 @@ ON CONFLICT (id) DO UPDATE SET
   tool_url = EXCLUDED.tool_url,
   badge = EXCLUDED.badge;
 
--- =====================================================================
--- 14. INITIAL SEED: ADMIN & VIP PROFILES
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 9. SEED DATA: ADMIN & VIP PROFILES
+-- ---------------------------------------------------------------------
 INSERT INTO public.profiles (id, full_name, email, phone, role, balance)
 VALUES 
   ('+92 347 8936242', 'Muhammad Saqib (Official Admin)', 'support@saqibvisuals.com', '+92 347 8936242', 'admin', 50000),
   ('03478936242', 'Muhammad Saqib', 'admin@saqibvisuals.com', '03478936242', 'admin', 50000),
-  ('vip_member', 'VIP Reseller Partner', 'reseller@saqibvisuals.com', '03120000000', 'reseller', 1800)
+  ('vip_member', 'VIP Reseller Partner', 'reseller@saqibvisuals.com', '03120000000', 'reseller', 5000)
 ON CONFLICT (id) DO NOTHING;
 
--- =====================================================================
--- 15. INITIAL SEED: VERIFIED CUSTOMER REVIEWS
--- =====================================================================
+-- ---------------------------------------------------------------------
+-- 10. SEED DATA: VERIFIED CUSTOMER REVIEWS
+-- ---------------------------------------------------------------------
 INSERT INTO public.reviews (id, name, service, rating, comment, verified)
 VALUES
   ('rev-1', 'Hamza Ali — Lahore', 'Google Gemini 18M & CapCut Pro', 5, 'Maine Saqib bhai se Google Gemini 18-Month Pro aur CapCut Pro liya. Sirf 5 minute mein mere apne Gmail par 2TB storage ke sath activate ho gaya. 100% trusted!', true),
@@ -324,33 +424,10 @@ VALUES
   ('rev-4', 'Bilal Ahmad — Rawalpindi', 'Remini AI Pro & Lovable Pro', 5, 'Remini Pro 1-year activation and Lovable AI builder subscription instant receive hui. Full replacement warranty support best hai!', true)
 ON CONFLICT (id) DO NOTHING;
 
--- =====================================================================
--- 16. ADMIN SECURITY VAULT (PBKDF2 SALT + SHA-512 HASH & JWT HS256)
--- STRICT BACKEND ACCESS ONLY — RLS DISABLED FOR PUBLIC/ANON
--- =====================================================================
-CREATE TABLE IF NOT EXISTS public.admin_vault (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    username TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    salt TEXT NOT NULL,
-    iterations INTEGER NOT NULL DEFAULT 100000,
-    algorithm TEXT NOT NULL DEFAULT 'sha512',
-    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
-);
-
--- Enable RLS and deny all direct public/anon access (Only service_role key can read/write)
-ALTER TABLE public.admin_vault ENABLE ROW LEVEL SECURITY;
-
-DROP POLICY IF EXISTS "No Direct Public Access to Admin Vault" ON public.admin_vault;
-CREATE POLICY "No Direct Public Access to Admin Vault"
-ON public.admin_vault FOR ALL
-TO anon, authenticated
-USING (false);
-
--- Seed Official Admin Credentials:
--- 1) Username: saqib / Password: saqibadmin (PBKDF2 SHA-512, 100,000 iterations)
--- 2) Username: saqibadmin / Password: deleefue (PBKDF2 SHA-512, 100,000 iterations)
+-- ---------------------------------------------------------------------
+-- 11. SEED DATA: ADMIN SECURITY VAULT
+-- (Pass: saqibadmin / deleefue - PBKDF2 SHA-512)
+-- ---------------------------------------------------------------------
 INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm)
 VALUES 
 (
@@ -375,68 +452,47 @@ ON CONFLICT (username) DO UPDATE SET
   updated_at = timezone('utc'::text, now());
 
 -- =====================================================================
--- 17. INITIAL SEED: SITE CONFIGURATION (HERO, WHATSAPP, BRANDING)
+-- 🛠️ USEFUL ADMIN MAINTENANCE CHEAT-SHEET QUERIES
 -- =====================================================================
-INSERT INTO public.site_config (id, config, updated_at)
-VALUES (
-  'default',
-  '{
-    "banner": {
-      "showHeroBanner": true,
-      "showTopStrip": true,
-      "showTopStripWhatsapp": true,
-      "rgbBorderEnabled": true,
-      "topStripTitle": "MUHAMMAD SAQIB • VISUALS HUB",
-      "showPortraitPhoto": true,
-      "portraitUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
-      "showPortraitOrbitBadges": true,
-      "orbitBadge1Enabled": true,
-      "orbitBadge1Title": "CapCut & Lovable",
-      "orbitBadge1Sub": "PRO UNLOCKED",
-      "orbitBadge2Enabled": true,
-      "orbitBadge2Title": "AI Suite",
-      "orbitBadge2Sub": "GEMINI • CLAUDE",
-      "orbitBadge3Enabled": true,
-      "orbitBadge3Title": "TikTok UK/USA",
-      "orbitBadge3Sub": "ADS & BOOST",
-      "orbitBadge4Enabled": true,
-      "orbitBadge4Title": "SIM & NADRA",
-      "orbitBadge4Sub": "CDR • FRC • LIVE",
-      "showBadgeText": true,
-      "badgeText": "ALL DIGITAL, AI, SMM, FRANCHISE & NADRA SERVICES AVAILABLE",
-      "showMainTitle": true,
-      "mainTitle": "Muhammad Saqib",
-      "highlightTitle": "— Saqib Visuals",
-      "showDescription": true,
-      "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
-      "showHeroFeaturePills": true
-    },
-    "contact": {
-      "whatsappNumberClean": "923478936242",
-      "whatsappNumberDisplay": "+92 347 8936242",
-      "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
-      "supportEmail": "support@saqibvisuals.com",
-      "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
-      "officialWebsiteLabel": "mrsaqib242.vercel.app"
-    },
-    "socials": {
-      "instagramUrl": "https://instagram.com/",
-      "instagramHandle": "@mrsaqib242",
-      "tiktokUrl": "https://tiktok.com/",
-      "tiktokHandle": "@mrsaqib242",
-      "facebookUrl": "https://facebook.com/",
-      "facebookName": "Muhammad Saqib",
-      "snapchatUrl": "https://snapchat.com/",
-      "snapchatHandle": "mrsaqib242"
-    },
-    "footer": {
-      "brandName": "🚀 Muhammad Saqib",
-      "copyrightTagline": "24/7 Instant Delivery • 100% Full Replacement Warranty",
-      "showQuickLinks": true
-    }
-  }'::jsonb,
-  timezone('utc'::text, now())
-)
-ON CONFLICT (id) DO NOTHING;
 
+-- [A] WhatsApp DP, Name, Status & Greetings Update Query:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   jsonb_set(
+--     jsonb_set(
+--       config,
+--       '{contact,whatsappWidgetAvatar}',
+--       '"https://your-domain.com/new-dp.jpg"'
+--     ),
+--     '{contact,whatsappWidgetName}',
+--     '"Muhammad Saqib"'
+--   ),
+--   '{contact,whatsappWidgetStatus}',
+--   '"Online • Typically replies in ~2 mins ⚡"'
+-- )
+-- WHERE id = 'default';
 
+-- [B] Social Platform Toggle Query (e.g. Turn YouTube or Telegram ON/OFF):
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   config,
+--   '{socials,platforms}',
+--   (
+--     SELECT jsonb_agg(
+--       CASE 
+--         WHEN elem->>'id' = 'youtube' THEN jsonb_set(elem, '{enabled}', 'true')
+--         ELSE elem
+--       END
+--     )
+--     FROM jsonb_array_elements(config->'socials'->'platforms') AS elem
+--   )
+-- )
+-- WHERE id = 'default';
+
+-- [C] Approve Payment Proof & Credit User Wallet Query:
+-- UPDATE public.payment_proofs SET status = 'approved', reviewed_at = now() WHERE id = 'YOUR_PROOF_ID';
+-- UPDATE public.profiles SET balance = balance + 1000 WHERE id = 'USER_PHONE_OR_ID';
+
+-- =====================================================================
+-- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
+-- =====================================================================

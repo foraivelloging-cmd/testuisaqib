@@ -1,0 +1,498 @@
+-- =====================================================================
+-- 🚀 MUHAMMAD SAQIB — SAQIB VISUALS HUB
+-- 👑 MASTER DATABASE SETUP & MIGRATION SCRIPT (100% PRODUCTION READY)
+-- =====================================================================
+-- Description: Complete schema, storage buckets, RLS security policies, 
+-- performance indexes, seed data for all 32+ services, 7+ web tools, 
+-- reviews, admin vault, interactive WhatsApp widget, and 10+ social platforms.
+-- Compatible with: Supabase SQL Editor / PostgreSQL 14+ / 15+ / 16+
+-- =====================================================================
+
+-- ---------------------------------------------------------------------
+-- 1. EXTENSIONS
+-- ---------------------------------------------------------------------
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- ---------------------------------------------------------------------
+-- 2. STORAGE BUCKETS & POLICIES (PAYMENT RECEIPTS & SITE ASSETS)
+-- ---------------------------------------------------------------------
+INSERT INTO storage.buckets (id, name, public)
+VALUES 
+  ('payment-proofs', 'payment-proofs', true),
+  ('site-assets', 'site-assets', true)
+ON CONFLICT (id) DO UPDATE SET public = true;
+
+-- Storage Policies for 'payment-proofs'
+DROP POLICY IF EXISTS "Public Access Payment Proofs" ON storage.objects;
+CREATE POLICY "Public Access Payment Proofs"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'payment-proofs');
+
+DROP POLICY IF EXISTS "Public Upload Payment Proofs" ON storage.objects;
+CREATE POLICY "Public Upload Payment Proofs"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'payment-proofs');
+
+-- Storage Policies for 'site-assets'
+DROP POLICY IF EXISTS "Public Access Site Assets" ON storage.objects;
+CREATE POLICY "Public Access Site Assets"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'site-assets');
+
+DROP POLICY IF EXISTS "Public Upload Site Assets" ON storage.objects;
+CREATE POLICY "Public Upload Site Assets"
+ON storage.objects FOR INSERT
+WITH CHECK (bucket_id = 'site-assets');
+
+-- ---------------------------------------------------------------------
+-- 3. CORE DATABASE TABLES (DDL)
+-- ---------------------------------------------------------------------
+
+-- 3.1 SITE CONFIGURATION TABLE
+CREATE TABLE IF NOT EXISTS public.site_config (
+    id TEXT PRIMARY KEY DEFAULT 'default',
+    config JSONB NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.2 DIGITAL & AI SERVICES CATALOG TABLE
+CREATE TABLE IF NOT EXISTS public.services (
+    id TEXT PRIMARY KEY,
+    category TEXT NOT NULL,
+    badge TEXT NOT NULL DEFAULT 'FEATURED',
+    title TEXT NOT NULL,
+    "desc" TEXT NOT NULL DEFAULT '',
+    plush TEXT NOT NULL DEFAULT 'plush-srv-1',
+    orb_grad TEXT NOT NULL DEFAULT 'from-pink-500 to-rose-600',
+    icon_type TEXT NOT NULL DEFAULT 'wand',
+    custom_icon_url TEXT,
+    direct_tool_url TEXT,
+    input_label TEXT NOT NULL DEFAULT 'Your Requirement',
+    placeholder TEXT NOT NULL DEFAULT 'Enter details...',
+    tiers JSONB NOT NULL DEFAULT '[]'::jsonb,
+    hidden BOOLEAN NOT NULL DEFAULT false,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.3 LIVE ONLINE WEB TOOLS TABLE
+CREATE TABLE IF NOT EXISTS public.web_tools (
+    id TEXT PRIMARY KEY,
+    title TEXT NOT NULL,
+    "desc" TEXT NOT NULL DEFAULT '',
+    tool_url TEXT NOT NULL,
+    icon_url TEXT,
+    badge TEXT NOT NULL DEFAULT 'ONLINE',
+    icon_type TEXT NOT NULL DEFAULT 'wand',
+    orb_grad TEXT NOT NULL DEFAULT 'from-indigo-600 to-purple-600',
+    plush TEXT NOT NULL DEFAULT 'plush-website',
+    open_mode TEXT NOT NULL DEFAULT 'new_tab',
+    hidden BOOLEAN NOT NULL DEFAULT false,
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.4 USER PROFILES & VIP WALLETS TABLE
+CREATE TABLE IF NOT EXISTS public.profiles (
+    id TEXT PRIMARY KEY, -- Mobile Number or Email or UUID
+    full_name TEXT NOT NULL DEFAULT 'VIP Member',
+    email TEXT,
+    phone TEXT,
+    password_hash TEXT,
+    role TEXT NOT NULL DEFAULT 'member', -- member, reseller, admin
+    balance NUMERIC NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.5 ORDERS TABLE
+CREATE TABLE IF NOT EXISTS public.orders (
+    id TEXT PRIMARY KEY DEFAULT ('ORD-' || upper(substring(md5(random()::text) from 1 for 8))),
+    user_id TEXT NOT NULL,
+    service_id TEXT NOT NULL,
+    service_title TEXT NOT NULL,
+    package_tier TEXT NOT NULL,
+    price NUMERIC NOT NULL DEFAULT 0,
+    user_input TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending', -- pending, processing, completed, cancelled
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.6 PAYMENT PROOFS & MANUAL DEPOSITS TABLE
+CREATE TABLE IF NOT EXISTS public.payment_proofs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    amount NUMERIC NOT NULL CHECK (amount > 0),
+    method TEXT NOT NULL,
+    sender_account_name TEXT NOT NULL DEFAULT '',
+    sender_account_number TEXT NOT NULL DEFAULT '',
+    trx_id TEXT NOT NULL DEFAULT '',
+    screenshot_url TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'pending', -- pending, approved, rejected
+    user_note TEXT DEFAULT '',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    reviewed_at TIMESTAMPTZ
+);
+
+-- 3.7 CONTACT INQUIRIES & SUPPORT TICKETS TABLE
+CREATE TABLE IF NOT EXISTS public.contact_inquiries (
+    id TEXT PRIMARY KEY DEFAULT ('TKT-' || upper(substring(md5(random()::text) from 1 for 8))),
+    name TEXT NOT NULL,
+    phone TEXT NOT NULL DEFAULT '',
+    department TEXT NOT NULL DEFAULT 'General Support',
+    priority TEXT NOT NULL DEFAULT 'Normal',
+    message TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'open', -- open, resolved, closed
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.8 VERIFIED CUSTOMER REVIEWS & TESTIMONIALS TABLE
+CREATE TABLE IF NOT EXISTS public.reviews (
+    id TEXT PRIMARY KEY DEFAULT ('REV-' || upper(substring(md5(random()::text) from 1 for 8))),
+    name TEXT NOT NULL,
+    service TEXT NOT NULL DEFAULT 'Digital Service',
+    rating INTEGER NOT NULL DEFAULT 5 CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    verified BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 PROTECTED)
+CREATE TABLE IF NOT EXISTS public.admin_vault (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    username TEXT UNIQUE NOT NULL,
+    password_hash TEXT NOT NULL,
+    salt TEXT NOT NULL,
+    iterations INTEGER NOT NULL DEFAULT 100000,
+    algorithm TEXT NOT NULL DEFAULT 'sha512',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+
+-- ---------------------------------------------------------------------
+-- 4. ULTRA-FAST PERFORMANCE INDEXES
+-- ---------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_services_category_hidden ON public.services(category, hidden, sort_order);
+CREATE INDEX IF NOT EXISTS idx_services_sort ON public.services(sort_order);
+CREATE INDEX IF NOT EXISTS idx_web_tools_hidden_sort ON public.web_tools(hidden, sort_order);
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_orders_created ON public.orders(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_payment_proofs_user_status ON public.payment_proofs(user_id, status);
+CREATE INDEX IF NOT EXISTS idx_payment_proofs_created ON public.payment_proofs(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_reviews_verified_created ON public.reviews(verified, created_at DESC);
+
+-- ---------------------------------------------------------------------
+-- 5. ROW LEVEL SECURITY (RLS) POLICIES — PRODUCTION HARDENED
+-- ---------------------------------------------------------------------
+ALTER TABLE public.site_config ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.web_tools ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.payment_proofs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.contact_inquiries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.admin_vault ENABLE ROW LEVEL SECURITY;
+
+-- Drop obsolete policies to prevent duplication
+DROP POLICY IF EXISTS "Public Read Services" ON public.services;
+DROP POLICY IF EXISTS "Public Read Web Tools" ON public.web_tools;
+DROP POLICY IF EXISTS "Public Read Site Config" ON public.site_config;
+DROP POLICY IF EXISTS "Public Read Approved Reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Public Insert Reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Public Insert Orders" ON public.orders;
+DROP POLICY IF EXISTS "Users Read Own Orders" ON public.orders;
+DROP POLICY IF EXISTS "Public Insert Payment Proofs" ON public.payment_proofs;
+DROP POLICY IF EXISTS "Users Read Own Payment Proofs" ON public.payment_proofs;
+DROP POLICY IF EXISTS "Public Insert Contact Inquiries" ON public.contact_inquiries;
+DROP POLICY IF EXISTS "Users Read Own Profile" ON public.profiles;
+DROP POLICY IF EXISTS "Users Insert Own Profile" ON public.profiles;
+DROP POLICY IF EXISTS "No Direct Public Access to Admin Vault" ON public.admin_vault;
+
+-- 5.1 Public Read Store Data
+CREATE POLICY "Public Read Services" ON public.services FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public Read Web Tools" ON public.web_tools FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public Read Site Config" ON public.site_config FOR SELECT TO anon, authenticated USING (true);
+CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT TO anon, authenticated USING (verified = true);
+CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+-- 5.2 Public Insert Orders & Proofs
+CREATE POLICY "Public Insert Orders" ON public.orders FOR INSERT TO anon, authenticated WITH CHECK (true);
+CREATE POLICY "Users Read Own Orders" ON public.orders FOR SELECT TO anon, authenticated USING (
+  user_id = coalesce(auth.uid()::text, '') OR user_id = current_setting('request.jwt.claim.sub', true)
+);
+
+CREATE POLICY "Public Insert Payment Proofs" ON public.payment_proofs FOR INSERT TO anon, authenticated WITH CHECK (status = 'pending');
+CREATE POLICY "Users Read Own Payment Proofs" ON public.payment_proofs FOR SELECT TO anon, authenticated USING (
+  user_id = coalesce(auth.uid()::text, '') OR user_id = current_setting('request.jwt.claim.sub', true)
+);
+
+CREATE POLICY "Public Insert Contact Inquiries" ON public.contact_inquiries FOR INSERT TO anon, authenticated WITH CHECK (true);
+
+-- 5.3 Profile RLS
+CREATE POLICY "Users Read Own Profile" ON public.profiles FOR SELECT TO anon, authenticated USING (
+  id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
+);
+CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, authenticated WITH CHECK (
+  id = coalesce(auth.uid()::text, '') OR id = current_setting('request.jwt.claim.sub', true)
+);
+
+-- 5.4 Admin Security Vault — ZERO Public / Client Access
+CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
+
+-- Grant privileges
+GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
+GRANT SELECT ON public.services, public.web_tools, public.site_config, public.reviews TO anon, authenticated;
+GRANT INSERT ON public.orders, public.payment_proofs, public.contact_inquiries, public.reviews TO anon, authenticated;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO service_role;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO service_role;
+
+-- ---------------------------------------------------------------------
+-- 6. SEED DATA: COMPLETE SITE CONFIGURATION
+-- (Includes WhatsApp Popup Widget & 10+ Social Platforms)
+-- ---------------------------------------------------------------------
+INSERT INTO public.site_config (id, config, updated_at)
+VALUES (
+  'default',
+  '{
+    "banner": {
+      "showHeroBanner": true,
+      "showTopStrip": true,
+      "showTopStripWhatsapp": true,
+      "rgbBorderEnabled": true,
+      "topStripTitle": "MUHAMMAD SAQIB • VISUALS HUB",
+      "showPortraitPhoto": true,
+      "portraitUrl": "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png",
+      "showPortraitOrbitBadges": true,
+      "orbitBadge1Enabled": true,
+      "orbitBadge1Title": "CapCut & Lovable",
+      "orbitBadge1Sub": "PRO UNLOCKED",
+      "orbitBadge2Enabled": true,
+      "orbitBadge2Title": "AI Suite",
+      "orbitBadge2Sub": "GEMINI • CLAUDE",
+      "orbitBadge3Enabled": true,
+      "orbitBadge3Title": "TikTok UK/USA",
+      "orbitBadge3Sub": "ADS & BOOST",
+      "orbitBadge4Enabled": true,
+      "orbitBadge4Title": "SIM & NADRA",
+      "orbitBadge4Sub": "CDR • FRC • LIVE",
+      "showBadgeText": true,
+      "badgeText": "🔥 ALL DIGITAL, AI, SMM & NADRA SERVICES LIVE 24/7 (VERIFIED ACTIVE)",
+      "showMainTitle": true,
+      "mainTitle": "Muhammad Saqib",
+      "highlightTitle": "— Saqib Visuals",
+      "showDescription": true,
+      "description": "Get Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT, Claude, Muse AI 1B & ElevenLabs, TikTok UK/USA & Ad Agency Accounts, Franchise SIM/CDR/IMEI Tracking, NADRA FRC/Passport Records & USDT/Video/Graphics!",
+      "showHeroFeaturePills": true
+    },
+    "contact": {
+      "whatsappNumberClean": "923478936242",
+      "whatsappNumberDisplay": "+92 347 8936242",
+      "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
+      "supportEmail": "support@saqibvisuals.com",
+      "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
+      "officialWebsiteLabel": "mrsaqib242.vercel.app",
+      "whatsappWidgetEnabled": true,
+      "whatsappWidgetName": "Muhammad Saqib",
+      "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
+      "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to <b>Saqib Visuals Hub</b>.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?",
+      "whatsappWidgetGreetingUr": "السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟",
+      "whatsappWidgetStatus": "Typically replies in ~2 minutes ⚡"
+    },
+    "socials": {
+      "instagramUrl": "https://instagram.com/mrsaqib242",
+      "instagramHandle": "@mrsaqib242",
+      "tiktokUrl": "https://tiktok.com/@mrsaqib242",
+      "tiktokHandle": "@mrsaqib242",
+      "facebookUrl": "https://facebook.com/mrsaqib242",
+      "facebookName": "Muhammad Saqib",
+      "snapchatUrl": "https://snapchat.com/add/mrsaqib242",
+      "snapchatHandle": "mrsaqib242",
+      "platforms": [
+        {"id":"instagram","platform":"instagram","label":"Instagram","handle":"@mrsaqib242","url":"https://instagram.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-instagram","colorGrad":"from-amber-300 via-pink-500 to-purple-600"},
+        {"id":"tiktok","platform":"tiktok","label":"TikTok","handle":"@mrsaqib242","url":"https://tiktok.com/@mrsaqib242","enabled":true,"icon":"fa-brands fa-tiktok","colorGrad":"from-slate-900 to-slate-800"},
+        {"id":"facebook","platform":"facebook","label":"Facebook","handle":"Muhammad Saqib","url":"https://facebook.com/mrsaqib242","enabled":true,"icon":"fa-brands fa-facebook-f","colorGrad":"from-blue-600 to-indigo-600"},
+        {"id":"snapchat","platform":"snapchat","label":"Snapchat","handle":"mrsaqib242","url":"https://snapchat.com/add/mrsaqib242","enabled":true,"icon":"fa-brands fa-snapchat","colorGrad":"from-amber-400 to-yellow-500"},
+        {"id":"youtube","platform":"youtube","label":"YouTube Channel","handle":"@saqibvisuals","url":"https://youtube.com/@saqibvisuals","enabled":true,"icon":"fa-brands fa-youtube","colorGrad":"from-red-500 to-rose-600"},
+        {"id":"telegram","platform":"telegram","label":"Telegram Channel","handle":"@saqibvisuals","url":"https://t.me/saqibvisuals","enabled":true,"icon":"fa-brands fa-telegram","colorGrad":"from-sky-400 to-blue-500"},
+        {"id":"whatsapp_channel","platform":"whatsapp_channel","label":"WhatsApp VIP Channel","handle":"Saqib Visuals VIP","url":"https://whatsapp.com/channel/saqibvisuals","enabled":true,"icon":"fa-brands fa-whatsapp","colorGrad":"from-emerald-500 to-teal-600"},
+        {"id":"github","platform":"github","label":"GitHub Profile","handle":"@mrsaqib242","url":"https://github.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-github","colorGrad":"from-slate-800 to-slate-950"},
+        {"id":"twitter","platform":"twitter","label":"X (Twitter)","handle":"@mrsaqib242","url":"https://x.com/mrsaqib242","enabled":false,"icon":"fa-brands fa-x-twitter","colorGrad":"from-zinc-800 to-black"},
+        {"id":"discord","platform":"discord","label":"Discord Community","handle":"Saqib Community","url":"https://discord.gg/saqibvisuals","enabled":false,"icon":"fa-brands fa-discord","colorGrad":"from-indigo-500 to-purple-600"}
+      ]
+    },
+    "footer": {
+      "brandName": "🚀 Muhammad Saqib",
+      "copyrightTagline": "24/7 Instant Delivery • 100% Full Replacement Warranty",
+      "showQuickLinks": true
+    }
+  }'::jsonb,
+  timezone('utc'::text, now())
+)
+ON CONFLICT (id) DO UPDATE SET
+  config = EXCLUDED.config,
+  updated_at = timezone('utc'::text, now());
+
+-- ---------------------------------------------------------------------
+-- 7. SEED DATA: ALL 32+ DIGITAL & PRO SERVICES
+-- ---------------------------------------------------------------------
+INSERT INTO public.services (
+  id, category, badge, title, "desc", plush, orb_grad, icon_type, custom_icon_url, direct_tool_url, input_label, placeholder, tiers, hidden, sort_order
+)
+VALUES
+('capcut-pro', 'capcut_ai', '🎬 #1 CREATOR APP', 'CapCut Pro Official (iOS / Android / PC)', 'Unlock all Pro effects, auto-captions, 4K 60fps export, AI background remover & 100GB cloud storage.', 'plush-capcut', 'from-slate-800 via-indigo-900 to-black', 'capcut', NULL, NULL, 'Enter Your WhatsApp Number or Email:', '0300-1234567 or email@gmail.com', '["CapCut Pro 1 Month (Full Warranty) — Rs. 350","CapCut Pro 1 Month Private Account — Rs. 650","CapCut Pro 6 Months Premium — Rs. 1,500","CapCut Pro 1 Year Full Warranty — Rs. 2,500"]'::jsonb, false, 1),
+('remini-ai-pro', 'capcut_ai', '📸 ULTRA HD 4K', 'Remini AI Pro (Web / Android / iOS)', 'Enhance old, blurry, pixelated photos to crystal-clear 4K Ultra HD. AI Face Restoration, Video Unblur & Unlimited Exports.', 'plush-snap', 'from-rose-500 via-red-600 to-amber-600', 'wand', NULL, NULL, 'Enter Your Email or WhatsApp Number:', '0300-1234567 or email@gmail.com', '["Remini Pro 1 Month Web/Mobile — Rs. 400","Remini Pro 3 Months Personal — Rs. 950","Remini Pro 12 Months Full Pro (Full Warranty) — Rs. 2,200"]'::jsonb, false, 2),
+('lovable-pro', 'capcut_ai', '💜 AI WEB BUILDER', 'Lovable Pro Subscription (AI App Builder)', 'Build full-stack web apps & UI with Lovable Pro AI. High message limits, private projects & custom domains.', 'plush-snap', 'from-pink-500 via-purple-600 to-indigo-700', 'lovable', NULL, NULL, 'Enter Your Email or WhatsApp Number:', 'developer@gmail.com', '["Lovable Pro 1 Month (Shared Workspace) — Rs. 1,200","Lovable Pro 1 Month (Private Account) — Rs. 3,500","Lovable Pro High-Credits Pack — Rs. 5,500"]'::jsonb, false, 3),
+('gemini-18m-pro', 'capcut_ai', '✨ 18 MONTHS PRO', 'Google Gemini 18-Month Pro + 2TB One', 'Official 18-Month Google Gemini Advanced Pro subscription on your own email with 2TB Google One Cloud.', 'plush-website', 'from-blue-500 via-indigo-500 to-purple-600', 'gemini', NULL, NULL, 'Enter Your Gmail Address for Activation:', 'yourname@gmail.com', '["Gemini Advanced Pro 18 Months (On Your Mail) — Rs. 1,800","Gemini Advanced Pro 12 Months Private — Rs. 1,350","Gemini Advanced Pro 1 Month Trial Pack — Rs. 350"]'::jsonb, false, 4),
+('muse-ai-1b', 'capcut_ai', '🧠 1 BILLION TOKENS', 'Muse AI — 1 Billion Tokens Pro Plan', 'Massive 1 Billion Tokens quota for AI generation, coding, writing, and unlimited creative workflows.', 'plush-ai', 'from-emerald-500 via-teal-600 to-cyan-700', 'wand', NULL, NULL, 'Enter Your Email or WhatsApp Number:', '0300-1234567 or email@gmail.com', '["Muse AI 1 Billion Tokens Account — Rs. 1,500","Muse AI Unlimited Creator Access (3 Months) — Rs. 2,800","Muse AI Reseller 5-Accounts Pack — Rs. 6,000"]'::jsonb, false, 5),
+('elevenlabs-300k', 'capcut_ai', '🎙️ NO EXPIRY CREDITS', 'ElevenLabs 300k Credits (No Expiry)', 'Ultra-realistic AI voice cloning & text-to-speech for YouTube automation & TikTok faceless channels.', 'plush-srv-2', 'from-amber-500 via-orange-500 to-rose-600', 'elevenlabs', NULL, NULL, 'Enter Your Email or WhatsApp Number:', 'creator@gmail.com', '["ElevenLabs 300,000 Credits (No Expiry) — Rs. 1,650","ElevenLabs Creator 100k Credits (1 Month) — Rs. 750","ElevenLabs 1 Million Credits Agency Pack — Rs. 4,500"]'::jsonb, false, 6),
+('chatgpt-plus', 'capcut_ai', '🤖 GPT-4o & o3 PRO', 'ChatGPT Plus Official Subscription', 'Full access to GPT-4o, DALL-E 3 image generation, voice mode, deep research & custom GPTs.', 'plush-ai', 'from-teal-500 via-emerald-600 to-green-700', 'openai', NULL, NULL, 'Enter Your Email or WhatsApp Number:', 'yourname@gmail.com', '["ChatGPT Plus 1 Month (Shared Pro) — Rs. 550","ChatGPT Plus 1 Month (Private Account) — Rs. 2,200","ChatGPT Plus 3 Months Private Warranty — Rs. 6,000"]'::jsonb, false, 7),
+('claude-ai-pro', 'capcut_ai', '⚡ CLAUDE 3.7 SONNET', 'Claude AI Pro Official Subscription', 'Best AI for coding, scriptwriting & long documents with 5x more usage and Claude 3.7 Sonnet.', 'plush-srv-2', 'from-orange-500 via-amber-600 to-stone-800', 'claude', NULL, NULL, 'Enter Your Email or WhatsApp Number:', 'yourname@gmail.com', '["Claude AI Pro 1 Month (Shared Workspace) — Rs. 750","Claude AI Pro 1 Month (Private Mail) — Rs. 2,500","Claude AI API Credits Pack — Rs. 3,200"]'::jsonb, false, 8),
+('canva-pro', 'capcut_ai', '🎨 DESIGN SUITE', 'Canva Pro Official (On Your Email)', 'Unlock 100M+ premium templates, Magic Studio AI, background remover & brand kits on your own email.', 'plush-srv-4', 'from-cyan-500 via-blue-500 to-purple-600', 'canva', NULL, NULL, 'Enter Your Canva Email Address:', 'design@gmail.com', '["Canva Pro 1 Year (On Your Personal Email) — Rs. 250","Canva Pro Lifetime Edu Warranty — Rs. 450","Canva Pro Admin Panel (500 Seats) — Rs. 2,500"]'::jsonb, false, 9),
+('proton-vpn-pro', 'capcut_ai', '🛡️ HIGH-SPEED VPN', 'Proton VPN Plus (10 Devices / All Countries)', 'Ultra-fast Swiss privacy VPN for UK/USA TikTok targeting, streaming & secure browsing with zero logs.', 'plush-srv-6', 'from-indigo-500 via-purple-600 to-slate-900', 'protonvpn', NULL, NULL, 'Enter Your WhatsApp Number or Email:', '0300-1234567', '["Proton VPN Plus 1 Month (1 Device) — Rs. 300","Proton VPN Plus 1 Month (Private 10 Devices) — Rs. 850","Proton VPN Plus 1 Year Full Warranty — Rs. 2,800"]'::jsonb, false, 10),
+('hostinger-12m', 'capcut_ai', '🌐 12M WEB HOSTING', 'Hostinger Unlimited Plan (12 Months FW)', 'Hostinger Business/Premium 12-Month Unlimited Hosting with Free SSL, NVMe SSD & AI Website Builder.', 'plush-snap', 'from-purple-600 via-violet-600 to-indigo-800', 'hostinger', NULL, NULL, 'Enter Your Email or Domain Name:', 'mywebsite.com or email@gmail.com', '["Hostinger Unlimited Hosting 12 Months (Full Warranty) — Rs. 3,500","Hostinger Hosting 12M + .com Domain Bundle — Rs. 5,200","Single Website Hosting Slot (1 Year) — Rs. 1,200"]'::jsonb, false, 11),
+('youtube-amazon-ott', 'capcut_ai', '🍿 4K STREAMING', 'YouTube Premium & Amazon Prime 6M', 'Ad-free YouTube Premium + YouTube Music on your email, plus Amazon Prime Video 6-Month & Netflix 4K.', 'plush-srv-1', 'from-red-500 via-rose-600 to-pink-700', 'youtube', NULL, NULL, 'Enter Your Email or WhatsApp Number:', 'yourmail@gmail.com', '["YouTube Premium 1 Month (On Your Mail) — Rs. 250","YouTube Premium 6 Months (On Your Mail) — Rs. 1,100","Amazon Prime Video 6 Months (Full Warranty) — Rs. 850","Netflix 4K UHD 1 Screen (1 Month) — Rs. 420"]'::jsonb, false, 12),
+('adobe-ms365-suite', 'capcut_ai', '💼 OFFICE & ADOBE', 'Adobe Express 12M & Microsoft 365 Pro', 'Official 12-Month Adobe Express Premium & Microsoft 365 (Word, Excel, PowerPoint + 1TB OneDrive).', 'plush-srv-4', 'from-blue-600 via-sky-600 to-indigo-700', 'adobe', NULL, NULL, 'Enter Your Email Address for Activation:', 'office@gmail.com', '["Adobe Express Premium 12 Months (On Your Mail) — Rs. 1,200","Microsoft 365 Official 1 Year + 1TB OneDrive — Rs. 950","Adobe Creative Cloud All Apps (1 Month) — Rs. 2,200"]'::jsonb, false, 13),
+('tiktok-uk-usa-acc', 'tiktok_fb', '🇬🇧🇺🇸 MONETIZATION', 'TikTok UK / USA Monetizable Account', 'Fresh UK or USA region TikTok account with Creator Rewards Program & TikTok Shop eligibility without VPN.', 'plush-tiktok', 'from-slate-900 via-rose-600 to-pink-500', 'tiktok', NULL, NULL, 'Enter Your Email or Preferred @Username:', 'yourname@gmail.com', '["Fresh TikTok UK / USA Account (On Your Email) — Rs. 600","TikTok UK Account + 1,000 Followers (Live Ready) — Rs. 1,450","Monetized TikTok UK Account (10K Followers + 100K Views) — Rs. 5,500"]'::jsonb, false, 14),
+('tiktok-ad-agency', 'tiktok_fb', '📈 AD AGENCY VIP', 'TikTok Ad Agency Account (No Tax / Global)', 'Verified TikTok Business Ad Agency Account with worldwide targeting, instant ad approval & low CPM.', 'plush-srv-1', 'from-rose-600 via-pink-600 to-purple-700', 'bullhorn', NULL, NULL, 'Enter Your Business Name or WhatsApp Number:', 'My Store / 0300-1234567', '["TikTok Ad Agency Account (Self Top-Up) — Rs. 2,500","TikTok Ad Agency Account + $20 Ad Balance — Rs. 8,500","Complete TikTok Shop / E-Commerce Ad Setup — Rs. 4,000"]'::jsonb, false, 15),
+('facebook-ads-service', 'tiktok_fb', '🚀 META ADS PRO', 'Facebook & Instagram Ads Agency Service', 'Run high-converting Facebook & Instagram sponsored ads for your business, page, or WhatsApp sales.', 'plush-fb', 'from-blue-600 via-indigo-600 to-sky-500', 'meta', NULL, NULL, 'Paste Your FB Page Link or WhatsApp Number:', 'https://facebook.com/yourpage', '["2-Day Trial Ad Campaign (With Budget) — Rs. 1,500","7-Day Sponsored WhatsApp / Leads Campaign — Rs. 5,000","Verified Meta Business Manager / Ad Account — Rs. 3,200"]'::jsonb, false, 16),
+('tt-likes-views-followers', 'tiktok_fb', '🔥 VIRAL BOOST', 'TikTok Real Followers, Likes & ForYou Views', 'Instant non-drop TikTok followers to unlock Live Studio, plus viral likes & millions of video views.', 'plush-tiktok', 'from-rose-500 via-pink-500 to-purple-600', 'tiktok', NULL, NULL, 'Paste TikTok Video Link or @Username:', 'https://www.tiktok.com/@username/video/...', '["1,000 TikTok Likes + 10K Free Views — Rs. 150","1,000 TikTok Permanent Followers (Unlock Live) — Rs. 350","10,000 TikTok Followers (Monetization Pack) — Rs. 2,800","100,000 (1 Lakh) TikTok Viral Video Views — Rs. 450"]'::jsonb, false, 17),
+('fb-monetization-boost', 'tiktok_fb', '👍 FB MONETIZATION', 'Facebook Page Likes, Followers & WatchTime', 'Grow your Facebook page with organic-style followers, post reactions ❤️, and 60K watch time.', 'plush-fb', 'from-blue-500 to-indigo-700', 'thumbs-up', NULL, NULL, 'Paste Facebook Page or Post Link:', 'https://facebook.com/yourpage', '["1,000 FB Page Likes + Followers — Rs. 300","5,000 FB Followers + 60K Watch Time Complete — Rs. 2,800","1,000 FB Post Likes / Love ❤️ Reactions — Rs. 180"]'::jsonb, false, 18),
+('ig-yt-social-all', 'tiktok_fb', '📢 ALL SMM SERVICES', 'Instagram, YouTube & Poll Votes Boost', 'All social media services: IG followers/reels, YouTube 1K subs + 4K watch hours, & contest votes.', 'plush-ig', 'from-amber-400 via-pink-500 to-purple-600', 'instagram', NULL, NULL, 'Paste Profile / Channel / Contest Link:', 'https://instagram.com/... or youtube.com/...', '["1,000 Instagram Non-Drop Followers — Rs. 320","1,000 YouTube Subscribers (Non-Drop) — Rs. 1,200","YouTube 4,000 Hours Watch Time Complete — Rs. 3,500","1,000 Contest / Poll Votes (Any Platform) — Rs. 450"]'::jsonb, false, 19),
+('sim-owner-details', 'franchise_sim', '📶 2026 FRESH SIM', 'Fresh SIM Owner Details & All Numbers on CNIC', 'Instant franchise lookup for latest 2026 SIM owner name, CNIC, exact address & all active SIMs list.', 'plush-srv-3', 'from-emerald-500 to-green-700', 'sim', NULL, NULL, 'Enter Target Mobile Number or 13-Digit CNIC:', '03001234567 or 3520212345671', '["Single Fresh SIM Owner + Address Details — Rs. 250","All Active Numbers on CNIC List (Fresh 2026) — Rs. 350","PTCL Landline Number Owner & Address Details — Rs. 400"]'::jsonb, false, 20),
+('cdr-call-history', 'franchise_sim', '📊 CALL HISTORY CDR', 'Call History Details (CDR) & SMS Record', 'Complete incoming/outgoing call history (CDR), tower locations, and top-contacted numbers report.', 'plush-sim-search', 'from-pink-500 via-rose-500 to-purple-700', 'satellite', NULL, NULL, 'Enter Target Mobile Number (Jazz/Zong/Telenor/Ufone):', '03XX-XXXXXXX', '["Last 1 Month Call History (CDR PDF) — Rs. 2,200","Last 3 Months Complete CDR + Tower Logs — Rs. 3,500","Last 6 Months Full Franchise CDR Report — Rs. 5,000"]'::jsonb, false, 21),
+('live-location-imei', 'franchise_sim', '📍 LIVE PINPOINT', 'Live Location Tracking & Mobile IMEI Trace', 'Real-time active SIM tower pinpoint location on Google Maps and stolen mobile IMEI number tracking.', 'plush-srv-1', 'from-rose-500 via-red-500 to-amber-600', 'satellite', NULL, NULL, 'Enter Mobile Number or 15-Digit IMEI Number:', '03001234567 or 358901234567890', '["Current Live Location Pinpoint (Google Maps) — Rs. 1,500","Mobile IMEI Tracking (Find Active SIM in Phone) — Rs. 2,000","Live Location + 30-Day Movement History — Rs. 3,200"]'::jsonb, false, 22),
+('easypaisa-jazzcash-help', 'franchise_sim', '💸 WALLET SERVICES', 'EasyPaisa & JazzCash Account / Limit Setup', 'Assistance with new EasyPaisa / JazzCash account opening, biometric verification & limit upgrades.', 'plush-whatsapp', 'from-emerald-500 via-teal-500 to-cyan-600', 'phone', NULL, NULL, 'Enter Your Mobile Number for Wallet Setup:', '0347-8936242', '["Open New EasyPaisa Account Setup — Rs. 600","Open New JazzCash Account Setup — Rs. 600","Merchant / Level-2 Limit Upgrade Guidance — Rs. 1,200"]'::jsonb, false, 23),
+('nadra-cnic-frc', 'nadra_records', '🪪 NADRA RECORDS', 'CNIC Copy, Family Tree (FRC) & Pic Details', 'Check NADRA CNIC front/back record, Family Registration Certificate (FRC) tree, and family members list.', 'plush-srv-4', 'from-blue-600 via-indigo-600 to-slate-800', 'id-card', NULL, NULL, 'Enter 13-Digit CNIC Number:', '35202-1234567-1', '["CNIC Record Verification & Details — Rs. 500","CNIC Color Copy / Verification Print — Rs. 800","Family Members Details (Full Family Tree) — Rs. 1,200","Family Members Pic (FRC Record) — Rs. 1,800"]'::jsonb, false, 24),
+('certificates-nadra', 'nadra_records', '📄 CERTIFICATES', 'Marriage, Birth & Vaccination Certificates', 'Record check and documentation assistance for Marriage, Birth, Divorce, Polio & Corona vaccination.', 'plush-srv-3', 'from-teal-500 to-emerald-700', 'id-card', NULL, NULL, 'Enter CNIC Number or Applicant Name:', '35202-1234567-1', '["Marriage Status Check on CNIC — Rs. 600","Birth / Marriage / Death Certificate Record Check — Rs. 1,200","Polio / Corona Vaccination Record Check — Rs. 800"]'::jsonb, false, 25),
+('passport-travel-history', 'nadra_records', '🛂 PASSPORT & TRAVEL', 'Passport Details, Copy & Travel History', 'Check passport number, expiry details, international travel history (FIA entry/exit) & status.', 'plush-website', 'from-sky-600 via-blue-700 to-indigo-900', 'passport', NULL, NULL, 'Enter CNIC Number or Passport Number:', '35202-1234567-1 or AB1234567', '["Passport Details Check via CNIC — Rs. 1,200","Passport Page Copy Record — Rs. 2,000","International Travel History Details — Rs. 3,000","ECL / Travel Status Check — Rs. 2,500"]'::jsonb, false, 26),
+('vehicle-land-fir-check', 'nadra_records', '🚗 VEHICLE & RECORDS', 'Car Owner, Land Records & FIR Details Check', 'Excise vehicle ownership verification (Punjab/Sindh/KPK/ISB), land record lookup & FIR copy check.', 'plush-srv-6', 'from-slate-700 via-indigo-700 to-blue-900', 'car', NULL, NULL, 'Enter Vehicle Plate Number or CNIC Number:', 'LEA-2024 or 35202-1234567-1', '["Car / Bike Owner & Excise Details — Rs. 450","FIR Details / Copy Record Check — Rs. 1,200","Land Record / Property Ownership Check — Rs. 1,500"]'::jsonb, false, 27),
+('btc-usdt-crypto', 'creative_crypto', '💲 CRYPTO P2P DESK', 'BTC / USDT Available (Buy & Sell Instant)', 'Buy or sell USDT (TRC20/BEP20/Binance) and BTC safely via EasyPaisa, JazzCash, SadaPay or Bank Transfer.', 'plush-ig', 'from-amber-500 via-yellow-500 to-orange-600', 'binance', NULL, NULL, 'Enter USDT/BTC Amount You Want to Buy or Sell:', 'e.g. Buy 50 USDT via EasyPaisa', '["Buy 10 USDT – 50 USDT (Instant Binance Transfer) — Market Rate","Buy 50 USDT – 500 USDT (Wholesale VIP Rate) — Market Rate","Sell Your USDT / BTC for EasyPaisa / JazzCash — Instant Cash"]'::jsonb, false, 28),
+('video-editing-service', 'creative_crypto', '🎬 SAQIB VISUALS EDIT', 'Pro Video Editing Service (Reels, TikTok, YT)', 'High-retention video editing with 3D captions, colour grading, sound FX & viral transitions.', 'plush-srv-5', 'from-purple-600 via-pink-500 to-rose-500', 'video', NULL, NULL, 'Describe Your Video Project or Paste Sample Link:', 'TikTok Reel / YouTube Documentary...', '["1 Viral TikTok / Instagram Reel Edit (Up to 60s) — Rs. 600","5 Viral Reels / Shorts Bundle Pack — Rs. 2,500","Full YouTube Video Edit (8–12 Mins Faceless/Vlog) — Rs. 2,200"]'::jsonb, false, 29),
+('graphics-design-docs', 'creative_crypto', '🎨 GRAPHICS & DOCS', 'Graphics Designing & Document Editing', 'Custom logos, social media posts, certificates, business cards, banners, thumbnails & PDF document edits.', 'plush-srv-2', 'from-pink-500 via-fuchsia-500 to-indigo-600', 'palette', NULL, NULL, 'Describe What You Need Designed or Edited:', 'Logo Design / Certificate / PDF Edit...', '["Custom Logo or 3 Social Media Posts — Rs. 800","Document / Certificate / PDF Clean Editing — Rs. 500","Complete Brand Identity + Banner Pack — Rs. 2,200"]'::jsonb, false, 30),
+('virtual-whatsapp-num', 'creative_crypto', '⚡ VIRTUAL NUMBER', 'International WhatsApp Virtual Number (UK/US)', 'Get a clean UK (+44), USA (+1), or Canada virtual number for WhatsApp Business & account verification.', 'plush-whatsapp', 'from-green-500 to-emerald-700', 'whatsapp', NULL, NULL, 'Enter Your Contact Number to Receive OTP:', '0300-1234567', '["USA / Canada (+1) WhatsApp Number — Rs. 450","UK (+44) Permanent WhatsApp Number — Rs. 750","Private Calling / Virtual Number App Setup — Rs. 1,200"]'::jsonb, false, 31),
+('custom-web-smm-panel', 'creative_crypto', '💎 FULL-STACK DEV', 'Custom 3D Glass Website & SMM Panel Setup', 'Get your own 3D Acrylic Glass website, SIM Tracker portal, or automated SMM store built by Muhammad Saqib.', 'plush-srv-5', 'from-indigo-600 via-purple-600 to-pink-600', 'code', NULL, NULL, 'Enter Your Brand Name & WhatsApp Number:', 'My Brand / 0300-1234567', '["3D Glass Portfolio + SIM Tracker Website — Rs. 2,500","Full Services Store Website (Like Saqib Visuals) — Rs. 3,800","Automated SMM Reseller Panel + Backend Setup — Rs. 8,500"]'::jsonb, false, 32)
+ON CONFLICT (id) DO UPDATE SET
+  badge = EXCLUDED.badge,
+  title = EXCLUDED.title,
+  "desc" = EXCLUDED."desc",
+  tiers = EXCLUDED.tiers,
+  sort_order = EXCLUDED.sort_order;
+
+-- ---------------------------------------------------------------------
+-- 8. SEED DATA: 7 LIVE WEB TOOLS
+-- ---------------------------------------------------------------------
+INSERT INTO public.web_tools (
+  id, title, "desc", tool_url, icon_url, badge, icon_type, orb_grad, plush, hidden, sort_order
+)
+VALUES
+('tool-chatgpt-web', 'ChatGPT Plus & o3 AI Workspace', 'Launch OpenAI ChatGPT web studio for coding, viral scripts, DALL·E 3 images & deep research.', 'https://chatgpt.com/', NULL, '🤖 AI WORKSPACE', 'openai', 'from-emerald-500 via-teal-600 to-green-700', 'plush-ai', false, 1),
+('tool-canva-studio', 'Canva Pro Visual & Thumbnail Studio', 'Create viral YouTube thumbnails, social media posts, logos, presentations & brand kits.', 'https://www.canva.com/', NULL, '🎨 DESIGN STUDIO', 'canva', 'from-pink-500 via-rose-500 to-purple-600', 'plush-srv-2', false, 2),
+('tool-gemini-studio', 'Google Gemini Pro & Veo AI Studio', 'Access Google Gemini Advanced 2.5 Pro workspace & AI Studio for prompts, docs & video.', 'https://gemini.google.com/', NULL, '✨ GOOGLE AI', 'gemini', 'from-blue-500 via-indigo-500 to-purple-600', 'plush-website', false, 3),
+('tool-capcut-cloud', 'CapCut Pro Web Editor & Templates', 'Open CapCut online video editor, viral TikTok templates, auto-captions & 4K export studio.', 'https://www.capcut.com/', NULL, '🎬 CREATOR TOOL', 'capcut', 'from-slate-900 via-indigo-900 to-purple-700', 'plush-capcut', false, 4),
+('tool-lovable-builder', 'Lovable AI Full-Stack App Builder', 'Build & deploy full-stack React, Supabase & Tailwind web apps from a single prompt.', 'https://lovable.dev/', NULL, '💻 AI DEV TOOL', 'lovable', 'from-pink-500 via-fuchsia-600 to-indigo-600', 'plush-snap', false, 5),
+('tool-elevenlabs-voice', 'ElevenLabs AI Voice & Dubbing Studio', 'Generate ultra-realistic Urdu, Hindi & English AI voiceovers for TikTok & YouTube Automation.', 'https://elevenlabs.io/', NULL, '🎙️ VOICE AI TOOL', 'elevenlabs', 'from-amber-500 via-orange-500 to-pink-600', 'plush-ig', false, 6),
+('tool-remini-web', 'Remini AI Ultra 4K Photo Enhancer', 'AI Photo enhancer, unblur faces and 4K upscale directly in web browser.', 'https://remini.ai', NULL, '⚡ ULTRA HD 4K', 'wand', 'from-rose-500 via-red-600 to-amber-600', 'plush-snap', false, 7)
+ON CONFLICT (id) DO UPDATE SET
+  title = EXCLUDED.title,
+  "desc" = EXCLUDED."desc",
+  tool_url = EXCLUDED.tool_url,
+  badge = EXCLUDED.badge;
+
+-- ---------------------------------------------------------------------
+-- 9. SEED DATA: ADMIN & VIP PROFILES
+-- ---------------------------------------------------------------------
+INSERT INTO public.profiles (id, full_name, email, phone, role, balance)
+VALUES 
+  ('+92 347 8936242', 'Muhammad Saqib (Official Admin)', 'support@saqibvisuals.com', '+92 347 8936242', 'admin', 50000),
+  ('03478936242', 'Muhammad Saqib', 'admin@saqibvisuals.com', '03478936242', 'admin', 50000),
+  ('vip_member', 'VIP Reseller Partner', 'reseller@saqibvisuals.com', '03120000000', 'reseller', 5000)
+ON CONFLICT (id) DO NOTHING;
+
+-- ---------------------------------------------------------------------
+-- 10. SEED DATA: VERIFIED CUSTOMER REVIEWS
+-- ---------------------------------------------------------------------
+INSERT INTO public.reviews (id, name, service, rating, comment, verified)
+VALUES
+  ('rev-1', 'Hamza Ali — Lahore', 'Google Gemini 18M & CapCut Pro', 5, 'Maine Saqib bhai se Google Gemini 18-Month Pro aur CapCut Pro liya. Sirf 5 minute mein mere apne Gmail par 2TB storage ke sath activate ho gaya. 100% trusted!', true),
+  ('rev-2', 'Zainab Khan — Islamabad', 'TikTok UK & ElevenLabs 300k', 5, 'Bought TikTok UK Account + 10K Followers and ElevenLabs 300k Credits for my faceless automation channel. Best wholesale rates in Pakistan!', true),
+  ('rev-3', 'Usman Tariq — Karachi', 'Fresh SIM CDR & ChatGPT Plus', 5, 'Urgent Fresh 2026 SIM Owner & CDR report chahiye thi aur sath ChatGPT Plus. EasyPaisa bhejte hi 10 mins mein WhatsApp par PDF report mil gayi. Highly recommended!', true),
+  ('rev-4', 'Bilal Ahmad — Rawalpindi', 'Remini AI Pro & Lovable Pro', 5, 'Remini Pro 1-year activation and Lovable AI builder subscription instant receive hui. Full replacement warranty support best hai!', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- ---------------------------------------------------------------------
+-- 11. SEED DATA: ADMIN SECURITY VAULT
+-- (Pass: saqibadmin / deleefue - PBKDF2 SHA-512)
+-- ---------------------------------------------------------------------
+INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm)
+VALUES 
+(
+  'saqib',
+  'f195d908c20941fc855a591ebb1f51c35bfc901443149fe091cb7201c924dbf7c7e88e68c629b5dddc612e843e10a4d6dec320e0961c849699604be04c2074b7',
+  'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2',
+  100000,
+  'sha512'
+),
+(
+  'saqibadmin',
+  '3642eaba715b6694284a57ad3cb1821772189998788f4691da77a4893a90a584c4f5c54922f66b8362e14590b9e1b24a61003185c23a3dd2c1bf22f800696e52',
+  '7d9d759b0d4f90db22f8e1431fd6a2f8108bee697ad551a386964df3e2ce789c',
+  100000,
+  'sha512'
+)
+ON CONFLICT (username) DO UPDATE SET
+  password_hash = EXCLUDED.password_hash,
+  salt = EXCLUDED.salt,
+  iterations = EXCLUDED.iterations,
+  algorithm = EXCLUDED.algorithm,
+  updated_at = timezone('utc'::text, now());
+
+-- =====================================================================
+-- 🛠️ USEFUL ADMIN MAINTENANCE CHEAT-SHEET QUERIES
+-- =====================================================================
+
+-- [A] WhatsApp DP, Name, Status & Greetings Update Query:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   jsonb_set(
+--     jsonb_set(
+--       config,
+--       '{contact,whatsappWidgetAvatar}',
+--       '"https://your-domain.com/new-dp.jpg"'
+--     ),
+--     '{contact,whatsappWidgetName}',
+--     '"Muhammad Saqib"'
+--   ),
+--   '{contact,whatsappWidgetStatus}',
+--   '"Online • Typically replies in ~2 mins ⚡"'
+-- )
+-- WHERE id = 'default';
+
+-- [B] Social Platform Toggle Query (e.g. Turn YouTube or Telegram ON/OFF):
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   config,
+--   '{socials,platforms}',
+--   (
+--     SELECT jsonb_agg(
+--       CASE 
+--         WHEN elem->>'id' = 'youtube' THEN jsonb_set(elem, '{enabled}', 'true')
+--         ELSE elem
+--       END
+--     )
+--     FROM jsonb_array_elements(config->'socials'->'platforms') AS elem
+--   )
+-- )
+-- WHERE id = 'default';
+
+-- [C] Approve Payment Proof & Credit User Wallet Query:
+-- UPDATE public.payment_proofs SET status = 'approved', reviewed_at = now() WHERE id = 'YOUR_PROOF_ID';
+-- UPDATE public.profiles SET balance = balance + 1000 WHERE id = 'USER_PHONE_OR_ID';
+
+-- =====================================================================
+-- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
+-- =====================================================================
