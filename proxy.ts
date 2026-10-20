@@ -186,40 +186,38 @@ export function proxy(request: NextRequest) {
       );
     }
 
-    // 3b. Anti-CSRF / Anti-XSRF for mutation methods
-    const method = request.method.toUpperCase();
-    if (['POST', 'PUT', 'DELETE', 'PATCH'].includes(method)) {
-      const origin = request.headers.get('origin');
-      const host = request.headers.get('host');
+    // 3b. Strict Anti-Clone & Anti-CSRF Origin Guard
+    const origin = request.headers.get('origin');
+    const host = request.headers.get('host');
 
-      if (origin && host) {
-        try {
-          const originHost = new URL(origin).host.toLowerCase();
-          const cleanHost = host.toLowerCase();
+    if (origin && host) {
+      try {
+        const originHost = new URL(origin).host.toLowerCase();
+        const cleanHost = host.toLowerCase();
 
-          // Reject if origin host does not match host header (excluding local dev)
-          if (
-            originHost !== cleanHost &&
-            !originHost.includes('localhost') &&
-            !originHost.includes('127.0.0.1')
-          ) {
-            return new NextResponse(
-              JSON.stringify({ error: 'Forbidden: Cross-Site Request Origin Rejected.' }),
-              {
-                status: 403,
-                headers: { 'Content-Type': 'application/json' },
-              }
-            );
-          }
-        } catch {
+        // Reject if request origin does not match legitimate host (preventing unauthorized clone sites)
+        if (
+          originHost !== cleanHost &&
+          !originHost.includes('localhost') &&
+          !originHost.includes('127.0.0.1') &&
+          !originHost.endsWith('vercel.app')
+        ) {
           return new NextResponse(
-            JSON.stringify({ error: 'Forbidden: Malformed Origin Header.' }),
+            JSON.stringify({ error: 'Forbidden: Unauthorized Cloned Origin Rejected by Saqib Visuals DRM.' }),
             {
               status: 403,
               headers: { 'Content-Type': 'application/json' },
             }
           );
         }
+      } catch {
+        return new NextResponse(
+          JSON.stringify({ error: 'Forbidden: Malformed Origin Header.' }),
+          {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
       }
     }
   }

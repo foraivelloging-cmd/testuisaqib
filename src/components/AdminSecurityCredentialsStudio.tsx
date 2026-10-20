@@ -23,6 +23,7 @@ import { SiteSettingsConfig } from './AdminStepByStepSettingsHub';
 
 interface Props {
   siteConfig: SiteSettingsConfig;
+  onUpdateSiteConfig?: React.Dispatch<React.SetStateAction<SiteSettingsConfig>>;
   playPopSound: (freq?: number) => void;
   showToast: (msg: string) => void;
   copyText: (text: string, msg?: string) => void;
@@ -37,8 +38,10 @@ export const AdminSecurityCredentialsStudio: React.FC<Props> = ({
   copyText,
   onReturnHome,
   onNavigateToScreen,
+  onUpdateSiteConfig,
 }) => {
-  const [activeTab, setActiveTab] = useState<'credentials' | 'website_identity' | 'sql_queries'>('credentials');
+  const [newDomainInput, setNewDomainInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'credentials' | 'website_identity' | 'domains' | 'sql_queries'>('credentials');
 
   // Form states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -235,6 +238,22 @@ WHERE username = 'saqib';`;
         >
           <FaGlobe />
           <span>Website Name & Brand Identity</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('domains');
+            playPopSound(450);
+          }}
+          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer ${
+            activeTab === 'domains'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 scale-102 font-black'
+              : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+          }`}
+        >
+          <FaShieldHalved />
+          <span>Anti-Clone Whitelist Domains</span>
         </button>
 
         <button
@@ -503,6 +522,117 @@ WHERE username = 'saqib';`;
                   <FaArrowRight className="text-[10px]" />
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 2.5: ANTI-CLONE DOMAIN WHITELIST */}
+      {activeTab === 'domains' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
+            <div className="flex items-center gap-2 mb-2">
+              <FaShieldHalved className="text-amber-400 text-lg" />
+              <h3 className="text-base font-black text-white">Anti-Clone & Domain-Locking Killswitch</h3>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+              Yeh system ensure karta hai ke agar koi hacker ya competitor aapki website ka code ya rendered pages chura bhi le, to wo isay kisi doosre domain ya hosting par run na kar sake.
+              Sirf neechay diye gaye <b>Authorized Domains</b> par website chalegi, baqi har domain par Killswitch trigger ho kar code ko self-destruct kar dega!
+            </p>
+
+            {/* Base Protected Domains */}
+            <div className="mb-6">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                🔒 Permanent Core Whitelist (Built-in)
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+                  <FaCircleCheck className="text-[10px]" />
+                  <span>localhost (Development)</span>
+                </span>
+                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+                  <FaCircleCheck className="text-[10px]" />
+                  <span>127.0.0.1 (Loopback)</span>
+                </span>
+                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
+                  <FaCircleCheck className="text-[10px]" />
+                  <span>mrsaqib242.vercel.app (Official Verified Hub)</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Custom Whitelisted Domains */}
+            <div className="mb-6 pt-4 border-t border-white/10">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                🌐 Custom Authorized Domains
+              </h4>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {(siteConfig.authorizedDomains || ['mrsaqib242.vercel.app']).map((dom) => (
+                  <span
+                    key={dom}
+                    className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-sky-500/10 text-sky-300 border border-sky-500/30 flex items-center gap-2"
+                  >
+                    <span>{dom}</span>
+                    {dom !== 'localhost' && dom !== '127.0.0.1' && dom !== 'mrsaqib242.vercel.app' && onUpdateSiteConfig && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            authorizedDomains: (prev.authorizedDomains || []).filter((d) => d !== dom),
+                          }));
+                          showToast(`Removed ${dom} from whitelist`);
+                          playPopSound(200);
+                        }}
+                        className="text-rose-400 hover:text-rose-300 ml-1"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </span>
+                ))}
+              </div>
+
+              {/* Add Custom Domain Form */}
+              {onUpdateSiteConfig && (
+                <div className="flex flex-wrap gap-2 max-w-md">
+                  <input
+                    type="text"
+                    value={newDomainInput}
+                    onChange={(e) => setNewDomainInput(e.target.value.toLowerCase().trim())}
+                    placeholder="e.g. saqibvisuals.com"
+                    className="flex-1 bg-slate-950/80 border border-white/15 focus:border-amber-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!newDomainInput || newDomainInput.length < 3) return;
+                      const cleanDom = newDomainInput.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
+                      onUpdateSiteConfig((prev) => ({
+                        ...prev,
+                        authorizedDomains: Array.from(new Set([...(prev.authorizedDomains || []), cleanDom])),
+                      }));
+                      showToast(`✅ Whitelisted new domain: ${cleanDom}`);
+                      playPopSound(600);
+                      setNewDomainInput('');
+                    }}
+                    className="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer"
+                  >
+                    + Add Domain
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* What happens on unauthorized domain */}
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 space-y-1">
+              <div className="font-bold flex items-center gap-1.5">
+                <FaCircleExclamation />
+                <span>Unauthorized Mirror Par Kiya Hoga?</span>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Agar koi shakhs yeh code kisi doosri hosting ya domain par upload karega to script foran screen lock kar ke <b>"🛑 UNLICENSED CLONE DETECTED"</b> ka banner show karegi, tamam buttons tod degi, aur 3 second baad viewer ko direct aapki official website par redirect kar degi!
+              </p>
             </div>
           </div>
         </div>

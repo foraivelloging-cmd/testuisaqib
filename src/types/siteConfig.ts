@@ -423,6 +423,7 @@ export interface SiteSettingsConfig {
   categories: StoreCategoryMeta[];
   visibility?: SiteVisibilityConfig;
   seo?: SiteSeoConfig;
+  authorizedDomains?: string[];
 }
 
 export const SITE_CONFIG_STORAGE_KEY = 'saqib_visuals_site_config_v1';
@@ -545,5 +546,8 @@ export function deepMergeSiteConfig(raw: unknown): SiteSettingsConfig {
       ...DEFAULT_SITE_CONFIG.seo,
       ...(obj.seo || {}),
     },
+    authorizedDomains: Array.isArray(obj.authorizedDomains) && obj.authorizedDomains.length > 0
+      ? obj.authorizedDomains
+      : ['localhost', '127.0.0.1', 'mrsaqib242.vercel.app'],
   };
 }

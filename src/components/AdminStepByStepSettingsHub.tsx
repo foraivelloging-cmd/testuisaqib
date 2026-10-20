@@ -241,7 +241,8 @@ export type AdminSettingsScreenId =
   | 'payments'
   | 'contact_footer'
   | 'ui'
-  | 'seo';
+  | 'seo'
+  | 'security';
 
 interface PlushOption {
   value: string;
@@ -1544,6 +1545,11 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 id: 'seo' as const,
                 label: '🌐 SEO & Meta Tags',
                 badge: 'Google'
+              },
+              {
+                id: 'security' as const,
+                label: '🔐 Admin & Anti-Clone',
+                badge: 'Killswitch'
               }
             ].map((item) => {
               const isAct = activeScreen === item.id;
@@ -9504,6 +9510,19 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           showToast={showToast}
           copyText={copyText}
           onReturnHome={() => openSettingsScreen('home')}
+        />
+      )}
+
+      {/* ==================== SCREEN 10: ADMIN SECURITY & ANTI-CLONE KILLSWITCH ==================== */}
+      {activeScreen === 'security' && (
+        <AdminSecurityCredentialsStudio
+          siteConfig={siteConfig}
+          onUpdateSiteConfig={onUpdateSiteConfig}
+          playPopSound={playPopSound}
+          showToast={showToast}
+          copyText={copyText}
+          onReturnHome={() => openSettingsScreen('home')}
+          onNavigateToScreen={(scr) => openSettingsScreen(scr)}
         />
       )}
     </div>
