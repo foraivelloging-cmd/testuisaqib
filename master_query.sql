@@ -656,6 +656,11 @@ VALUES (
       "accountTitle": "Saqib Visuals Official",
       "accountNumber": "WhatsApp +92 347 8936242 (Ask UID)"
     }
+  ],
+  "authorizedDomains": [
+    "localhost",
+    "127.0.0.1",
+    "mrsaqib242.vercel.app"
   ]
 }'::jsonb,
   timezone('utc'::text, now())
