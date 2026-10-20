@@ -133,11 +133,42 @@ export async function DELETE() {
 
 export async function PATCH(req: Request) {
   try {
+    const clientIp =
+      req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+      req.headers.get('x-real-ip') ||
+      '127.0.0.1';
+
     const auth = verifyAdminRequest(req);
     if (!auth.authorized) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized: Admin privileges required to update credentials.' },
         { status: 401 }
+      );
+    }
+
+    const currentAdminUser = auth.payload?.username || 'admin';
+    const patchLockoutKey = `admin_pwd_change_lock:${clientIp}:${currentAdminUser.toLowerCase()}`;
+    const ipLockoutKey = `admin_pwd_ip_lock:${clientIp}`;
+
+    // 1. Check if Account or IP is currently locked out from password changes
+    const accountLock = checkAdminLockout(patchLockoutKey);
+    const ipLock = checkAdminLockout(ipLockoutKey);
+    const activeLock = accountLock.locked ? accountLock : ipLock.locked ? ipLock : null;
+
+    if (activeLock && activeLock.locked) {
+      return NextResponse.json(
+        {
+          success: false,
+          locked: true,
+          remainingSeconds: activeLock.remainingSeconds,
+          error: `Security Lockout Active: Too many failed password update attempts (3). Password updates locked for ${Math.ceil(
+            activeLock.remainingSeconds / 60
+          )} minute(s). Try again in ${activeLock.remainingSeconds}s.`,
+        },
+        {
+          status: 429,
+          headers: { 'Retry-After': String(activeLock.remainingSeconds) },
+        }
       );
     }
 
@@ -151,9 +182,46 @@ export async function PATCH(req: Request) {
       auth.payload?.username
     );
 
+    // 2. On Failure: Check if wrong current password and record failed attempts
     if (!result.success) {
+      if (result.error?.toLowerCase().includes('current password')) {
+        const state = recordFailedAttempt(patchLockoutKey);
+        recordFailedAttempt(ipLockoutKey);
+
+        if (state.locked) {
+          return NextResponse.json(
+            {
+              success: false,
+              locked: true,
+              remainingSeconds: state.remainingSeconds,
+              error: `Security Lockout Activated: 3 consecutive failed password change attempts. Password updating locked for 15 minutes.`,
+            },
+            {
+              status: 429,
+              headers: { 'Retry-After': String(state.remainingSeconds) },
+            }
+          );
+        }
+
+        return NextResponse.json(
+          {
+            success: false,
+            locked: false,
+            attemptsLeft: state.attemptsLeft,
+            error: `${result.error} (${state.attemptsLeft} attempt${
+              state.attemptsLeft === 1 ? '' : 's'
+            } remaining before 15-minute lockout)`,
+          },
+          { status: 400 }
+        );
+      }
+
       return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
+
+    // 3. On Success: Reset all failed password attempt records
+    resetFailedAttempts(patchLockoutKey);
+    resetFailedAttempts(ipLockoutKey);
 
     const response = NextResponse.json({
       success: true,
