@@ -207,20 +207,20 @@ WHERE username = 'saqib';`;
       </div>
 
       {/* Navigation Sub-Tabs */}
-      <div className="flex flex-wrap gap-2 border-b border-white/10 pb-3">
+      <div className="bg-slate-900/90 border border-white/15 rounded-2xl p-2 sm:p-2.5 backdrop-blur-2xl shadow-xl flex flex-wrap gap-2 sm:gap-2.5">
         <button
           type="button"
           onClick={() => {
             setActiveTab('credentials');
             playPopSound(450);
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'credentials'
-              ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/30 scale-102'
-              : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+              ? 'bg-rose-500 text-white shadow-lg shadow-rose-500/40 ring-1 ring-white/30 scale-[1.02]'
+              : 'bg-slate-800/95 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 hover:border-white/25 shadow-sm'
           }`}
         >
-          <FaKey />
+          <FaKey className={activeTab === 'credentials' ? 'text-white' : 'text-rose-400'} />
           <span>Change Password & Username</span>
         </button>
 
@@ -230,13 +230,13 @@ WHERE username = 'saqib';`;
             setActiveTab('website_identity');
             playPopSound(450);
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'website_identity'
-              ? 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/30 scale-102 font-black'
-              : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+              ? 'bg-sky-500 text-slate-950 shadow-lg shadow-sky-500/40 ring-1 ring-white/30 scale-[1.02]'
+              : 'bg-slate-800/95 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 hover:border-white/25 shadow-sm'
           }`}
         >
-          <FaGlobe />
+          <FaGlobe className={activeTab === 'website_identity' ? 'text-slate-950' : 'text-sky-400'} />
           <span>Website Name & Brand Identity</span>
         </button>
 
@@ -246,13 +246,13 @@ WHERE username = 'saqib';`;
             setActiveTab('domains');
             playPopSound(450);
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'domains'
-              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/30 scale-102 font-black'
-              : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+              ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/40 ring-1 ring-white/30 scale-[1.02]'
+              : 'bg-slate-800/95 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 hover:border-white/25 shadow-sm'
           }`}
         >
-          <FaShieldHalved />
+          <FaShieldHalved className={activeTab === 'domains' ? 'text-slate-950' : 'text-amber-400'} />
           <span>Anti-Clone Whitelist Domains</span>
         </button>
 
@@ -262,26 +262,28 @@ WHERE username = 'saqib';`;
             setActiveTab('sql_queries');
             playPopSound(450);
           }}
-          className={`px-4 py-2 rounded-xl text-xs font-extrabold transition flex items-center gap-2 cursor-pointer ${
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
             activeTab === 'sql_queries'
-              ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30 scale-102 font-black'
-              : 'bg-white/5 hover:bg-white/10 text-slate-300 border border-white/10'
+              ? 'bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/40 ring-1 ring-white/30 scale-[1.02]'
+              : 'bg-slate-800/95 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 hover:border-white/25 shadow-sm'
           }`}
         >
-          <FaDatabase />
+          <FaDatabase className={activeTab === 'sql_queries' ? 'text-slate-950' : 'text-emerald-400'} />
           <span>Master SQL Cheat-Sheet</span>
         </button>
       </div>
 
       {/* TAB 1: CHANGE CREDENTIALS */}
       {activeTab === 'credentials' && (
-        <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-5 sm:p-7 backdrop-blur-xl">
-          <div className="flex items-center gap-2 mb-4">
-            <FaUserShield className="text-rose-400 text-lg" />
-            <h3 className="text-base font-black text-white">Update Admin Login Credentials</h3>
+        <div className="bg-slate-900/95 border border-white/15 rounded-2xl p-5 sm:p-7 backdrop-blur-2xl shadow-2xl">
+          <div className="flex items-center gap-2.5 mb-3">
+            <div className="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center">
+              <FaUserShield className="text-base" />
+            </div>
+            <h3 className="text-base sm:text-lg font-black text-white">Update Admin Login Credentials</h3>
           </div>
-          <p className="text-xs text-slate-400 mb-6 leading-relaxed">
-            Naye username aur password ko yahan enter karein. Server automatically ise 100,000 rounds of PBKDF2 SHA-512 cryptographic salt ke sath encrypt karke Supabase table <code className="text-rose-300 bg-black/40 px-1.5 py-0.5 rounded">admin_vault</code> mein store kar dega.
+          <p className="text-xs sm:text-sm text-slate-300 mb-6 leading-relaxed">
+            Naye username aur password ko yahan enter karein. Server automatically ise 100,000 rounds of PBKDF2 SHA-512 cryptographic salt ke sath encrypt karke Supabase table <code className="text-rose-300 bg-black/60 px-2 py-0.5 rounded font-mono">admin_vault</code> mein store kar dega.
           </p>
 
           {statusMessage && (
@@ -435,12 +437,12 @@ WHERE username = 'saqib';`;
       {/* TAB 2: WEBSITE NAME & BRAND IDENTITY QUICK LINKS */}
       {activeTab === 'website_identity' && (
         <div className="space-y-6">
-          <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-            <h3 className="text-base font-black text-white mb-2 flex items-center gap-2">
+          <div className="bg-slate-900/95 border border-white/15 rounded-2xl p-6 sm:p-7 backdrop-blur-2xl shadow-2xl">
+            <h3 className="text-base sm:text-lg font-black text-white mb-2 flex items-center gap-2">
               <FaGlobe className="text-sky-400" />
               <span>Where to Change Website Name & Brand Identity</span>
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
               Website ka naam 3 mukhtalif jagah use hota hai aur har ek ko aap Admin Panel se bina code touch kiye 1-click mein change kar sakte hain:
             </p>
 
@@ -530,47 +532,49 @@ WHERE username = 'saqib';`;
       {/* TAB 2.5: ANTI-CLONE DOMAIN WHITELIST */}
       {activeTab === 'domains' && (
         <div className="space-y-6">
-          <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-            <div className="flex items-center gap-2 mb-2">
-              <FaShieldHalved className="text-amber-400 text-lg" />
-              <h3 className="text-base font-black text-white">Anti-Clone & Domain-Locking Killswitch</h3>
+          <div className="bg-slate-900/95 border border-white/15 rounded-2xl p-6 sm:p-7 backdrop-blur-2xl shadow-2xl">
+            <div className="flex items-center gap-2.5 mb-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center">
+                <FaShieldHalved className="text-base" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white">Anti-Clone & Domain-Locking Killswitch</h3>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6 font-normal">
               Yeh system ensure karta hai ke agar koi hacker ya competitor aapki website ka code ya rendered pages chura bhi le, to wo isay kisi doosre domain ya hosting par run na kar sake.
-              Sirf neechay diye gaye <b>Authorized Domains</b> par website chalegi, baqi har domain par Killswitch trigger ho kar code ko self-destruct kar dega!
+              Sirf neechay diye gaye <b className="text-amber-400 font-bold">Authorized Domains</b> par website chalegi, baqi har domain par Killswitch trigger ho kar code ko self-destruct kar dega!
             </p>
 
             {/* Base Protected Domains */}
             <div className="mb-6">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                🔒 Permanent Core Whitelist (Built-in)
+              <h4 className="text-xs font-black text-slate-200 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <span>🔒 Permanent Core Whitelist (Built-in)</span>
               </h4>
-              <div className="flex flex-wrap gap-2">
-                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-                  <FaCircleCheck className="text-[10px]" />
+              <div className="flex flex-wrap gap-2.5">
+                <span className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-2 shadow-sm">
+                  <FaCircleCheck className="text-[11px] text-emerald-400" />
                   <span>localhost (Development)</span>
                 </span>
-                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-                  <FaCircleCheck className="text-[10px]" />
+                <span className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-2 shadow-sm">
+                  <FaCircleCheck className="text-[11px] text-emerald-400" />
                   <span>127.0.0.1 (Loopback)</span>
                 </span>
-                <span className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 flex items-center gap-2">
-                  <FaCircleCheck className="text-[10px]" />
+                <span className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-2 shadow-sm">
+                  <FaCircleCheck className="text-[11px] text-emerald-400" />
                   <span>mrsaqib242.vercel.app (Official Verified Hub)</span>
                 </span>
               </div>
             </div>
 
             {/* Custom Whitelisted Domains */}
-            <div className="mb-6 pt-4 border-t border-white/10">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                🌐 Custom Authorized Domains
+            <div className="mb-6 pt-5 border-t border-white/10">
+              <h4 className="text-xs font-black text-slate-200 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <span>🌐 Custom Authorized Domains</span>
               </h4>
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2.5 mb-4">
                 {(siteConfig.authorizedDomains || ['mrsaqib242.vercel.app']).map((dom) => (
                   <span
                     key={dom}
-                    className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold bg-sky-500/10 text-sky-300 border border-sky-500/30 flex items-center gap-2"
+                    className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-sky-500/20 text-sky-200 border border-sky-400/40 flex items-center gap-2 shadow-sm"
                   >
                     <span>{dom}</span>
                     {dom !== 'localhost' && dom !== '127.0.0.1' && dom !== 'mrsaqib242.vercel.app' && onUpdateSiteConfig && (
@@ -584,7 +588,8 @@ WHERE username = 'saqib';`;
                           showToast(`Removed ${dom} from whitelist`);
                           playPopSound(200);
                         }}
-                        className="text-rose-400 hover:text-rose-300 ml-1"
+                        className="text-rose-400 hover:text-rose-300 ml-1.5 font-black cursor-pointer"
+                        title={`Remove ${dom}`}
                       >
                         ✕
                       </button>
@@ -595,13 +600,13 @@ WHERE username = 'saqib';`;
 
               {/* Add Custom Domain Form */}
               {onUpdateSiteConfig && (
-                <div className="flex flex-wrap gap-2 max-w-md">
+                <div className="flex flex-wrap gap-2.5 max-w-md">
                   <input
                     type="text"
                     value={newDomainInput}
                     onChange={(e) => setNewDomainInput(e.target.value.toLowerCase().trim())}
                     placeholder="e.g. saqibvisuals.com"
-                    className="flex-1 bg-slate-950/80 border border-white/15 focus:border-amber-500 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 outline-none"
+                    className="flex-1 bg-slate-950 border border-white/20 focus:border-amber-400 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-400 outline-none transition"
                   />
                   <button
                     type="button"
@@ -616,7 +621,7 @@ WHERE username = 'saqib';`;
                       playPopSound(600);
                       setNewDomainInput('');
                     }}
-                    className="px-4 py-2 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer"
+                    className="px-4 py-2.5 rounded-xl text-xs font-black bg-amber-500 hover:bg-amber-400 text-slate-950 transition cursor-pointer shadow-md shadow-amber-500/25 active:scale-95"
                   >
                     + Add Domain
                   </button>
@@ -625,13 +630,13 @@ WHERE username = 'saqib';`;
             </div>
 
             {/* What happens on unauthorized domain */}
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-300 space-y-1">
-              <div className="font-bold flex items-center gap-1.5">
-                <FaCircleExclamation />
+            <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-rose-950/80 via-slate-950/90 to-rose-950/80 border border-rose-500/40 text-xs text-rose-200 space-y-2 shadow-xl">
+              <div className="font-black text-rose-300 flex items-center gap-2 text-xs sm:text-sm">
+                <FaCircleExclamation className="text-rose-400 text-sm shrink-0" />
                 <span>Unauthorized Mirror Par Kiya Hoga?</span>
               </div>
-              <p className="text-[11px] text-slate-400 leading-relaxed">
-                Agar koi shakhs yeh code kisi doosri hosting ya domain par upload karega to script foran screen lock kar ke <b>"🛑 UNLICENSED CLONE DETECTED"</b> ka banner show karegi, tamam buttons tod degi, aur 3 second baad viewer ko direct aapki official website par redirect kar degi!
+              <p className="text-xs text-rose-100/90 leading-relaxed font-normal">
+                Agar koi shakhs yeh code kisi doosri hosting ya domain par upload karega to script foran screen lock kar ke <b className="text-white font-black underline decoration-rose-500">"🛑 UNLICENSED CLONE DETECTED"</b> ka banner show karegi, tamam buttons tod degi, aur 3 second baad viewer ko direct aapki official website par redirect kar degi!
               </p>
             </div>
           </div>
@@ -641,12 +646,12 @@ WHERE username = 'saqib';`;
       {/* TAB 3: MASTER SQL CHEAT-SHEET */}
       {activeTab === 'sql_queries' && (
         <div className="space-y-6">
-          <div className="bg-slate-900/60 border border-white/10 rounded-2xl p-6 backdrop-blur-xl">
-            <h3 className="text-base font-black text-white mb-2 flex items-center gap-2">
+          <div className="bg-slate-900/95 border border-white/15 rounded-2xl p-6 sm:p-7 backdrop-blur-2xl shadow-2xl">
+            <h3 className="text-base sm:text-lg font-black text-white mb-2 flex items-center gap-2">
               <FaDatabase className="text-emerald-400" />
               <span>Direct Database SQL Queries (Supabase SQL Editor)</span>
             </h3>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed mb-6">
               Agar aap Supabase SQL Editor mein direct queries run karna chahte hain, to yeh ready-to-run queries use karein:
             </p>
 

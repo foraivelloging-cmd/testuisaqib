@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -12,12 +13,14 @@ interface BeforeInstallPromptEvent extends Event {
 }
 
 export function PwaInstallPrompt() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
   const [isIos, setIsIos] = useState<boolean>(false);
   const [showIosGuide, setShowIosGuide] = useState<boolean>(false);
   const [showFloatingPill, setShowFloatingPill] = useState<boolean>(false);
+  const [pillDismissed, setPillDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     // 1. Register Service Worker
@@ -142,13 +145,13 @@ export function PwaInstallPrompt() {
 
   return (
     <>
-      {/* ==================== 1. FLOATING QUICK INSTALL BUTTON (ALWAYS ACCESSIBLE) ==================== */}
-      {!showModal && showFloatingPill && (
-        <div className="fixed bottom-6 left-6 z-[990] animate-bounce-subtle">
+      {/* ==================== 1. FLOATING QUICK INSTALL BUTTON (WITH DISMISS ✕) ==================== */}
+      {!showModal && showFloatingPill && !pillDismissed && !pathname?.includes('saqibadmin') && (
+        <div className="fixed bottom-6 left-6 z-[990] animate-bounce-subtle flex items-center gap-1.5">
           <button
             onClick={() => setShowModal(true)}
             aria-label="Install Saqib Visuals Web App"
-            className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 text-white font-semibold text-xs sm:text-sm shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 backdrop-blur-md"
+            className="group flex items-center gap-2.5 px-4 py-2.5 rounded-full bg-gradient-to-r from-cyan-500 via-purple-600 to-pink-500 text-white font-semibold text-xs sm:text-sm shadow-xl shadow-cyan-500/20 hover:shadow-cyan-500/40 hover:scale-105 active:scale-95 transition-all duration-300 border border-white/20 backdrop-blur-md cursor-pointer"
           >
             <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:rotate-12 transition-transform">
               <i className="fa-solid fa-download text-xs text-white"></i>
@@ -158,6 +161,18 @@ export function PwaInstallPrompt() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-100"></span>
             </span>
+          </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setPillDismissed(true);
+            }}
+            title="Dismiss Install App badge"
+            aria-label="Close Install App badge"
+            className="w-7 h-7 rounded-full bg-slate-900/90 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/25 flex items-center justify-center text-xs transition-all shadow-lg cursor-pointer"
+          >
+            ✕
           </button>
         </div>
       )}
