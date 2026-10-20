@@ -73,6 +73,7 @@ import {
 import { AdminSeoStudio } from './AdminSeoStudio';
 import { AdminSecurityCredentialsStudio } from './AdminSecurityCredentialsStudio';
 import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
+import { AdminPromoPopupStudio } from './AdminPromoPopupStudio';
 
 export {
   type SiteBannerConfig,
@@ -244,7 +245,8 @@ export type AdminSettingsScreenId =
   | 'contact_footer'
   | 'ui'
   | 'seo'
-  | 'security';
+  | 'security'
+  | 'promo_popup';
 
 interface PlushOption {
   value: string;
@@ -557,6 +559,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       case 'visibility':
       case 'banner':
       case 'promo_banners':
+      case 'promo_popup':
       case 'store_bars':
       case 'contact_footer':
       case 'ui':
@@ -1999,6 +2002,41 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </div>
                   <div className={`text-[10px] font-semibold ${!canManageAdmins ? 'text-rose-200 font-bold' : 'text-purple-100'}`}>
                     {!canManageAdmins ? '🔒 Superadmin Only' : 'Create Admin & Granular Permissions'}
+                  </div>
+                </div>
+              </button>
+
+                            {/* Card 9: Welcome & Promo Popup Modal */}
+              <button
+                type="button"
+                onClick={() => {
+                  if (!canManageSiteConfig) {
+                    handleRestrictedAccess('Promo Popup Modal');
+                    return;
+                  }
+                  openSettingsScreen('promo_popup');
+                }}
+                className={`p-3.5 rounded-2xl bg-gradient-to-br from-rose-600 via-pink-600 to-indigo-700 text-white text-left shadow-md hover:scale-[1.01] transition flex flex-col justify-between gap-2 relative ${
+                  !canManageSiteConfig ? 'opacity-65 cursor-not-allowed !border-rose-500/50' : 'cursor-pointer'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className={`w-9 h-9 rounded-xl flex items-center justify-center ${!canManageSiteConfig ? 'bg-rose-500/20 text-rose-400' : 'bg-white/20 text-white'}`}>
+                    <FaBullhorn className="w-4 h-4 text-white" />
+                  </span>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase flex items-center gap-1 ${
+                    !canManageSiteConfig ? 'bg-rose-500 text-white shadow-sm' : (siteConfig.promoPopup?.enabled ? 'bg-emerald-400 text-slate-950 font-black shadow-sm animate-pulse' : 'bg-white/25 text-white')
+                  }`}>
+                    {!canManageSiteConfig ? <>🔒 LOCKED</> : (siteConfig.promoPopup?.enabled ? '● LIVE ON' : '○ OFF')}
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-extrabold flex items-center gap-1.5">
+                    <span>Welcome &amp; Promo Popup</span>
+                    {!canManageSiteConfig && <FaLock className="text-[10px] text-rose-300" />}
+                  </div>
+                  <div className={`text-[10px] font-semibold ${!canManageSiteConfig ? 'text-rose-200 font-bold' : 'text-pink-100'}`}>
+                    {!canManageSiteConfig ? '🔒 Restricted by Superadmin' : '20% Off, Announcement & Image'}
                   </div>
                 </div>
               </button>
@@ -9764,6 +9802,18 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
         />
       )}
 
+      
+      {/* ==================== SCREEN 11: STOREFRONT PROMO & WELCOME POPUP STUDIO ==================== */}
+      {activeScreen === 'promo_popup' && hasScreenPermission('promo_popup') && (
+        <AdminPromoPopupStudio
+          siteConfig={siteConfig}
+          onUpdateSiteConfig={onUpdateSiteConfig}
+          playPopSound={playPopSound}
+          showToast={showToast}
+          copyText={copyText}
+          onReturnHome={() => openSettingsScreen('home')}
+        />
+      )}
       {/* ==================== SCREEN 10: ADMIN SECURITY & ANTI-CLONE KILLSWITCH ==================== */}
       {activeScreen === 'security' && hasScreenPermission('security') && (
         <AdminSecurityCredentialsStudio

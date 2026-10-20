@@ -19,6 +19,7 @@ import {
 } from './data/defaultCatalog';
 import { ShowcaseSections } from './components/ShowcaseSections';
 import { WhatsAppChatWidget } from './components/WhatsAppChatWidget';
+import { PromoAnnouncementModal } from './components/PromoAnnouncementModal';
 import { getActiveSocialPlatforms } from './types/siteConfig';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
@@ -6264,6 +6265,15 @@ export default function App({
           </div>
         </div>
       )}
+
+            {/* Storefront Promotional & Welcome Announcement Popup Modal */}
+      <PromoAnnouncementModal
+        config={siteConfig.promoPopup}
+        contactConfig={siteConfig.contact}
+        onOpenAddFunds={() => setAddFundsModalOpen(true)}
+        showToast={showToast}
+        playPopSound={playPopSound}
+      />
 
       {/* Toast Notification Pill */}
       <div

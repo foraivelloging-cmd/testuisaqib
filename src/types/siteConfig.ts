@@ -412,7 +412,45 @@ export const DEFAULT_PROMO_BANNERS: SitePromoBannerItem[] = [
   }
 ];
 
+export interface SitePromoPopupConfig {
+  enabled: boolean;
+  popupType?: 'discount' | 'welcome' | 'notice' | 'custom';
+  badgeText: string;
+  title: string;
+  description: string;
+  imageUrl?: string;
+  showImage?: boolean;
+  couponCode?: string;
+  showCoupon?: boolean;
+  countdownMinutes?: number;
+  showCountdown?: boolean;
+  primaryBtnText: string;
+  primaryBtnAction: 'whatsapp' | 'addfunds' | 'custom_url';
+  primaryBtnUrl?: string;
+  secondaryBtnText?: string;
+  showOncePerSession: boolean;
+}
+
+export const DEFAULT_PROMO_POPUP_CONFIG: SitePromoPopupConfig = {
+  enabled: false,
+  popupType: 'discount',
+  badgeText: '🔥 SPECIAL 20% DISCOUNT',
+  title: 'Limited Time Flash Offer — Save 20% Today!',
+  description: 'Order any AI Pro Tool, CapCut Pro, or TikTok Agency Account right now and enjoy an instant 20% discount on your first order. WhatsApp Saqib directly!',
+  imageUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+  showImage: true,
+  couponCode: 'SAQIB20',
+  showCoupon: true,
+  countdownMinutes: 15,
+  showCountdown: true,
+  primaryBtnText: 'Claim 20% Off on WhatsApp',
+  primaryBtnAction: 'whatsapp',
+  secondaryBtnText: 'Maybe Later',
+  showOncePerSession: true,
+};
+
 export interface SiteSettingsConfig {
+  promoPopup?: SitePromoPopupConfig;
   banner: SiteBannerConfig;
   promoBanners?: SitePromoBannerItem[];
   storeBars?: SiteStoreBarsConfig;
@@ -461,6 +499,7 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     showHeroFeaturePills: true
   },
   promoBanners: DEFAULT_PROMO_BANNERS,
+  promoPopup: DEFAULT_PROMO_POPUP_CONFIG,
   storeBars: DEFAULT_STORE_BARS_CONFIG,
   contact: {
     whatsappNumberClean: '923478936242',
@@ -509,6 +548,10 @@ export function deepMergeSiteConfig(raw: unknown): SiteSettingsConfig {
     banner: {
       ...DEFAULT_SITE_CONFIG.banner,
       ...(obj.banner || {}),
+    },
+        promoPopup: {
+      ...DEFAULT_PROMO_POPUP_CONFIG,
+      ...(obj.promoPopup || {}),
     },
     promoBanners: Array.isArray(obj.promoBanners) && obj.promoBanners.length > 0 
       ? obj.promoBanners 
