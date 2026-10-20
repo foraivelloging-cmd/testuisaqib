@@ -58,6 +58,7 @@ import {
   FaLayerGroup,
   FaFont,
   FaShieldHalved,
+  FaUserShield,
   FaBolt,
   FaImages,
   FaTags,
@@ -487,6 +488,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
 }) => {
   // Active Settings Screen ('home' shows WhatsApp/TikTok style grouped menu)
   const [activeScreen, setActiveScreen] = useState<AdminSettingsScreenId>('dashboard');
+  const [securityStep, setSecurityStep] = useState<number>(1);
   const [settingsSearchQuery, setSettingsSearchQuery] = useState<string>('');
   const [visibilitySubTab, setVisibilitySubTab] = useState<
     'sections' | 'products' | 'categories' | 'tools'
@@ -929,6 +931,11 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
     }
     if (screen === 'promo_banners' && initialStep) {
       setPromoBannerStep(initialStep as 1 | 2 | 3 | 4);
+    }
+    if (screen === 'security' && initialStep) {
+      setSecurityStep(initialStep);
+    } else if (screen === 'security') {
+      setSecurityStep(1);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -1548,8 +1555,8 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               },
               {
                 id: 'security' as const,
-                label: '🔐 Admin & Anti-Clone',
-                badge: 'Killswitch'
+                label: '🔐 Security & Sub-Admins',
+                badge: 'RBAC Team'
               }
             ].map((item) => {
               const isAct = activeScreen === item.id;
@@ -1787,7 +1794,28 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 </div>
               </button>
 
-              <button
+                            <button
+                type="button"
+                onClick={() => openSettingsScreen('security', 2)}
+                className="p-3.5 rounded-2xl bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
+                    <FaUserShield className="w-4 h-4 text-white" />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full bg-white/25 text-[9px] font-extrabold uppercase">
+                    RBAC Team
+                  </span>
+                </div>
+                <div>
+                  <div className="text-xs sm:text-sm font-extrabold">Sub-Admins &amp; Roles</div>
+                  <div className="text-[10px] text-purple-100 font-semibold">
+                    Create Admin &amp; Granular Permissions
+                  </div>
+                </div>
+              </button>
+
+<button
                 type="button"
                 onClick={() => openSettingsScreen('seo')}
                 className="p-3.5 rounded-2xl bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 text-white text-left shadow-md hover:scale-[1.01] transition cursor-pointer flex flex-col justify-between gap-2 col-span-2 sm:col-span-1"
@@ -9523,6 +9551,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           copyText={copyText}
           onReturnHome={() => openSettingsScreen('home')}
           onNavigateToScreen={(scr) => openSettingsScreen(scr)}
+          initialTab={securityStep === 2 ? 'subadmins' : 'credentials'}
         />
       )}
     </div>

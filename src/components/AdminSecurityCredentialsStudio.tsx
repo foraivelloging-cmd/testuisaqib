@@ -20,6 +20,7 @@ import {
   FaPenToSquare
 } from 'react-icons/fa6';
 import { SiteSettingsConfig } from './AdminStepByStepSettingsHub';
+import { AdminSubAdminManagerView } from './AdminSubAdminManagerView';
 
 interface Props {
   siteConfig: SiteSettingsConfig;
@@ -29,6 +30,7 @@ interface Props {
   copyText: (text: string, msg?: string) => void;
   onReturnHome: () => void;
   onNavigateToScreen: (screen: any) => void;
+  initialTab?: 'credentials' | 'subadmins' | 'website_identity' | 'domains' | 'sql_queries';
 }
 
 export const AdminSecurityCredentialsStudio: React.FC<Props> = ({
@@ -39,9 +41,12 @@ export const AdminSecurityCredentialsStudio: React.FC<Props> = ({
   onReturnHome,
   onNavigateToScreen,
   onUpdateSiteConfig,
+  initialTab,
 }) => {
   const [newDomainInput, setNewDomainInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'credentials' | 'website_identity' | 'domains' | 'sql_queries'>('credentials');
+  const [activeTab, setActiveTab] = useState<'credentials' | 'subadmins' | 'website_identity' | 'domains' | 'sql_queries'>(
+    initialTab || 'credentials'
+  );
 
   // Form states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -222,6 +227,22 @@ WHERE username = 'saqib';`;
         >
           <FaKey className={activeTab === 'credentials' ? 'text-white' : 'text-rose-400'} />
           <span>Change Password & Username</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => {
+            setActiveTab('subadmins');
+            playPopSound(450);
+          }}
+          className={`px-4 py-2.5 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+            activeTab === 'subadmins'
+              ? 'bg-gradient-to-r from-indigo-500 via-purple-600 to-pink-500 text-white shadow-lg shadow-indigo-500/40 ring-1 ring-white/30 scale-[1.02]'
+              : 'bg-slate-800/95 hover:bg-slate-700 text-slate-200 hover:text-white border border-white/10 hover:border-white/25 shadow-sm'
+          }`}
+        >
+          <FaUserShield className={activeTab === 'subadmins' ? 'text-white' : 'text-indigo-400'} />
+          <span>👥 Add & Manage Sub-Admins</span>
         </button>
 
         <button
@@ -432,6 +453,15 @@ WHERE username = 'saqib';`;
             </div>
           </form>
         </div>
+      )}
+
+      {/* TAB 1.5: SUB-ADMINS & RBAC ACCESS CONTROL */}
+      {activeTab === 'subadmins' && (
+        <AdminSubAdminManagerView
+          showToast={showToast}
+          copyText={copyText}
+          playPopSound={playPopSound}
+        />
       )}
 
       {/* TAB 2: WEBSITE NAME & BRAND IDENTITY QUICK LINKS */}
