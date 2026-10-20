@@ -7,6 +7,7 @@ import { PaymentProofRequest } from './WalletAndAdminPayments';
 import { AdminVisitorTelemetryView } from './AdminVisitorTelemetryView';
 import { AdminUserManagementView } from './AdminUserManagementView';
 import { AdminSubAdminManagerView } from './AdminSubAdminManagerView';
+import { AdminCouponManagerView } from './AdminCouponManagerView';
 import { AdminPermissions } from '@/src/lib/serverSecurity';
 import {
   FaChartPie,
@@ -85,7 +86,7 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
   copyText,
   exitSecretAdminPortal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users' | 'admins'>('users');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users' | 'admins' | 'coupons'>('users');
   const [featureFilter, setFeatureFilter] = useState<FeatureCategory>('all');
   const [featureSearch, setFeatureSearch] = useState<string>('');
 
@@ -848,6 +849,9 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
           ...(isSuperadmin || adminPermissions.manage_orders
             ? [{ id: 'financials' as const, label: `💳 Financials & Proofs (${totalProofs})`, badge: `${pendingProofs} New` }]
             : []),
+          ...(isSuperadmin || adminPermissions.manage_orders || adminPermissions.manage_site_config
+            ? [{ id: 'coupons' as const, label: '🏷️ Coupons & Discounts', badge: 'Active Deals' }]
+            : []),
           { id: 'tech' as const, label: '🚀 Tech Stack & SEO Specs', badge: 'Next.js 16' },
         ].map((tab) => {
           const isAct = activeTab === tab.id;
@@ -881,6 +885,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
       {/* ==================== TAB: SUPERADMIN TEAM & RBAC MANAGEMENT ==================== */}
       {activeTab === 'admins' && (
         <AdminSubAdminManagerView
+          showToast={showToast}
+          copyText={copyText}
+          playPopSound={playPopSound}
+        />
+      )}
+
+      {/* ==================== TAB: PROMOTIONAL COUPONS & DISCOUNTS ==================== */}
+      {activeTab === 'coupons' && (
+        <AdminCouponManagerView
           showToast={showToast}
           copyText={copyText}
           playPopSound={playPopSound}

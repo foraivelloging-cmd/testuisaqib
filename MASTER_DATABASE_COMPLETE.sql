@@ -218,6 +218,26 @@ CREATE INDEX IF NOT EXISTS idx_visitor_fp_fingerprint ON public.visitor_fingerpr
 CREATE INDEX IF NOT EXISTS idx_visitor_fp_ip ON public.visitor_fingerprints (ip_address);
 CREATE INDEX IF NOT EXISTS idx_visitor_fp_last_seen ON public.visitor_fingerprints (last_seen DESC);
 
+-- 3.12 COUPONS & PROMO DISCOUNTS TABLE
+CREATE TABLE IF NOT EXISTS public.coupons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL,
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+    discount_value NUMERIC NOT NULL,
+    max_discount_amount NUMERIC,
+    min_order_amount NUMERIC DEFAULT 0,
+    max_uses INTEGER,
+    used_count INTEGER DEFAULT 0,
+    expires_at TIMESTAMPTZ,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    applicable_category TEXT DEFAULT 'all',
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons (code);
+CREATE INDEX IF NOT EXISTS idx_coupons_active ON public.coupons (is_active);
+
 -- ---------------------------------------------------------------------
 -- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
 -- ---------------------------------------------------------------------

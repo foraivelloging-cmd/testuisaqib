@@ -453,6 +453,34 @@ export default function App({
   const [modalTargetInput, setModalTargetInput] = useState<string>('');
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod>('EasyPaisa');
 
+  // Coupon Code & Promo Discount State for Order Modal
+  const [orderCouponInput, setOrderCouponInput] = useState<string>('');
+  const [isApplyingOrderCoupon, setIsApplyingOrderCoupon] = useState<boolean>(false);
+  const [appliedOrderCoupon, setAppliedOrderCoupon] = useState<{
+    code: string;
+    discountType: string;
+    discountValue: number;
+    discountAmount: number;
+    originalAmount: number;
+    finalAmount: number;
+    description?: string;
+  } | null>(null);
+  const [orderCouponError, setOrderCouponError] = useState<string | null>(null);
+
+  // Cart Coupon Code State
+  const [cartCouponInput, setCartCouponInput] = useState<string>('');
+  const [isApplyingCartCoupon, setIsApplyingCartCoupon] = useState<boolean>(false);
+  const [appliedCartCoupon, setAppliedCartCoupon] = useState<{
+    code: string;
+    discountType: string;
+    discountValue: number;
+    discountAmount: number;
+    originalAmount: number;
+    finalAmount: number;
+    description?: string;
+  } | null>(null);
+  const [cartCouponError, setCartCouponError] = useState<string | null>(null);
+
   // Other Modals & Mobile Grid Layout State (Defaults to 2-Column Mobile Grid)
   const [cartModalOpen, setCartModalOpen] = useState<boolean>(false);
   const [whatsAppWidgetOpen, setWhatsAppWidgetOpen] = useState<boolean>(false);
@@ -1018,6 +1046,9 @@ export default function App({
     const rawTier = srv.tiers?.[tierIdx] || srv.tiers?.[0] || '';
     setModalTierValue(formatTierToString(rawTier));
     setModalTargetInput('');
+    setAppliedOrderCoupon(null);
+    setOrderCouponInput('');
+    setOrderCouponError(null);
     setTimeout(() => {
       modalInputRef.current?.focus();
     }, 100);
@@ -1025,6 +1056,91 @@ export default function App({
 
   const closeOrderModal = () => {
     setActiveOrderService(null);
+    setAppliedOrderCoupon(null);
+    setOrderCouponInput('');
+    setOrderCouponError(null);
+  };
+
+  const applyOrderCoupon = async (amount: number, categoryId?: string) => {
+    if (!orderCouponInput.trim()) {
+      setOrderCouponError('Please enter a coupon code');
+      return;
+    }
+    setIsApplyingOrderCoupon(true);
+    setOrderCouponError(null);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: orderCouponInput.trim(),
+          orderAmount: amount,
+          categoryId: categoryId || 'all',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid && data.coupon) {
+        setAppliedOrderCoupon(data.coupon);
+        playPopSound(880);
+        triggerConfettiBurst();
+        showToast(`🎉 Coupon "${data.coupon.code}" applied: Saved Rs. ${data.coupon.discountAmount.toLocaleString()}!`);
+      } else {
+        playPopSound(420);
+        setOrderCouponError(data.error || 'Invalid or expired coupon');
+        setAppliedOrderCoupon(null);
+      }
+    } catch {
+      setOrderCouponError('Network error checking coupon');
+    } finally {
+      setIsApplyingOrderCoupon(false);
+    }
+  };
+
+  const removeOrderCoupon = () => {
+    setAppliedOrderCoupon(null);
+    setOrderCouponInput('');
+    setOrderCouponError(null);
+  };
+
+  const applyCartCoupon = async (totalAmount: number) => {
+    if (!cartCouponInput.trim()) {
+      setCartCouponError('Please enter a coupon code');
+      return;
+    }
+    setIsApplyingCartCoupon(true);
+    setCartCouponError(null);
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: cartCouponInput.trim(),
+          orderAmount: totalAmount,
+          categoryId: 'all',
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.valid && data.coupon) {
+        setAppliedCartCoupon(data.coupon);
+        playPopSound(880);
+        triggerConfettiBurst();
+        showToast(`🎉 Cart coupon "${data.coupon.code}" applied: Saved Rs. ${data.coupon.discountAmount.toLocaleString()}!`);
+      } else {
+        playPopSound(420);
+        setCartCouponError(data.error || 'Invalid or expired coupon');
+        setAppliedCartCoupon(null);
+      }
+    } catch {
+      setCartCouponError('Network error checking coupon');
+    } finally {
+      setIsApplyingCartCoupon(false);
+    }
+  };
+
+  const removeCartCoupon = () => {
+    setAppliedCartCoupon(null);
+    setCartCouponInput('');
+    setCartCouponError(null);
   };
 
   const quickAddToCart = (srv: StoreService) => {
@@ -1062,6 +1178,11 @@ export default function App({
     if (!activeOrderService) return `https://wa.me/${activeWaNumberClean}`;
     const targetLink = modalTargetInput.trim() || 'Will send in chat';
 
+    const couponBreakdown = appliedOrderCoupon
+      ? `\n🏷️ *Coupon Applied:* ${appliedOrderCoupon.code} (-Rs. ${appliedOrderCoupon.discountAmount.toLocaleString()} OFF)` +
+        `\n💰 *Original Price:* Rs. ${appliedOrderCoupon.originalAmount.toLocaleString()} | *Discounted Total:* Rs. ${appliedOrderCoupon.finalAmount.toLocaleString()}`
+      : '';
+
     // Cloud Order Record
     fetch('/api/orders', {
       method: 'POST',
@@ -1071,8 +1192,9 @@ export default function App({
         serviceId: activeOrderService.id,
         serviceTitle: activeOrderService.title,
         packageTier: modalTierValue,
-        price: 0,
-        userInput: targetLink
+        price: appliedOrderCoupon ? appliedOrderCoupon.finalAmount : 0,
+        userInput: targetLink,
+        couponCode: appliedOrderCoupon ? appliedOrderCoupon.code : null,
       })
     }).catch((err) => console.error('Cloud order save error:', err));
 
@@ -1081,7 +1203,8 @@ export default function App({
       `📦 *Service:* ${activeOrderService.title}\n` +
       `💎 *Package:* ${modalTierValue}\n` +
       `🔗 *Link / Details:* ${targetLink}\n` +
-      `💳 *Payment Via:* ${selectedPaymentMethod}\n\n` +
+      `💳 *Payment Via:* ${selectedPaymentMethod}` +
+      `${couponBreakdown}\n\n` +
       `Please share payment account details so I can send screenshot!`;
     return `https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(message)}`;
   };
@@ -1091,6 +1214,12 @@ export default function App({
     shoppingCart.forEach((item, i) => {
       msg += `*${i + 1}. ${item.title}*\n   • Package: ${item.tier}\n   • Link/Number: ${item.target}\n\n`;
     });
+
+    if (appliedCartCoupon) {
+      msg += `🏷️ *Coupon Applied:* ${appliedCartCoupon.code} (-Rs. ${appliedCartCoupon.discountAmount.toLocaleString()} OFF)\n`;
+      msg += `💰 *Original Subtotal:* Rs. ${appliedCartCoupon.originalAmount.toLocaleString()} | *Discounted Total:* Rs. ${appliedCartCoupon.finalAmount.toLocaleString()}\n\n`;
+    }
+
     msg += `Please share total bill & EasyPaisa/JazzCash details!`;
     return `https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(msg)}`;
   };
@@ -5357,6 +5486,85 @@ export default function App({
                 />
               </div>
 
+              {/* Promo / Coupon Code Section */}
+              <div className="bg-white/80 rounded-2xl p-3 border border-pink-200/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-[11px] font-extrabold uppercase text-slate-800 flex items-center gap-1.5">
+                    <i className="fa-solid fa-tag text-pink-500"></i>
+                    <span>Promo / Coupon Code:</span>
+                  </label>
+                  {appliedOrderCoupon && (
+                    <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                      Applied ✓
+                    </span>
+                  )}
+                </div>
+
+                {appliedOrderCoupon ? (
+                  <div className="flex items-center justify-between p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <div className="space-y-0.5 min-w-0">
+                      <div className="text-xs font-black text-emerald-800 flex items-center gap-1.5 font-mono">
+                        <i className="fa-solid fa-circle-check text-emerald-600"></i>
+                        <span>{appliedOrderCoupon.code}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-800 font-sans font-bold">
+                          -Rs. {appliedOrderCoupon.discountAmount.toLocaleString()} OFF
+                        </span>
+                      </div>
+                      <div className="text-[10px] text-slate-600">
+                        Original: <span className="line-through">Rs. {appliedOrderCoupon.originalAmount.toLocaleString()}</span> → Final: <span className="font-extrabold text-slate-900">Rs. {appliedOrderCoupon.finalAmount.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removeOrderCoupon}
+                      className="text-xs font-extrabold text-rose-600 hover:text-rose-700 px-2 py-1 rounded-lg hover:bg-rose-50 cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={orderCouponInput}
+                        onChange={(e) => {
+                          setOrderCouponInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                          setOrderCouponError(null);
+                        }}
+                        placeholder="e.g. WELCOME10, SAQIB50"
+                        className="flex-1 px-3 py-2 rounded-xl bg-white border border-pink-200 font-mono font-bold text-xs text-slate-900 placeholder:font-sans placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-400 uppercase"
+                      />
+                      <button
+                        type="button"
+                        disabled={isApplyingOrderCoupon || !orderCouponInput.trim()}
+                        onClick={() => {
+                          const priceMatch = modalTierValue.match(/Rs\.?\s*([\d,]+)/i);
+                          const currentTierPrice = priceMatch ? Number(priceMatch[1].replace(/,/g, '')) || 0 : 0;
+                          applyOrderCoupon(currentTierPrice, activeOrderService.category);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-sm cursor-pointer disabled:opacity-40 transition flex items-center gap-1.5"
+                      >
+                        {isApplyingOrderCoupon ? (
+                          <>
+                            <i className="fa-solid fa-circle-notch fa-spin text-xs"></i>
+                            <span>Applying...</span>
+                          </>
+                        ) : (
+                          <span>Apply</span>
+                        )}
+                      </button>
+                    </div>
+                    {orderCouponError && (
+                      <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
+                        <i className="fa-solid fa-circle-exclamation text-xs"></i>
+                        <span>{orderCouponError}</span>
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+
               {/* Payment Method Selector */}
               <div className="space-y-1">
                 <label className="block text-xs font-extrabold text-slate-800">Payment Method:</label>
@@ -5390,7 +5598,11 @@ export default function App({
                   const tierPrice = priceMatch
                     ? Number(priceMatch[1].replace(/,/g, '')) || 0
                     : 0;
-                  const canAfford = tierPrice > 0 && walletBalance >= tierPrice;
+                  const effectivePrice =
+                    appliedOrderCoupon && appliedOrderCoupon.originalAmount === tierPrice
+                      ? appliedOrderCoupon.finalAmount
+                      : tierPrice;
+                  const canAfford = effectivePrice > 0 && walletBalance >= effectivePrice;
 
                   return (
                     <button
@@ -5398,15 +5610,22 @@ export default function App({
                       onClick={() => {
                         if (canAfford) {
                           playPopSound(880);
-                          setWalletBalance((prev) => Math.max(0, prev - tierPrice));
+                          setWalletBalance((prev) => Math.max(0, prev - effectivePrice));
                           triggerConfettiBurst();
+                          const discountMsg = appliedOrderCoupon
+                            ? ` (Coupon "${appliedOrderCoupon.code}" saved Rs. ${appliedOrderCoupon.discountAmount.toLocaleString()})`
+                            : '';
                           showToast(
-                            `✅ Paid Rs. ${tierPrice.toLocaleString()} from Wallet Balance! Sending order to WhatsApp...`
+                            `✅ Paid Rs. ${effectivePrice.toLocaleString()}${discountMsg} from Wallet Balance! Sending order to WhatsApp...`
                           );
+                          const couponMsgPart = appliedOrderCoupon
+                            ? `\n🏷️ *Coupon Code Applied:* ${appliedOrderCoupon.code} (-Rs. ${appliedOrderCoupon.discountAmount.toLocaleString()} OFF)\n💰 *Original Bill:* Rs. ${appliedOrderCoupon.originalAmount.toLocaleString()} | *Discounted Total:* Rs. ${effectivePrice.toLocaleString()}`
+                            : `\n💰 *Total Paid:* Rs. ${effectivePrice.toLocaleString()}`;
+
                           openExternalWhatsApp(
                             `Assalam-o-Alaikum Saqib Bhai! 💳 *PAID VIA WALLET BALANCE*\n\n📦 *Service:* ${activeOrderService.title}\n💎 *Package:* ${modalTierValue}\n🎯 *Target:* ${
                               modalTargetInput.trim() || 'Provided on chat'
-                            }\n💰 *Deducted from Approved Wallet Balance:* Rs. ${tierPrice.toLocaleString()}`
+                            }${couponMsgPart}\n✅ *Deducted from Approved Wallet Balance:* Rs. ${effectivePrice.toLocaleString()}`
                           );
                           closeOrderModal();
                         } else {
@@ -5424,7 +5643,9 @@ export default function App({
                       <i className="fa-solid fa-wallet"></i>
                       <span suppressHydrationWarning>
                         {canAfford
-                          ? `Pay Instantly from Wallet Balance (Rs. ${walletBalance.toLocaleString()} Available)`
+                          ? appliedOrderCoupon
+                            ? `Pay Discounted Rs. ${effectivePrice.toLocaleString()} (Saved Rs. ${appliedOrderCoupon.discountAmount.toLocaleString()}) from Wallet`
+                            : `Pay Instantly from Wallet Balance (Rs. ${walletBalance.toLocaleString()} Available)`
                           : `Wallet Balance Low (Rs. ${walletBalance.toLocaleString()}) — Click to +Add Balance`}
                       </span>
                     </button>
@@ -5669,6 +5890,96 @@ export default function App({
                   ))
                 )}
               </div>
+
+              {/* Cart Coupon Code Box */}
+              {(() => {
+                const cartSubtotal = shoppingCart.reduce((sum, item) => {
+                  const match = item.tier.match(/Rs\.?\s*([\d,]+)/i);
+                  return sum + (match ? Number(match[1].replace(/,/g, '')) || 0 : 0);
+                }, 0);
+
+                return (
+                  shoppingCart.length > 0 && (
+                    <div className="bg-white/80 rounded-2xl p-2.5 border border-pink-200/80 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-extrabold text-slate-800 flex items-center gap-1">
+                          <i className="fa-solid fa-tag text-pink-500"></i> Have a Cart Promo Code?
+                        </span>
+                        {appliedCartCoupon && (
+                          <span className="text-[10px] font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+                            Applied ✓
+                          </span>
+                        )}
+                      </div>
+
+                      {appliedCartCoupon ? (
+                        <div className="flex items-center justify-between p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                          <div className="text-xs font-black text-emerald-800 font-mono flex items-center gap-1.5">
+                            <i className="fa-solid fa-circle-check text-emerald-600"></i>
+                            <span>{appliedCartCoupon.code}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-200 text-emerald-800 font-sans font-bold">
+                              -Rs. {appliedCartCoupon.discountAmount.toLocaleString()} OFF
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={removeCartCoupon}
+                            className="text-xs font-extrabold text-rose-600 hover:text-rose-700 px-2 cursor-pointer"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5">
+                            <input
+                              type="text"
+                              value={cartCouponInput}
+                              onChange={(e) => {
+                                setCartCouponInput(e.target.value.toUpperCase().replace(/\s+/g, ''));
+                                setCartCouponError(null);
+                              }}
+                              placeholder="e.g. WELCOME10, SAQIB50"
+                              className="flex-1 px-3 py-1.5 rounded-xl bg-white border border-pink-200 font-mono font-bold text-xs text-slate-900 placeholder:font-sans uppercase"
+                            />
+                            <button
+                              type="button"
+                              disabled={isApplyingCartCoupon || !cartCouponInput.trim()}
+                              onClick={() => applyCartCoupon(cartSubtotal)}
+                              className="px-3 py-1.5 rounded-xl bg-slate-900 text-white font-extrabold text-xs shadow-xs cursor-pointer disabled:opacity-40"
+                            >
+                              {isApplyingCartCoupon ? '...' : 'Apply'}
+                            </button>
+                          </div>
+                          {cartCouponError && (
+                            <p className="text-[10px] font-bold text-rose-600">{cartCouponError}</p>
+                          )}
+                        </div>
+                      )}
+
+                      {cartSubtotal > 0 && (
+                        <div className="flex items-center justify-between text-xs font-black pt-1 border-t border-slate-100">
+                          <span className="text-slate-600">Order Subtotal:</span>
+                          <span className="text-slate-900">
+                            {appliedCartCoupon ? (
+                              <>
+                                <span className="line-through text-slate-400 font-normal mr-1.5">
+                                  Rs. {cartSubtotal.toLocaleString()}
+                                </span>
+                                <span className="text-emerald-700">
+                                  Rs. {appliedCartCoupon.finalAmount.toLocaleString()}
+                                </span>
+                              </>
+                            ) : (
+                              `Rs. ${cartSubtotal.toLocaleString()}`
+                            )}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                );
+              })()}
 
               <div className="pt-3 border-t border-pink-200 flex items-center justify-between">
                 <button
