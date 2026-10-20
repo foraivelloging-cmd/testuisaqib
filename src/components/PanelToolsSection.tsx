@@ -448,7 +448,8 @@ export const MarqueeAndPulseBanner: React.FC<{
   onQuickFilter: (category: CategoryId, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
   storeBarsConfig?: SiteStoreBarsConfig;
-}> = ({ onSelectServiceById, onQuickFilter, onPlayPop, storeBarsConfig }) => {
+  siteLang?: 'en' | 'ur';
+}> = ({ onSelectServiceById, onQuickFilter, onPlayPop, storeBarsConfig, siteLang = 'en' }) => {
   const bars = storeBarsConfig;
   return (
     <div className="space-y-3">
@@ -459,11 +460,11 @@ export const MarqueeAndPulseBanner: React.FC<{
             <div className="flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 server-pulse-dot"></span>
               <span className="font-display font-bold text-slate-900 uppercase tracking-wider text-[11px]">
-                {bars?.statusPanelTitle ?? 'SAQIB VISUALS LIVE PANEL STATUS:'}
+                {siteLang === 'ur' ? 'ثاقب ویژولز لائیو سروس پینل:' : (bars?.statusPanelTitle ?? 'SAQIB VISUALS LIVE PANEL STATUS:')}
               </span>
               {(bars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE') && (
                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] border border-emerald-300">
-                  {bars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE'}
+                  {siteLang === 'ur' ? 'تمام 3 سرورز 99.9% آن لائن' : (bars?.statusPanelBadge ?? 'ALL 3 SERVERS 99.9% ONLINE')}
                 </span>
               )}
             </div>
@@ -472,22 +473,22 @@ export const MarqueeAndPulseBanner: React.FC<{
               {bars?.chip1Enabled !== false && (
                 <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
                   <SiGooglegemini className="w-3.5 h-3.5 text-purple-600" />
-                  <span>{bars?.chip1Label ?? 'AI Pro Server:'}</span>
-                  <strong className="text-emerald-700">{bars?.chip1Value ?? '3 Min Avg'}</strong>
+                  <span>{siteLang === 'ur' ? 'اے آئی سرور:' : (bars?.chip1Label ?? 'AI Pro Server:')}</span>
+                  <strong className="text-emerald-700">{siteLang === 'ur' ? '3 منٹ اوسط' : (bars?.chip1Value ?? '3 Min Avg')}</strong>
                 </span>
               )}
               {bars?.chip2Enabled !== false && (
                 <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
                   <SiTiktok className="w-3.5 h-3.5 text-rose-500" />
-                  <span>{bars?.chip2Label ?? 'SMM Turbo API:'}</span>
-                  <strong className="text-emerald-700">{bars?.chip2Value ?? 'Instant Start'}</strong>
+                  <span>{siteLang === 'ur' ? 'ایس ایم ایم سروس:' : (bars?.chip2Label ?? 'SMM Turbo API:')}</span>
+                  <strong className="text-emerald-700">{siteLang === 'ur' ? 'فوری سٹارٹ' : (bars?.chip2Value ?? 'Instant Start')}</strong>
                 </span>
               )}
               {bars?.chip3Enabled !== false && (
                 <span className="inline-flex items-center gap-1 bg-white/80 px-2.5 py-1 rounded-full border border-white shadow-sm">
                   <FaSatelliteDish className="w-3.5 h-3.5 text-blue-600" />
-                  <span>{bars?.chip3Label ?? '2026 SIM/NADRA Desk:'}</span>
-                  <strong className="text-emerald-700">{bars?.chip3Value ?? '15 Min PDF'}</strong>
+                  <span>{siteLang === 'ur' ? 'سم اور نادرا ڈیسک:' : (bars?.chip3Label ?? '2026 SIM/NADRA Desk:')}</span>
+                  <strong className="text-emerald-700">{siteLang === 'ur' ? '15 منٹ میں' : (bars?.chip3Value ?? '15 Min PDF')}</strong>
                 </span>
               )}
             </div>

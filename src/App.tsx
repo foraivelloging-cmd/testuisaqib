@@ -2768,7 +2768,7 @@ export default function App({
                     ✨
                   </span>
                   <h1 className="title-3d-blue text-xs sm:text-3xl font-bold tracking-wider uppercase truncate">
-                    {siteConfig.banner.topStripTitle}
+                    {siteLang === 'ur' ? 'محمد ثاقب • ثاقب ویژولز ہب' : siteConfig.banner.topStripTitle}
                   </h1>
                 </div>
                 {siteConfig.banner.showTopStripWhatsapp !== false && (
@@ -2971,15 +2971,19 @@ export default function App({
                     {siteConfig.banner.showBadgeText !== false && siteConfig.banner.badgeText && (
                       <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/80 border border-white text-[9px] sm:text-[10px] font-extrabold text-pink-600 shadow-sm mb-2">
                         <i className="fa-solid fa-circle-check text-emerald-500"></i>{' '}
-                        {siteConfig.banner.badgeText}
+                        {siteLang === 'ur' ? '✅ تمام ڈیجیٹل، اے آئی، اور ایس ایم ایم سروسز 24/7 لائیو اور ایکٹو ہیں' : siteConfig.banner.badgeText}
                       </div>
                     )}
 
                     {/* Main Title & Highlight */}
                     {siteConfig.banner.showMainTitle !== false && (
                       <h2 className="text-xl sm:text-2xl md:text-[26px] font-extrabold text-slate-900 tracking-tight leading-snug">
-                        {siteConfig.banner.mainTitle}{' '}
-                        {siteConfig.banner.highlightTitle && (
+                        {siteLang === 'ur' ? 'محمد ثاقب — ثاقب ویژولز' : siteConfig.banner.mainTitle}{' '}
+                        {siteLang === 'ur' ? (
+                          <span className="text-pink-600 font-display">
+                            (پریمیم ڈیجیٹل سٹور)
+                          </span>
+                        ) : siteConfig.banner.highlightTitle && (
                           <span className="text-pink-600 font-display">
                             {siteConfig.banner.highlightTitle}
                           </span>
@@ -2990,7 +2994,9 @@ export default function App({
                     {/* Bio Description */}
                     {siteConfig.banner.showDescription !== false && siteConfig.banner.description && (
                       <p className="mt-1.5 text-xs sm:text-sm font-semibold text-slate-800 leading-relaxed">
-                        {siteConfig.banner.description}
+                        {siteLang === 'ur'
+                          ? 'کینوا پرو، نیٹ فلکس، پرائم ویڈیو، ایڈوب، چیٹ جی پی ٹی، کلاڈ، وی پی این اور سوشل میڈیا سروسز فوری حاصل کریں — مکمل 100% ریپلیسمنٹ گارنٹی اور 24/7 فوری واٹس ایپ ڈیلیوری کے ساتھ!'
+                          : siteConfig.banner.description}
                       </p>
                     )}
 
@@ -3051,6 +3057,7 @@ export default function App({
             {/* Infinite 3D Brand Marquee & Live Server Pulse Strip */}
             {siteVisibility.showMarqueeBanner && (
               <MarqueeAndPulseBanner
+                siteLang={siteLang}
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
                 onSelectServiceById={(id) => {
@@ -3075,14 +3082,14 @@ export default function App({
                     <div>
                       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
                         <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-300">
-                          {siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:'}
+                          {siteLang === 'ur' ? '● لائیو اکاؤنٹ بیلنس:' : (siteConfig.storeBars?.walletBalanceLabel || '● LIVE ACCOUNT BALANCE:')}
                         </span>
                         <span className="font-display font-bold text-lg sm:text-2xl text-white" suppressHydrationWarning>
                           {siteConfig.storeBars?.currencyPrefix || 'Rs.'} {walletBalance.toLocaleString()}
                         </span>
                         {(siteConfig.storeBars?.showPendingProofBadge ?? true) && pendingProofsCount > 0 && (
                           <span className="px-2 py-0.5 rounded-full bg-amber-500/25 border border-amber-400/50 text-amber-300 text-[9px] font-extrabold">
-                            ⏳ {pendingProofsCount} Pending Proof
+                            {siteLang === 'ur' ? `⏳ ${pendingProofsCount} زیرِ تصدیق رسید` : `⏳ ${pendingProofsCount} Pending Proof`}
                           </span>
                         )}
                       </div>
@@ -3165,7 +3172,7 @@ export default function App({
                   <div className="flex items-center justify-between sm:justify-end gap-2 flex-shrink-0">
                     <span className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl bg-white/85 border border-pink-200 text-[10px] sm:text-[11px] font-extrabold text-pink-700 shadow-sm whitespace-nowrap">
                       <i className="fa-solid fa-sparkles mr-1 text-amber-500"></i>
-                      Showing {filteredServices.length} of {visibleServicesCatalog.length} Services
+                      {siteLang === "ur" ? `${visibleServicesCatalog.length} میں سے ${filteredServices.length} سروسز دستیاب ہیں` : `Showing ${filteredServices.length} of ${visibleServicesCatalog.length} Services`}
                     </span>
 
                     {/* Mobile 2-Grid / 1-Grid Instant Switcher */}
@@ -3352,7 +3359,7 @@ export default function App({
                           <div className="min-w-0">
                             <div className="flex items-center justify-between gap-1 mb-1 min-w-0">
                               <label className="text-[8.5px] sm:text-[10px] font-extrabold uppercase text-slate-700 truncate">
-                                Package:
+                                {siteLang === "ur" ? "پیکج منتخب کریں:" : "Package:"}
                               </label>
                               <span className="text-[9.5px] sm:text-[11px] font-display font-bold text-pink-700 bg-white/85 px-1.5 py-0.2 rounded-md border border-pink-200/80 whitespace-nowrap flex-shrink-0">
                                 {quickPriceLabel}
@@ -3382,7 +3389,7 @@ export default function App({
                               className="flex-1 min-w-0 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-extrabold text-[10px] sm:text-xs shadow-md flex items-center justify-center gap-1 sm:gap-1.5 transition cursor-pointer overflow-hidden"
                             >
                               <SiWhatsapp className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-                              <span className="truncate">Buy Now</span>
+                              <span className="truncate">{siteLang === "ur" ? "ابھی خریدیں" : "Buy Now"}</span>
                             </button>
                             {srv.directToolUrl && (
                               <a
@@ -3434,7 +3441,7 @@ export default function App({
                       className="self-center sm:self-auto px-3.5 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-indigo-600 to-pink-500 text-white font-extrabold text-[10.5px] sm:text-xs shadow-md hover:scale-105 transition whitespace-nowrap cursor-pointer flex items-center gap-1.5"
                     >
                       <FaScrewdriverWrench className="w-3 h-3" />
-                      <span>Open All Web Tools</span>
+                      <span>{siteLang === "ur" ? "تمام ٹولز اوپن کریں" : "Open All Web Tools"}</span>
                     </button>
                   </div>
 
@@ -5505,13 +5512,13 @@ export default function App({
                     }}
                     className="flex-1 py-3 px-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs sm:text-sm shadow-lg flex items-center justify-center gap-2 transition"
                   >
-                    <i className="fa-brands fa-whatsapp text-base"></i> Order Now on WhatsApp
+                    <i className="fa-brands fa-whatsapp text-base"></i> {siteLang === 'ur' ? 'واٹس ایپ پر آرڈر بھیجیں' : 'Order Now on WhatsApp'}
                   </a>
                   <button
                     onClick={addCurrentModalToCart}
                     className="py-3 px-4 rounded-full bg-white/90 hover:bg-white text-pink-600 font-extrabold text-xs border border-pink-200 shadow-sm transition cursor-pointer"
                   >
-                    <i className="fa-solid fa-cart-plus mr-1"></i>Add to Bag
+                    <i className="fa-solid fa-cart-plus mr-1"></i>{siteLang === 'ur' ? 'ٹوکری میں شامل کریں' : 'Add to Bag'}
                   </button>
                 </div>
               </div>
