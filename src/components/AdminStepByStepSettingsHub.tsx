@@ -63,11 +63,13 @@ import {
   FaTags,
   FaBullhorn,
   FaArrowUp,
+  FaArrowRight,
   FaArrowDown,
   FaClone,
   FaPalette
 } from 'react-icons/fa6';
 import { AdminSeoStudio } from './AdminSeoStudio';
+import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
 
 export {
   type SiteBannerConfig,
@@ -222,6 +224,7 @@ export function getPromoBannerStyleClasses(style: PromoBannerStyle) {
 }
 
 export type AdminSettingsScreenId =
+  | 'dashboard'
   | 'home'
   | 'visibility'
   | 'categories'
@@ -478,7 +481,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
   exitSecretAdminPortal
 }) => {
   // Active Settings Screen ('home' shows WhatsApp/TikTok style grouped menu)
-  const [activeScreen, setActiveScreen] = useState<AdminSettingsScreenId>('home');
+  const [activeScreen, setActiveScreen] = useState<AdminSettingsScreenId>('dashboard');
   const [settingsSearchQuery, setSettingsSearchQuery] = useState<string>('');
   const [visibilitySubTab, setVisibilitySubTab] = useState<
     'sections' | 'products' | 'categories' | 'tools'
@@ -1473,6 +1476,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           {/* Quick Pill Navigation Strip (Always accessible like TikTok top tabs) */}
           <div className="flex items-center gap-1.5 overflow-x-auto pt-2 border-t border-white/15 scrollbar-none pr-8 overscroll-x-contain pb-1">
             {[
+              { id: 'dashboard' as const, label: '📊 System Dashboard', badge: 'Live Radar' },
               { id: 'home' as const, label: '⚙️ Settings Menu', badge: 'Home' },
               {
                 id: 'visibility' as const,
@@ -1565,9 +1569,55 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
         </div>
       </div>
 
+      {/* ==================== SCREEN -1: MASTER ANALYTICS & 26-FEATURE DASHBOARD ==================== */}
+      {activeScreen === 'dashboard' && (
+        <AdminAnalyticsDashboard
+          siteConfig={siteConfig}
+          onUpdateSiteConfig={onUpdateSiteConfig}
+          servicesCatalog={servicesCatalog}
+          webToolsCatalog={webToolsCatalog}
+          paymentProofs={paymentProofs}
+          walletBalance={walletBalance}
+          websiteUiMode={websiteUiMode}
+          websiteFontMode={websiteFontMode}
+          onOpenScreen={openSettingsScreen}
+          toggleServiceHidden={toggleServiceHidden}
+          toggleToolHidden={toggleToolHidden}
+          toggleCategoryHidden={toggleCategoryHidden}
+          showToast={showToast}
+          playPopSound={playPopSound}
+          copyText={copyText}
+          exitSecretAdminPortal={exitSecretAdminPortal}
+        />
+      )}
+
       {/* ==================== SCREEN 0: WHATSAPP & TIKTOK STYLE SETTINGS HOME MENU ==================== */}
       {activeScreen === 'home' && (
         <div className="space-y-5">
+          {/* Quick Jump to Dashboard Pill */}
+          <div
+            onClick={() => openSettingsScreen('dashboard')}
+            className="rounded-2xl p-3.5 bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 border border-indigo-400/50 text-white flex items-center justify-between gap-3 cursor-pointer shadow-md hover:scale-[1.01] transition"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="w-8 h-8 rounded-xl bg-indigo-500/30 text-sky-300 flex items-center justify-center font-bold text-sm">
+                📊
+              </span>
+              <div className="min-w-0">
+                <div className="text-xs sm:text-sm font-extrabold truncate">
+                  Open Master System Dashboard &amp; 26-Feature Audit
+                </div>
+                <div className="text-[10px] text-sky-200 truncate">
+                  View real-time functions ON/OFF, products breakdown, web tools &amp; verified sales volume
+                </div>
+              </div>
+            </div>
+            <span className="px-3 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-extrabold flex items-center gap-1.5 whitespace-nowrap shadow-sm">
+              <span>View Dashboard</span>
+              <FaArrowRight className="w-3 h-3" />
+            </span>
+          </div>
+
           {/* Search Bar + 4 Quick Wizard Launch Tiles */}
           <div className="acrylic-frame rounded-[30px] p-3 sm:p-4 space-y-3.5">
             <div className="sim-input-box !py-2.5 !px-4 !rounded-2xl">
