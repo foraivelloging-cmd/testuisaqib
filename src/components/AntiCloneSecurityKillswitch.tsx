@@ -4,15 +4,42 @@ import React, { useEffect, useRef } from 'react';
 
 interface Props {
   authorizedDomains?: string[];
+  disableKillswitch?: boolean;
 }
 
-export function AntiCloneSecurityKillswitch({ authorizedDomains = [] }: Props) {
+export function AntiCloneSecurityKillswitch({
+  authorizedDomains = [],
+  disableKillswitch = false,
+}: Props) {
   const guardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Allowed base domains
+    // Master killswitch bypass for client deployments
+    if (
+      disableKillswitch ||
+      process.env.NEXT_PUBLIC_DISABLE_KILLSWITCH === 'true'
+    ) {
+      return;
+    }
+
+    // Read additional domains from NEXT_PUBLIC_ALLOWED_DOMAINS if present
+    const envAllowed = (process.env.NEXT_PUBLIC_ALLOWED_DOMAINS || '')
+      .split(',')
+      .map((d) => d.trim().toLowerCase())
+      .filter(Boolean);
+
+    // Read domain from NEXT_PUBLIC_APP_URL
+    const envAppUrl = process.env.NEXT_PUBLIC_APP_URL || '';
+    if (envAppUrl) {
+      try {
+        const parsed = new URL(envAppUrl.startsWith('http') ? envAppUrl : `https://${envAppUrl}`);
+        envAllowed.push(parsed.hostname.toLowerCase());
+      } catch {}
+    }
+
+    // Base allowed domains
     const baseAllowed = [
       'localhost',
       '127.0.0.1',
@@ -20,7 +47,11 @@ export function AntiCloneSecurityKillswitch({ authorizedDomains = [] }: Props) {
       'vercel.app',
     ];
 
-    const allAllowed = [...baseAllowed, ...authorizedDomains.map((d) => d.toLowerCase().trim())];
+    const allAllowed = [
+      ...baseAllowed,
+      ...envAllowed,
+      ...authorizedDomains.map((d) => d.toLowerCase().trim()),
+    ];
 
     const currentHost = window.location.hostname.toLowerCase();
     const currentProtocol = window.location.protocol;
@@ -132,7 +163,7 @@ export function AntiCloneSecurityKillswitch({ authorizedDomains = [] }: Props) {
         observer.disconnect();
       };
     }
-  }, [authorizedDomains]);
+  }, [authorizedDomains, disableKillswitch]);
 
   return (
     <div

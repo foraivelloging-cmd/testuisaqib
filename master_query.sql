@@ -861,6 +861,16 @@ ON CONFLICT (username) DO UPDATE SET
 --   updated_at = now()
 -- WHERE username = 'saqib';
 
+
+-- [H] Whitelist New Domain for Client Clones / Resales:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   config,
+--   '{authorizedDomains}',
+--   COALESCE(config->'authorizedDomains', '["localhost", "127.0.0.1", "mrsaqib242.vercel.app"]'::jsonb) || '["clientdomain.com"]'::jsonb
+-- )
+-- WHERE id = 'default';
+
 -- =====================================================================
 -- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
 -- =====================================================================

@@ -187,20 +187,47 @@ export function proxy(request: NextRequest) {
     }
 
     // 3b. Strict Anti-Clone & Anti-CSRF Origin Guard
+    const disableKillswitch =
+      process.env.DISABLE_KILLSWITCH === 'true' ||
+      process.env.NEXT_PUBLIC_DISABLE_KILLSWITCH === 'true';
+
     const origin = request.headers.get('origin');
     const host = request.headers.get('host');
 
-    if (origin && host) {
+    if (!disableKillswitch && origin && host) {
       try {
         const originHost = new URL(origin).host.toLowerCase();
         const cleanHost = host.toLowerCase();
+
+        // Read dynamically configured allowed domains from environment (for multiple client sales/clones)
+        const envAllowedDomains = (
+          process.env.ALLOWED_DOMAINS ||
+          process.env.NEXT_PUBLIC_ALLOWED_DOMAINS ||
+          ''
+        )
+          .split(',')
+          .map((d) => d.trim().toLowerCase())
+          .filter(Boolean);
+
+        const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '';
+        if (appUrl) {
+          try {
+            const parsed = new URL(appUrl.startsWith('http') ? appUrl : `https://${appUrl}`);
+            envAllowedDomains.push(parsed.hostname.toLowerCase());
+          } catch {}
+        }
+
+        const isEnvAuthorized = envAllowedDomains.some(
+          (d) => originHost === d || originHost.endsWith(`.${d}`)
+        );
 
         // Reject if request origin does not match legitimate host (preventing unauthorized clone sites)
         if (
           originHost !== cleanHost &&
           !originHost.includes('localhost') &&
           !originHost.includes('127.0.0.1') &&
-          !originHost.endsWith('vercel.app')
+          !originHost.endsWith('vercel.app') &&
+          !isEnvAuthorized
         ) {
           return new NextResponse(
             JSON.stringify({ error: 'Forbidden: Unauthorized Cloned Origin Rejected by Saqib Visuals DRM.' }),

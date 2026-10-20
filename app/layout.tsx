@@ -29,6 +29,31 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const envAllowedDomains = (
+    process.env.ALLOWED_DOMAINS ||
+    process.env.NEXT_PUBLIC_ALLOWED_DOMAINS ||
+    ''
+  )
+    .split(',')
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
+
+  const appUrl = process.env.APP_URL || process.env.NEXT_PUBLIC_APP_URL || '';
+  if (appUrl) {
+    try {
+      const parsed = new URL(appUrl.startsWith('http') ? appUrl : `https://${appUrl}`);
+      envAllowedDomains.push(parsed.hostname.toLowerCase());
+    } catch {}
+  }
+
+  if (process.env.VERCEL_URL) {
+    envAllowedDomains.push(process.env.VERCEL_URL.replace(/https?:\/\//, '').split('/')[0].toLowerCase());
+  }
+
+  const disableKillswitch =
+    process.env.DISABLE_KILLSWITCH === 'true' ||
+    process.env.NEXT_PUBLIC_DISABLE_KILLSWITCH === 'true';
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -68,7 +93,10 @@ export default function RootLayout({
         />
       </head>
       <body suppressHydrationWarning className="overflow-x-hidden antialiased selection:bg-pink-500 selection:text-white">
-        <AntiCloneSecurityKillswitch />
+        <AntiCloneSecurityKillswitch
+          authorizedDomains={envAllowedDomains}
+          disableKillswitch={disableKillswitch}
+        />
         <AntiScrapeProtectionShield />
         {children}
       </body>
