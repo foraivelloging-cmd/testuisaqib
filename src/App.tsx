@@ -18,6 +18,7 @@ import {
   DEFAULT_FAQS
 } from './data/defaultCatalog';
 import { ShowcaseSections } from './components/ShowcaseSections';
+import { WhatsAppChatWidget } from './components/WhatsAppChatWidget';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
   SupportedLang,
@@ -453,6 +454,7 @@ export default function App({
 
   // Other Modals & Mobile Grid Layout State (Defaults to 2-Column Mobile Grid)
   const [cartModalOpen, setCartModalOpen] = useState<boolean>(false);
+  const [whatsAppWidgetOpen, setWhatsAppWidgetOpen] = useState<boolean>(false);
 
   // Internationalization: Language Switcher (English 'en' vs Urdu 'ur')
   const [siteLang, setSiteLang] = useState<SupportedLang>('en');
@@ -5251,20 +5253,16 @@ export default function App({
         </button>
       )}
 
-      {/* ==================== FLOATING 1-TAP WHATSAPP QUICK ORDER ORB ==================== */}
+      {/* ==================== FLOATING INTERACTIVE WHATSAPP CHAT POPUP WIDGET ==================== */}
       {siteVisibility.showFloatingWhatsApp && activeTab !== 'saqibadmb' && (
-        <a
-          href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
-            siteConfig.contact.whatsappDefaultMessage
-          )}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          title={`Chat on WhatsApp with ${siteConfig.banner.mainTitle}`}
-          className="fixed bottom-20 md:bottom-6 right-3 sm:right-5 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 text-white border-2 border-white shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-transform"
-        >
-          <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-400 border-2 border-white animate-ping"></span>
-          <SiWhatsapp className="w-6 h-6 sm:w-7 sm:h-7" />
-        </a>
+        <WhatsAppChatWidget
+          siteConfig={siteConfig}
+          siteLang={siteLang}
+          isOpen={whatsAppWidgetOpen}
+          onToggle={() => setWhatsAppWidgetOpen((prev) => !prev)}
+          onClose={() => setWhatsAppWidgetOpen(false)}
+          onPlayPop={playPopSound}
+        />
       )}
 
       {/* ==================== FIXED 3D GLASS MOBILE BOTTOM APP DOCK (MD:HIDDEN) ==================== */}

@@ -41,6 +41,12 @@ export interface SiteContactConfig {
   supportEmail: string;
   officialWebsiteUrl: string;
   officialWebsiteLabel: string;
+  whatsappWidgetEnabled?: boolean;
+  whatsappWidgetName?: string;
+  whatsappWidgetAvatar?: string;
+  whatsappWidgetGreeting?: string;
+  whatsappWidgetGreetingUr?: string;
+  whatsappWidgetStatus?: string;
 }
 
 export interface SiteSocialsConfig {
@@ -339,7 +345,13 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     whatsappDefaultMessage: 'Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.',
     supportEmail: 'support@saqibvisuals.com',
     officialWebsiteUrl: 'https://mrsaqib242.vercel.app',
-    officialWebsiteLabel: 'mrsaqib242.vercel.app'
+    officialWebsiteLabel: 'mrsaqib242.vercel.app',
+    whatsappWidgetEnabled: true,
+    whatsappWidgetName: 'Muhammad Saqib',
+    whatsappWidgetAvatar: 'https://mrsaqib242.vercel.app/saqib-pic.png',
+    whatsappWidgetGreeting: 'Assalam-o-Alaikum! 👋 Welcome to Saqib Visuals Hub.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?',
+    whatsappWidgetGreetingUr: 'السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟',
+    whatsappWidgetStatus: 'Typically replies in ~2 minutes ⚡'
   },
   socials: {
     instagramUrl: 'https://instagram.com/',

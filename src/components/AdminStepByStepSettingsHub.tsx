@@ -8305,6 +8305,120 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </div>
                 </div>
 
+                {/* WhatsApp Interactive Popup Chat Widget Customizer */}
+                <div className="p-4 rounded-2xl bg-emerald-50/80 border-2 border-emerald-300 space-y-3.5">
+                  <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-600 text-white flex items-center justify-center text-sm shadow">
+                        <i className="fa-brands fa-whatsapp"></i>
+                      </span>
+                      <div>
+                        <h4 className="text-xs font-extrabold text-slate-900">
+                          WhatsApp Interactive Popup Chat Widget (Live Frontend)
+                        </h4>
+                        <p className="text-[10px] font-bold text-emerald-700">
+                          Customize Widget Name, Avatar (DP), Online Status, and Greeting Messages
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                        Widget Agent Name
+                      </label>
+                      <input
+                        type="text"
+                        value={siteConfig.contact.whatsappWidgetName || ''}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, whatsappWidgetName: e.target.value }
+                          }))
+                        }
+                        placeholder="Muhammad Saqib"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-bold text-xs text-slate-900"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                        Widget Avatar / DP URL (Image Link)
+                      </label>
+                      <input
+                        type="text"
+                        value={siteConfig.contact.whatsappWidgetAvatar || ''}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, whatsappWidgetAvatar: e.target.value }
+                          }))
+                        }
+                        placeholder="https://mrsaqib242.vercel.app/saqib-pic.png"
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-mono-code text-xs text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                      Online Subtitle Status
+                    </label>
+                    <input
+                      type="text"
+                      value={siteConfig.contact.whatsappWidgetStatus || ''}
+                      onChange={(e) =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          contact: { ...prev.contact, whatsappWidgetStatus: e.target.value }
+                        }))
+                      }
+                      placeholder="Typically replies in ~2 minutes ⚡"
+                      className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-bold text-xs text-slate-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                        Welcome Greeting Message (English)
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={siteConfig.contact.whatsappWidgetGreeting || ''}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, whatsappWidgetGreeting: e.target.value }
+                          }))
+                        }
+                        placeholder="Assalam-o-Alaikum! Welcome to Saqib Visuals Hub..."
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-medium text-xs text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                        Welcome Greeting Message (Urdu اردو)
+                      </label>
+                      <textarea
+                        rows={2}
+                        dir="rtl"
+                        value={siteConfig.contact.whatsappWidgetGreetingUr || ''}
+                        onChange={(e) =>
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            contact: { ...prev.contact, whatsappWidgetGreetingUr: e.target.value }
+                          }))
+                        }
+                        placeholder="السلام علیکم! ثاقب ویژولز ہب میں خوش آمدید..."
+                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-medium text-xs text-slate-900"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex justify-end">
                   <button
                     type="button"
