@@ -105,6 +105,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     password_hash TEXT,
     role TEXT NOT NULL DEFAULT 'member', -- member, reseller, admin
     balance NUMERIC NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    status TEXT NOT NULL DEFAULT 'active', -- active, banned
+    ban_reason TEXT DEFAULT '',
+    last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );

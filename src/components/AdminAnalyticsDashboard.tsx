@@ -5,6 +5,7 @@ import { StoreService, WebToolItem, CategoryId, CATEGORY_META } from '../data/de
 import { SiteSettingsConfig, AdminSettingsScreenId } from './AdminStepByStepSettingsHub';
 import { PaymentProofRequest } from './WalletAndAdminPayments';
 import { AdminVisitorTelemetryView } from './AdminVisitorTelemetryView';
+import { AdminUserManagementView } from './AdminUserManagementView';
 import {
   FaChartPie,
   FaBolt,
@@ -82,7 +83,7 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
   copyText,
   exitSecretAdminPortal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors'>('visitors');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users'>('users');
   const [featureFilter, setFeatureFilter] = useState<FeatureCategory>('all');
   const [featureSearch, setFeatureSearch] = useState<string>('');
 
@@ -789,6 +790,7 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
       {/* ==================== 3. DASHBOARD SUB-NAVIGATION TABS ==================== */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
         {[
+          { id: 'users' as const, label: '👥 User Accounts & Wallets', badge: 'Users & Bans' },
           { id: 'visitors' as const, label: '🕵️ Live Visitors & Devices', badge: 'Live Telemetry' },
           { id: 'matrix' as const, label: `⚡ Live Feature Matrix (${totalFeaturesCount})`, badge: `${activeFeaturesCount} ON` },
           { id: 'products' as const, label: `🛍️ Products Catalog (${totalProducts})`, badge: `${liveProducts} Live` },
@@ -823,6 +825,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
           );
         })}
       </div>
+
+      {/* ==================== TAB: USER ACCOUNTS & VIP WALLETS ==================== */}
+      {activeTab === 'users' && (
+        <AdminUserManagementView
+          showToast={showToast}
+          copyText={copyText}
+          playPopSound={playPopSound}
+        />
+      )}
 
       {/* ==================== TAB 0: LIVE VISITORS & DEVICE TELEMETRY ==================== */}
       {activeTab === 'visitors' && (

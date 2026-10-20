@@ -39,7 +39,8 @@ export async function POST(req: Request) {
       }
 
       // Create new profile in Supabase
-      const { data, error } = await supabaseAdmin
+      const nowIso = new Date().toISOString();
+      let insertResult = await supabaseAdmin
         .from('profiles')
         .insert({
           id: cleanId,
@@ -48,15 +49,41 @@ export async function POST(req: Request) {
           email: cleanId.includes('@') ? cleanId : null,
           role: role || 'member',
           balance: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          status: 'active',
+          ban_reason: '',
+          last_login_at: nowIso,
+          created_at: nowIso,
+          updated_at: nowIso,
         })
         .select()
         .single();
 
-      if (error) {
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+      // Graceful fallback if status/ban_reason/last_login_at columns are not migrated yet
+      if (
+        insertResult.error &&
+        (insertResult.error.message?.includes('column') || insertResult.error.message?.includes('schema cache'))
+      ) {
+        insertResult = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: cleanId,
+            full_name: fullName?.trim() || 'VIP Member',
+            phone: cleanId.startsWith('03') || cleanId.startsWith('+92') ? cleanId : null,
+            email: cleanId.includes('@') ? cleanId : null,
+            role: role || 'member',
+            balance: 0,
+            created_at: nowIso,
+            updated_at: nowIso,
+          })
+          .select()
+          .single();
       }
+
+      if (insertResult.error) {
+        return NextResponse.json({ success: false, error: insertResult.error.message }, { status: 500 });
+      }
+
+      const data = insertResult.data;
 
       return NextResponse.json({
         success: true,
@@ -66,6 +93,8 @@ export async function POST(req: Request) {
           name: data.full_name,
           role: data.role,
           balance: Number(data.balance || 0),
+          status: data.status || 'active',
+          lastLoginAt: data.last_login_at || nowIso,
         },
       });
     }
@@ -87,9 +116,42 @@ export async function POST(req: Request) {
           name: fullName?.trim() || cleanId.split('@')[0] || 'VIP Member',
           role: 'member',
           balance: 1800,
+          status: 'active',
+          lastLoginAt: new Date().toISOString(),
         },
       });
     }
+
+    // 1. Check if Account is Banned by Administrator
+    if (profile.status === 'banned') {
+      const reason = profile.ban_reason || 'Violation of website terms or fraudulent behavior.';
+      return NextResponse.json(
+        {
+          success: false,
+          banned: true,
+          error: `Account Suspended: Your account has been banned by the Administrator (${reason}). Please contact support on WhatsApp.`,
+        },
+        { status: 403 }
+      );
+    }
+
+    // 2. Update last_login_at timestamp
+    const loginNow = new Date().toISOString();
+    (async () => {
+      try {
+        const res = await supabaseAdmin
+          .from('profiles')
+          .update({
+            last_login_at: loginNow,
+            updated_at: loginNow,
+          })
+          .eq('id', cleanId);
+
+        if (res.error && res.error.message?.includes('column')) {
+          await supabaseAdmin.from('profiles').update({ updated_at: loginNow }).eq('id', cleanId);
+        }
+      } catch {}
+    })();
 
     return NextResponse.json({
       success: true,
@@ -99,6 +161,8 @@ export async function POST(req: Request) {
         name: profile.full_name,
         role: profile.role,
         balance: Number(profile.balance || 0),
+        status: profile.status || 'active',
+        lastLoginAt: loginNow,
       },
     });
   } catch (err: unknown) {
