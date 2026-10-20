@@ -258,7 +258,7 @@ export const DEFAULT_SITE_SEO: SiteSeoConfig = {
   metaDescription: 'Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.',
   keywords: 'Muhammad Saqib, Saqib Visuals, CapCut Pro Pakistan, SMM Panel Pakistan, Lovable Pro Account, Gemini 18M Pro, ChatGPT Plus & Claude, Pak SIM Database Live, SIM Tracker 2026, NADRA Verification FRC, TikTok Agency Accounts UK USA, Fast USDT EasyPaisa Delivery',
   author: 'Muhammad Saqib',
-  canonicalUrl: 'https://mrsaqib242.vercel.app',
+  canonicalUrl: 'https://testuisaqib.vercel.app',
   robotsIndex: true,
   robotsFollow: true,
   ogType: 'website',
@@ -506,11 +506,11 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     whatsappNumberDisplay: '+92 347 8936242',
     whatsappDefaultMessage: 'Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.',
     supportEmail: 'support@saqibvisuals.com',
-    officialWebsiteUrl: 'https://mrsaqib242.vercel.app',
-    officialWebsiteLabel: 'mrsaqib242.vercel.app',
+    officialWebsiteUrl: 'https://testuisaqib.vercel.app',
+    officialWebsiteLabel: 'testuisaqib.vercel.app',
     whatsappWidgetEnabled: true,
     whatsappWidgetName: 'Muhammad Saqib',
-    whatsappWidgetAvatar: 'https://mrsaqib242.vercel.app/saqib-pic.png',
+    whatsappWidgetAvatar: 'https://testuisaqib.vercel.app/saqib-pic.png',
     whatsappWidgetGreeting: 'Assalam-o-Alaikum! 👋 Welcome to Saqib Visuals Hub.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?',
     whatsappWidgetGreetingUr: 'السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟',
     whatsappWidgetStatus: 'Typically replies in ~2 minutes ⚡'
@@ -591,6 +591,6 @@ export function deepMergeSiteConfig(raw: unknown): SiteSettingsConfig {
     },
     authorizedDomains: Array.isArray(obj.authorizedDomains) && obj.authorizedDomains.length > 0
       ? obj.authorizedDomains
-      : ['localhost', '127.0.0.1', 'mrsaqib242.vercel.app'],
+      : ['localhost', '127.0.0.1', 'testuisaqib.vercel.app', 'mrsaqib242.vercel.app'],
   };
 }

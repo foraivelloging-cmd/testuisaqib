@@ -43,6 +43,7 @@ export function AntiCloneSecurityKillswitch({
     const baseAllowed = [
       'localhost',
       '127.0.0.1',
+      'testuisaqib.vercel.app',
       'mrsaqib242.vercel.app',
       'vercel.app',
     ];
@@ -113,7 +114,7 @@ export function AntiCloneSecurityKillswitch({
               <div style="padding:12px;background:rgba(0,0,0,0.5);border-radius:12px;font-size:11px;color:#fca5a5;font-weight:bold;margin-bottom:20px;">
                 ⚡ Redirecting to Official Verified Hub in 3 seconds...
               </div>
-              <a href="https://mrsaqib242.vercel.app" style="display:inline-block;background:#ef4444;color:#fff;text-decoration:none;font-size:12px;font-weight:900;padding:12px 24px;border-radius:12px;box-shadow:0 8px 20px rgba(239,68,68,0.4);">
+              <a href="https://testuisaqib.vercel.app" style="display:inline-block;background:#ef4444;color:#fff;text-decoration:none;font-size:12px;font-weight:900;padding:12px 24px;border-radius:12px;box-shadow:0 8px 20px rgba(239,68,68,0.4);">
                 Go to Official Verified Website →
               </a>
             </div>
@@ -123,9 +124,9 @@ export function AntiCloneSecurityKillswitch({
         // 4. Force Redirect to genuine production site
         setTimeout(() => {
           try {
-            window.location.replace('https://mrsaqib242.vercel.app');
+            window.location.replace('https://testuisaqib.vercel.app');
           } catch {
-            window.location.href = 'https://mrsaqib242.vercel.app';
+            window.location.href = 'https://testuisaqib.vercel.app';
           }
         }, 3000);
       };

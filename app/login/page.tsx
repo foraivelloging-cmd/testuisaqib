@@ -6,7 +6,7 @@ import ClientStoreApp from '../ClientStoreApp';
 // Dynamic Server-Side Generated SEO Metadata for VIP Login & Wallet Portal
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
-  const origin = process.env.APP_URL || 'https://mrsaqib242.vercel.app';
+  const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const effectiveCanonical = `${origin}/login`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
   const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';

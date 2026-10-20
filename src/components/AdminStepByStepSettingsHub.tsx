@@ -8580,7 +8580,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           contact: { ...prev.contact, officialWebsiteUrl: e.target.value }
                         }))
                       }
-                      placeholder="https://mrsaqib242.vercel.app"
+                      placeholder="https://testuisaqib.vercel.app"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-indigo-300 font-mono-code text-xs text-slate-900"
                     />
                   </div>
@@ -8598,7 +8598,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           contact: { ...prev.contact, officialWebsiteLabel: e.target.value }
                         }))
                       }
-                      placeholder="mrsaqib242.vercel.app"
+                      placeholder="testuisaqib.vercel.app"
                       className="w-full px-3.5 py-2.5 rounded-xl bg-white border border-indigo-300 font-bold text-xs text-slate-900"
                     />
                   </div>
@@ -8654,7 +8654,7 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             contact: { ...prev.contact, whatsappWidgetAvatar: e.target.value }
                           }))
                         }
-                        placeholder="https://mrsaqib242.vercel.app/saqib-pic.png"
+                        placeholder="https://testuisaqib.vercel.app/saqib-pic.png"
                         className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-mono-code text-xs text-slate-900"
                       />
                     </div>

@@ -37,7 +37,7 @@ export function WhatsAppChatWidget({
   const widgetAvatar =
     siteConfig?.contact?.whatsappWidgetAvatar ||
     siteConfig?.banner?.portraitUrl ||
-    'https://mrsaqib242.vercel.app/saqib-pic.png';
+    'https://testuisaqib.vercel.app/saqib-pic.png';
 
   const widgetStatus =
     siteConfig?.contact?.whatsappWidgetStatus ||
@@ -111,7 +111,7 @@ export function WhatsAppChatWidget({
                     className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover border-2 border-white/40 shadow-sm"
                     onError={(e) => {
                       (e.currentTarget as HTMLImageElement).src =
-                        'https://mrsaqib242.vercel.app/saqib-pic.png';
+                        'https://testuisaqib.vercel.app/saqib-pic.png';
                     }}
                   />
                 ) : (

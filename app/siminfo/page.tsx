@@ -4,7 +4,7 @@ import ClientStoreApp from '../ClientStoreApp';
 
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
-  const origin = process.env.APP_URL || 'https://mrsaqib242.vercel.app';
+  const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const canonical = `${origin}/siminfo`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
   const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';

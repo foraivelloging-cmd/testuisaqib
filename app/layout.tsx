@@ -6,7 +6,7 @@ import { PwaInstallPrompt } from '@/src/components/PwaInstallPrompt';
 import { VisitorTelemetryTracker } from '@/src/components/VisitorTelemetryTracker';
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.APP_URL || 'https://mrsaqib242.vercel.app'),
+  metadataBase: new URL(process.env.APP_URL || 'https://testuisaqib.vercel.app'),
   title: 'Muhammad Saqib | Saqib Visuals — SMM Store, CapCut, AI & SIM Info Hub',
   description: 'SMM Store, CapCut Pro, AI Tools & SIM Info Hub by Muhammad Saqib.',
   manifest: '/manifest.json',

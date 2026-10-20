@@ -74,7 +74,7 @@ export const AdminSeoStudio: React.FC<AdminSeoStudioProps> = ({
   const currentOrigin =
     typeof window !== 'undefined'
       ? window.location.origin
-      : 'https://mrsaqib242.vercel.app';
+      : 'https://testuisaqib.vercel.app';
   const effectiveCanonical = seo.canonicalUrl.trim() || currentOrigin;
 
   const currentKeywordsList = seo.keywords
@@ -375,7 +375,7 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                       type="text"
                       value={seo.canonicalUrl}
                       onChange={(e) => updateSeoField('canonicalUrl', e.target.value)}
-                      placeholder="https://mrsaqib242.vercel.app"
+                      placeholder="https://testuisaqib.vercel.app"
                       className="w-full px-3.5 py-2 rounded-xl bg-white border border-slate-300 font-mono-code text-xs text-slate-900"
                     />
                   </div>

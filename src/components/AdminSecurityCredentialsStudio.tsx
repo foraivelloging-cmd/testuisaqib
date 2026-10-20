@@ -590,7 +590,7 @@ WHERE username = 'saqib';`;
                 </span>
                 <span className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 flex items-center gap-2 shadow-sm">
                   <FaCircleCheck className="text-[11px] text-emerald-400" />
-                  <span>mrsaqib242.vercel.app (Official Verified Hub)</span>
+                  <span>testuisaqib.vercel.app (Official Verified Hub)</span>
                 </span>
               </div>
             </div>
@@ -601,13 +601,13 @@ WHERE username = 'saqib';`;
                 <span>🌐 Custom Authorized Domains</span>
               </h4>
               <div className="flex flex-wrap gap-2.5 mb-4">
-                {(siteConfig.authorizedDomains || ['mrsaqib242.vercel.app']).map((dom) => (
+                {(siteConfig.authorizedDomains || ['testuisaqib.vercel.app', 'mrsaqib242.vercel.app']).map((dom) => (
                   <span
                     key={dom}
                     className="px-3.5 py-1.5 rounded-xl text-xs font-mono font-bold bg-sky-500/20 text-sky-200 border border-sky-400/40 flex items-center gap-2 shadow-sm"
                   >
                     <span>{dom}</span>
-                    {dom !== 'localhost' && dom !== '127.0.0.1' && dom !== 'mrsaqib242.vercel.app' && onUpdateSiteConfig && (
+                    {dom !== 'localhost' && dom !== '127.0.0.1' && dom !== 'testuisaqib.vercel.app' && dom !== 'mrsaqib242.vercel.app' && onUpdateSiteConfig && (
                       <button
                         type="button"
                         onClick={() => {
