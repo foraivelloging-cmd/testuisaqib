@@ -3,6 +3,7 @@ import '../src/index.css';
 import { AntiScrapeProtectionShield } from '@/src/components/AntiScrapeProtectionShield';
 import { AntiCloneSecurityKillswitch } from '@/src/components/AntiCloneSecurityKillswitch';
 import { PwaInstallPrompt } from '@/src/components/PwaInstallPrompt';
+import { VisitorTelemetryTracker } from '@/src/components/VisitorTelemetryTracker';
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || 'https://mrsaqib242.vercel.app'),
@@ -119,6 +120,7 @@ export default function RootLayout({
         />
         <AntiScrapeProtectionShield />
         <PwaInstallPrompt />
+        <VisitorTelemetryTracker />
         {children}
       </body>
     </html>

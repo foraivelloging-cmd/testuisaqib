@@ -184,6 +184,32 @@ CREATE TABLE IF NOT EXISTS public.security_lockouts (
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
 );
 
+-- 3.11 VISITOR FINGERPRINTS & DEVICE TELEMETRY TABLE
+CREATE TABLE IF NOT EXISTS public.visitor_fingerprints (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    fingerprint TEXT NOT NULL UNIQUE,
+    ip_address TEXT DEFAULT '127.0.0.1',
+    country TEXT DEFAULT 'Pakistan',
+    city TEXT DEFAULT '',
+    device_type TEXT DEFAULT 'Desktop',
+    os TEXT DEFAULT 'Unknown',
+    browser TEXT DEFAULT 'Unknown',
+    battery_level TEXT DEFAULT 'N/A',
+    battery_raw INTEGER DEFAULT -1,
+    battery_charging BOOLEAN DEFAULT false,
+    screen_resolution TEXT DEFAULT '',
+    hardware_specs TEXT DEFAULT '',
+    language TEXT DEFAULT 'en',
+    last_path TEXT DEFAULT '/',
+    total_visits INTEGER DEFAULT 1,
+    first_seen TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    last_seen TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    user_agent TEXT DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_fingerprint ON public.visitor_fingerprints (fingerprint);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_ip ON public.visitor_fingerprints (ip_address);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_last_seen ON public.visitor_fingerprints (last_seen DESC);
+
 -- ---------------------------------------------------------------------
 -- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
 -- ---------------------------------------------------------------------
@@ -292,6 +318,14 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
 ALTER TABLE public.security_lockouts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "No Public Access to Lockouts" ON public.security_lockouts FOR ALL TO anon, authenticated USING (false);
+ALTER TABLE public.visitor_fingerprints ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow Public Insert Visitor Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Allow Public Insert Visitor Telemetry" ON public.visitor_fingerprints FOR INSERT TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow Public Update Visitor Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Allow Public Update Visitor Telemetry" ON public.visitor_fingerprints FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Deny Public Select Direct Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Deny Public Select Direct Telemetry" ON public.visitor_fingerprints FOR SELECT TO anon, authenticated USING (false);
+GRANT ALL ON public.visitor_fingerprints TO service_role;
 
 -- Grant privileges
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
