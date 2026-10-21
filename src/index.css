@@ -2845,3 +2845,20 @@ body.rgb-light-on .hero-rgb-card {
 .animate-bounce-subtle {
   animation: pwaBounceSubtle 3s ease-in-out infinite;
 }
+
+/* ============================================================================ */
+/* MOBILE STEP-BY-STEP DRAWER ANIMATIONS (LEFT SLIDE-IN)                        */
+/* ============================================================================ */
+@keyframes drawerSlideInLeft {
+  0% {
+    transform: translate3d(-100%, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.animate-drawer-slide-left {
+  animation: drawerSlideInLeft 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: transform;
+}

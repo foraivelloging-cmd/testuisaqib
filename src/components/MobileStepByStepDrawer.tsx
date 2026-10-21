@@ -175,7 +175,7 @@ export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
       />
 
       {/* 2. Slide-In Vertical Step-by-Step Drawer Container */}
-      <div className="relative w-[86%] max-w-[350px] h-full bg-white text-slate-900 shadow-2xl flex flex-col z-10 overflow-hidden transform transition-transform duration-300 ease-out border-r border-slate-200">
+      <div className="relative w-[86%] max-w-[350px] h-full bg-white text-slate-900 shadow-2xl flex flex-col z-10 overflow-hidden border-r border-slate-200 animate-drawer-slide-left">
         {/* Drawer Header with Saqib Portrait & Online Status */}
         <div className="p-4 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white flex-shrink-0 relative overflow-hidden">
           <div className="absolute top-0 right-0 w-32 h-32 bg-pink-500/10 rounded-full blur-2xl pointer-events-none" />

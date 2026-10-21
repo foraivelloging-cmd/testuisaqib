@@ -2496,24 +2496,6 @@ export default function App({
                 }
               ></i>
             </button>
-
-            {/* Right-Side Mobile 3-Line Menu Pill Button (Thumb-Friendly for Right Hand) */}
-            <button
-              type="button"
-              onClick={() => {
-                playPopSound(640);
-                setMobileMenuOpen((prev) => !prev);
-              }}
-              title="Open Mobile Menu"
-              className={`flex md:hidden px-2.5 py-1.5 rounded-xl font-extrabold text-[10px] sm:text-xs items-center gap-1.5 transition cursor-pointer border shadow-xs ${
-                mobileMenuOpen
-                  ? 'bg-slate-900 text-white border-pink-400'
-                  : 'bg-white/95 hover:bg-white text-slate-900 border-pink-200'
-              }`}
-            >
-              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark text-pink-400' : 'fa-bars-staggered text-pink-600'} text-xs`}></i>
-              <span className="font-extrabold">Menu</span>
-            </button>
           </div>
         </nav>
 

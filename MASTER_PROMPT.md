@@ -103,7 +103,7 @@ All production database queries, schema definitions, RLS policies, and triggers 
     - **Step 05**: FAQs & Quick Help Desk
     - **Step 06**: 24/7 Direct WhatsApp VIP Support
   - Quick action bar: 6 Dynamic UI Theme Presets, Sound Toggle (Chimes/Muted), and Dual Language Switcher (🇬🇧 English / 🇵🇰 Urdu).
-  - Thumb-friendly triggers: Left header hamburger and right-side mobile `Menu` pill.
+  - Mobile Navigation Trigger: Single prominent animated 3-line hamburger menu button on the LEFT side (exact side from which the drawer glides open), eliminating dual-button confusion.
 
 ### B. Mobile 60-120 FPS Performance Optimizations
 - **File**: `src/index.css` (`@media (max-width: 768px)`), `src/App.tsx`, `src/components/ShowcaseSections.tsx`
