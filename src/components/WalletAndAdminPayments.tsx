@@ -1,4 +1,5 @@
 'use client';
+import { uploadImageToImageKit } from '@/src/lib/clientImageUpload';
 
 import React, { useState, useRef } from 'react';
 import { renderPaymentMethodIcon } from './BrandIcons';
@@ -66,6 +67,7 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
   const [ssMode, setSsMode] = useState<'upload' | 'url'>('upload');
   const [directUrlInput, setDirectUrlInput] = useState<string>('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [isUploadingImageKit, setIsUploadingImageKit] = useState<boolean>(false);
   const [justSubmitted, setJustSubmitted] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -90,14 +92,32 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
     setStep(2);
   };
 
-  // Compress uploaded screenshot image to clean DataURL so localStorage never overflows
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Upload screenshot directly to ImageKit CDN with offline compressed fallback
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     onPlayPop(680);
     setUploadFileName(file.name);
     setFormError(null);
+    setIsUploadingImageKit(true);
 
+    try {
+      // 1. Direct High-Speed ImageKit CDN Upload
+      const res = await uploadImageToImageKit(
+        file,
+        '/saqib-hub/proofs',
+        `proof-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+      );
+      if (res.success && res.url) {
+        setScreenshotDataUrl(res.url);
+        setIsUploadingImageKit(false);
+        return;
+      }
+    } catch {
+      // Fallback to local canvas compression
+    }
+
+    // 2. Offline fallback: canvas compression
     const reader = new FileReader();
     reader.onload = (ev) => {
       const rawDataUrl = ev.target?.result as string;
@@ -116,9 +136,11 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
         } else {
           setScreenshotDataUrl(rawDataUrl);
         }
+        setIsUploadingImageKit(false);
       };
       img.onerror = () => {
         setScreenshotDataUrl(rawDataUrl);
+        setIsUploadingImageKit(false);
       };
       img.src = rawDataUrl;
     };
@@ -617,7 +639,19 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
               />
 
               {!screenshotDataUrl ? (
-                ssMode === 'upload' ? (
+                isUploadingImageKit ? (
+                  <div className="border-2 border-dashed border-pink-400 bg-pink-50/90 rounded-2xl p-6 text-center space-y-2.5 animate-pulse">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 to-indigo-600 text-white flex items-center justify-center mx-auto text-xl shadow-md">
+                      <i className="fa-solid fa-cloud-arrow-up fa-bounce"></i>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-slate-900">
+                      ⚡ Uploading Directly to ImageKit High-Speed CDN...
+                    </div>
+                    <div className="text-[10px] font-semibold text-slate-600">
+                      Converting screenshot into cloud URL for instant verification
+                    </div>
+                  </div>
+                ) : ssMode === 'upload' ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
                     className="border-2 border-dashed border-pink-400 hover:border-purple-600 bg-pink-50/50 hover:bg-pink-50 rounded-2xl p-5 text-center cursor-pointer transition space-y-2"
@@ -629,7 +663,7 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                       Click to Select Payment Screenshot from Gallery / Files
                     </div>
                     <div className="text-[10px] font-semibold text-slate-600">
-                      Supports JPG, PNG, WEBP from EasyPaisa, JazzCash, Nayapay, SadaPay or Bank App
+                      Auto-uploads to ImageKit CDN • Supports EasyPaisa, JazzCash, Bank Apps
                     </div>
                   </div>
                 ) : (
@@ -674,9 +708,16 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                       className="w-16 h-20 object-cover rounded-xl border-2 border-white shadow-md bg-white flex-shrink-0"
                     />
                     <div className="min-w-0">
-                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold">
-                        <i className="fa-solid fa-check"></i> SCREENSHOT ATTACHED
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-600 text-white text-[9px] font-extrabold">
+                          <i className="fa-solid fa-check"></i> SCREENSHOT ATTACHED
+                        </span>
+                        {screenshotDataUrl.includes('imagekit.io') && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[9px] font-extrabold border border-pink-200">
+                            <i className="fa-solid fa-bolt text-pink-500"></i> ImageKit CDN
+                          </span>
+                        )}
+                      </div>
                       <div className="text-xs font-extrabold text-slate-900 mt-1 truncate max-w-[200px] sm:max-w-xs">
                         {uploadFileName || 'Payment-Receipt-Screenshot.jpg'}
                       </div>

@@ -1,4 +1,5 @@
 'use client';
+import { uploadImageToImageKit } from '../lib/clientImageUpload';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -824,15 +825,32 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
       return opt.label.toLowerCase().includes(q) || opt.value.toLowerCase().includes(q);
     });
 
-    const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
+      playPopSound(780);
+      showToast('⚡ Uploading icon directly to ImageKit CDN...');
+      try {
+        const res = await uploadImageToImageKit(
+          file,
+          '/saqib-hub/icons',
+          `icon-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`
+        );
+        if (res.success && res.url) {
+          onChangeCustomIconUrl(res.url);
+          showToast('✓ Icon saved & hosted on ImageKit CDN!');
+          return;
+        }
+      } catch {
+        // Fallback
+      }
+
+      // Offline fallback
       const reader = new FileReader();
       reader.onload = () => {
         if (typeof reader.result === 'string') {
-          playPopSound(780);
           onChangeCustomIconUrl(reader.result);
-          showToast('🖼️ Custom Icon Image Uploaded!');
+          showToast('🖼️ Custom Icon Loaded Locally!');
         }
       };
       reader.readAsDataURL(file);
@@ -5441,18 +5459,45 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       {siteConfig.banner.showPortraitPhoto !== false ? '✅ Photo is ON' : '🙈 Photo is HIDDEN'}
                     </span>
                   </div>
-                  <input
-                    type="text"
-                    value={siteConfig.banner.portraitUrl}
-                    onChange={(e) =>
-                      onUpdateSiteConfig((prev) => ({
-                        ...prev,
-                        banner: { ...prev.banner, portraitUrl: e.target.value }
-                      }))
-                    }
-                    placeholder="https://..."
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-mono-code text-xs text-slate-900 shadow-inner"
-                  />
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <input
+                      type="text"
+                      value={siteConfig.banner.portraitUrl}
+                      onChange={(e) =>
+                        onUpdateSiteConfig((prev) => ({
+                          ...prev,
+                          banner: { ...prev.banner, portraitUrl: e.target.value }
+                        }))
+                      }
+                      placeholder="https://... (or click Upload to ImageKit)"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-mono-code text-xs text-slate-900 shadow-inner"
+                    />
+                    <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition flex-shrink-0">
+                      <i className="fa-solid fa-cloud-arrow-up"></i>
+                      <span>Upload Photo to ImageKit</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          showToast('⚡ Uploading photo directly to ImageKit CDN...');
+                          const res = await uploadImageToImageKit(file, '/saqib-hub/portrait');
+                          if (res.success && res.url) {
+                            onUpdateSiteConfig((prev) => ({
+                              ...prev,
+                              banner: { ...prev.banner, portraitUrl: res.url }
+                            }));
+                            playPopSound(780);
+                            showToast('✓ Photo uploaded & saved to ImageKit CDN!');
+                          } else {
+                            showToast('Upload failed: ' + (res.error || 'Unknown error'));
+                          }
+                        }}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <span className="text-[11px] font-bold text-slate-600">Preset Avatars:</span>
                     <button
@@ -5966,22 +6011,46 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             )}
                           </div>
                           <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={activeBanner.imageUrl || ''}
-                              onChange={(e) =>
-                                handleUpdatePromoBannerField(activeBanner.id, 'imageUrl', e.target.value)
-                              }
-                              placeholder="https://.../banner-badge.png (optional transparent badge/illustration)"
-                              className="flex-grow px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900 focus:outline-none focus:border-pink-500"
-                            />
-                            {activeBanner.imageUrl && (
-                              <img
-                                src={activeBanner.imageUrl}
-                                alt="Banner preview"
-                                className="w-9 h-9 rounded-lg object-contain bg-slate-100 border border-slate-300 p-0.5 flex-shrink-0"
+                            <div className="flex items-center gap-2 flex-grow">
+                              <input
+                                type="text"
+                                value={activeBanner.imageUrl || ''}
+                                onChange={(e) =>
+                                  handleUpdatePromoBannerField(activeBanner.id, 'imageUrl', e.target.value)
+                                }
+                                placeholder="https://.../banner-badge.png (or Upload to ImageKit)"
+                                className="flex-grow px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-300 font-mono-code text-xs text-slate-900 focus:outline-none focus:border-pink-500"
                               />
-                            )}
+                              <label className="px-3 py-2 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs shadow-sm cursor-pointer flex items-center gap-1.5 transition flex-shrink-0">
+                                <i className="fa-solid fa-cloud-arrow-up"></i>
+                                <span>Upload</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (!file) return;
+                                    showToast('⚡ Uploading banner illustration to ImageKit...');
+                                    const res = await uploadImageToImageKit(file, '/saqib-hub/banners');
+                                    if (res.success && res.url) {
+                                      handleUpdatePromoBannerField(activeBanner.id, 'imageUrl', res.url);
+                                      playPopSound(780);
+                                      showToast('✓ Banner saved to ImageKit CDN!');
+                                    } else {
+                                      showToast('Upload failed: ' + (res.error || 'Unknown error'));
+                                    }
+                                  }}
+                                  className="hidden"
+                                />
+                              </label>
+                              {activeBanner.imageUrl && (
+                                <img
+                                  src={activeBanner.imageUrl}
+                                  alt="Banner preview"
+                                  className="w-9 h-9 rounded-lg object-contain bg-slate-100 border border-slate-300 p-0.5 flex-shrink-0"
+                                />
+                              )}
+                            </div>
                           </div>
                         </div>
 
