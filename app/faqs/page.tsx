@@ -2,17 +2,22 @@ import { Metadata } from 'next';
 import { getServerStoreData } from '@/src/lib/serverDataLoader';
 import ClientStoreApp from '../ClientStoreApp';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
   const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const canonical = `${origin}/faqs`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
-  const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';
+  const brandOwner = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const fullBrand = `${brandOwner} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
+  const brand = siteConfig.footer?.brandName || fullBrand;
 
   return {
     title: `Frequently Asked Questions (FAQs) — Help & Support | ${brand}`,
     description:
-      `Answers to frequently asked questions about account delivery times, payment methods (EasyPaisa, JazzCash, Banks), wallet top-ups, and warranty policies.`,
+      `Answers to frequently asked questions about account delivery times, payment methods (EasyPaisa, JazzCash, Banks), wallet top-ups, and warranty policies for ${brand}.`,
     alternates: {
       canonical,
     },

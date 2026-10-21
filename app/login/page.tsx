@@ -3,18 +3,23 @@ import { getServerStoreData } from '@/src/lib/serverDataLoader';
 import { DEFAULT_SITE_SEO } from '@/src/types/siteConfig';
 import ClientStoreApp from '../ClientStoreApp';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Dynamic Server-Side Generated SEO Metadata for VIP Login & Wallet Portal
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
   const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const effectiveCanonical = `${origin}/login`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
-  const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';
+  const brandOwner = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const fullBrand = `${brandOwner} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
+  const brand = siteConfig.footer?.brandName || fullBrand;
 
   return {
     title: `VIP Client Login & Wallet Portal | ${brand}`,
     description:
-      `Log in to your Saqib Visuals client portal to manage orders, top up your live wallet balance, upload payment proofs, and access premium subscriptions.`,
+      `Log in to your ${brand} client portal to manage orders, top up your live wallet balance, upload payment proofs, and access premium subscriptions.`,
     alternates: {
       canonical: effectiveCanonical,
     },

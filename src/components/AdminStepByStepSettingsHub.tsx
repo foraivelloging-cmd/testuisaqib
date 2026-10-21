@@ -5053,42 +5053,89 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       )}
                     </div>
                     {siteConfig.banner.showMainTitle !== false && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            Main Name / Title
-                          </label>
-                          <input
-                            type="text"
-                            value={siteConfig.banner.mainTitle}
-                            onChange={(e) =>
+                      <>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Main Name / Title
+                            </label>
+                            <input
+                              type="text"
+                              value={siteConfig.banner.mainTitle}
+                              onChange={(e) =>
+                                onUpdateSiteConfig((prev) => ({
+                                  ...prev,
+                                  banner: { ...prev.banner, mainTitle: e.target.value }
+                                }))
+                              }
+                              className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                              placeholder="e.g. Muhammad Saqib"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                              Highlighted Accent Title
+                            </label>
+                            <input
+                              type="text"
+                              value={siteConfig.banner.highlightTitle}
+                              onChange={(e) =>
+                                onUpdateSiteConfig((prev) => ({
+                                  ...prev,
+                                  banner: { ...prev.banner, highlightTitle: e.target.value }
+                                }))
+                              }
+                              className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                              placeholder="e.g. — Saqib Visuals"
+                            />
+                          </div>
+                        </div>
+
+                        {/* White-Label Dynamic Sync Notice & 1-Click Sync Button */}
+                        <div className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 border border-pink-200/80 text-[11px] text-slate-700 space-y-2 shadow-xs">
+                          <div className="flex items-start gap-2.5">
+                            <div className="w-6 h-6 rounded-xl bg-pink-500 text-white flex items-center justify-center flex-shrink-0 text-xs shadow-xs mt-0.5">
+                              <i className="fa-solid fa-wand-magic-sparkles"></i>
+                            </div>
+                            <div className="space-y-0.5">
+                              <div className="font-extrabold text-slate-900 flex items-center gap-1.5">
+                                <span>Global White-Label Sync Active</span>
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-black uppercase">Live</span>
+                              </div>
+                              <p className="text-[10.5px] font-medium text-slate-600 leading-relaxed">
+                                Jab aap yahan Name change karenge, poori website ka <strong>Navbar, Hero Heading, WhatsApp Widget, Order Checkout, Web Tools Hub aur About section</strong> automatically is naye name par switch ho jayega! (Footer developer credit &ldquo;Made by Muhammad Saqib&rdquo; hamesha secure rahega).
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const main = siteConfig.banner.mainTitle?.trim() || 'Muhammad Saqib';
+                              const accent = siteConfig.banner.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Visuals Hub';
                               onUpdateSiteConfig((prev) => ({
                                 ...prev,
-                                banner: { ...prev.banner, mainTitle: e.target.value }
-                              }))
-                            }
-                            className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
-                            placeholder="e.g. Muhammad Saqib"
-                          />
+                                banner: {
+                                  ...prev.banner,
+                                  topStripTitle: `${main.toUpperCase()} • ${accent.toUpperCase()}`
+                                },
+                                contact: {
+                                  ...prev.contact,
+                                  whatsappWidgetName: main
+                                },
+                                footer: {
+                                  ...prev.footer,
+                                  brandName: `🚀 ${main}`
+                                }
+                              }));
+                              showToast('✨ Top Strip, WhatsApp Widget & Footer Brand synchronized!');
+                            }}
+                            className="w-full sm:w-auto px-3.5 py-1.5 rounded-xl bg-white hover:bg-pink-50 border border-pink-300 text-pink-700 font-extrabold text-[11px] flex items-center justify-center gap-1.5 shadow-xs transition hover:scale-[1.01] cursor-pointer"
+                          >
+                            <i className="fa-solid fa-arrows-rotate"></i>
+                            <span>1-Click Sync: Top Strip &amp; WhatsApp Widget Name</span>
+                          </button>
                         </div>
-                        <div>
-                          <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                            Highlighted Accent Title
-                          </label>
-                          <input
-                            type="text"
-                            value={siteConfig.banner.highlightTitle}
-                            onChange={(e) =>
-                              onUpdateSiteConfig((prev) => ({
-                                ...prev,
-                                banner: { ...prev.banner, highlightTitle: e.target.value }
-                              }))
-                            }
-                            className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
-                            placeholder="e.g. — Saqib Visuals"
-                          />
-                        </div>
-                      </div>
+                      </>
                     )}
                   </div>
 

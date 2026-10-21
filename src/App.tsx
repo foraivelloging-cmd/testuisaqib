@@ -346,6 +346,11 @@ export default function App({
     return DEFAULT_SITE_CONFIG;
   });
 
+  // Dynamic White-Label Brand & Owner Names (Synced automatically from Hero Title)
+  const brandOwnerName = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const brandAccentName = siteConfig.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Saqib Visuals';
+  const fullBrandTitle = `${brandOwnerName} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
+
   const siteVisibility = {
     ...DEFAULT_SITE_VISIBILITY,
     ...(siteConfig.visibility || {})
@@ -956,7 +961,7 @@ export default function App({
 
   const triggerConfettiBurst = () => {
     playPopSound(880);
-    showToast(`🚀 Muhammad Saqib — ${servicesCatalog.length} Digital & Franchise Services`);
+    showToast(`🚀 ${fullBrandTitle} — ${servicesCatalog.length} Digital & Franchise Services`);
   };
 
   const allPromoBanners: SitePromoBannerItem[] =
@@ -981,7 +986,7 @@ export default function App({
     } else {
       // Default: WhatsApp
       const waMsg = encodeURIComponent(
-        `Assalam-o-Alaikum Saqib Bhai! Mujhe is deal/service ki details chahiye: "${bannerTitle || 'Special Deal'}"`
+        `Assalam-o-Alaikum ${brandOwnerName}! Mujhe is deal/service ki details chahiye: "${bannerTitle || 'Special Deal'}"`
       );
       window.open(`https://wa.me/${activeWaNumberClean}?text=${waMsg}`, '_blank', 'noopener,noreferrer');
     }
@@ -1302,7 +1307,7 @@ export default function App({
     }).catch((err) => console.error('Cloud order save error:', err));
 
     const message =
-      `🚀 *New Service Order — Saqib Visuals*\n\n` +
+      `🚀 *New Service Order — ${fullBrandTitle}*\n\n` +
       `📦 *Service:* ${activeOrderService.title}\n` +
       `💎 *Package:* ${modalTierValue}\n` +
       `🔗 *Link / Details:* ${targetLink}\n` +
@@ -1313,7 +1318,7 @@ export default function App({
   };
 
   const getCartWhatsAppUrl = () => {
-    let msg = `🚀 *Multi-Service Order — Saqib Visuals*\n\n`;
+    let msg = `🚀 *Multi-Service Order — ${fullBrandTitle}*\n\n`;
     shoppingCart.forEach((item, i) => {
       msg += `*${i + 1}. ${item.title}*\n   • Package: ${item.tier}\n   • Link/Number: ${item.target}\n\n`;
     });
@@ -1440,7 +1445,7 @@ export default function App({
 
   const copyAllResults = () => {
     if (!simRecords.length) return;
-    let text = `🚀 SAQIB VISUALS — SIM INFO REPORT\n=================================\n`;
+    let text = `🚀 ${fullBrandTitle.toUpperCase()} — SIM INFO REPORT\n=================================\n`;
     simRecords.forEach((item, i) => {
       text += `\nRECORD #${i + 1}:\n`;
       text += `👤 Name: ${item.name || item.Name || item.full_name || 'N/A'}\n`;
@@ -1459,7 +1464,7 @@ export default function App({
     playPopSound(820);
     const ticketId = 'SV-' + Math.floor(1000 + Math.random() * 9000);
     const waText =
-      `🎫 *Support Ticket #${ticketId} — Saqib Visuals*\n\n` +
+      `🎫 *Support Ticket #${ticketId} — ${fullBrandTitle}*\n\n` +
       `👤 *Name:* ${contactName.trim()}\n` +
       `📱 *WhatsApp:* ${contactPhone.trim()}\n` +
       `📂 *Department:* ${contactDept}\n` +
@@ -1795,7 +1800,7 @@ export default function App({
     const newTool: WebToolItem = {
       id: editingToolId || 'tool-' + Date.now(),
       title: toolTitle.trim(),
-      desc: toolDesc.trim() || 'Instant online digital utility powered by Muhammad Saqib.',
+      desc: toolDesc.trim() || `Instant online digital utility powered by ${brandOwnerName}.`,
       toolUrl: normalizedUrl,
       iconUrl: toolIconUrl.trim(),
       iconType: toolIconType,
@@ -2338,12 +2343,12 @@ export default function App({
               <span className="text-base sm:text-2xl flex-shrink-0">🚀</span>
               <div className="flex flex-col leading-none min-w-0">
                 <span className="font-extrabold text-slate-900 tracking-tight text-[11px] sm:text-sm truncate">
-                  <span className="xs:hidden">SAQIB</span>
-                  <span className="hidden xs:inline sm:hidden">SAQIB VISUALS</span>
-                  <span className="hidden sm:inline">MUHAMMAD SAQIB</span>
+                  <span className="xs:hidden">{brandOwnerName.split(' ')[0].toUpperCase()}</span>
+                  <span className="hidden xs:inline sm:hidden">{(brandAccentName || brandOwnerName).toUpperCase()}</span>
+                  <span className="hidden sm:inline">{brandOwnerName.toUpperCase()}</span>
                 </span>
                 <span className="text-[7.5px] sm:text-[10px] font-semibold text-pink-600 truncate hidden xs:block">
-                  SAQIB VISUALS • {visibleServicesCatalog.length} SERVICES
+                  {(brandAccentName || fullBrandTitle).toUpperCase()} • {visibleServicesCatalog.length} SERVICES
                 </span>
               </div>
             </div>
@@ -3229,7 +3234,7 @@ export default function App({
                   No service matched &ldquo;{storeSearchQuery}&rdquo;
                 </h3>
                 <p className="text-xs font-medium text-slate-600">
-                  Clear the search filter or message Muhammad Saqib directly on WhatsApp for custom deals!
+                  Clear the search filter or message {brandOwnerName} directly on WhatsApp for custom deals!
                 </p>
                 <div className="flex items-center justify-center gap-2">
                   <button
@@ -3371,7 +3376,7 @@ export default function App({
                         Instant Online Tools &amp; Web Utilities 🛠️
                       </h2>
                       <p className="text-[10.5px] sm:text-xs font-semibold text-slate-700">
-                        Launch free &amp; official web tools directly from Saqib Visuals with 1 tap.
+                        Launch free &amp; official web tools directly from {fullBrandTitle} with 1 tap.
                       </p>
                     </div>
                     <button
@@ -3468,6 +3473,7 @@ export default function App({
             {/* Interactive SMM Panel Tools: Price & Profit Calculator + Live Order Tracker + Real-Time Activity Ticker */}
             {siteVisibility.showSimDatabaseTracker && (
               <PanelToolsSection
+                siteConfig={siteConfig}
                 primaryWaNumber={PRIMARY_WA_NUMBER}
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
@@ -3486,6 +3492,7 @@ export default function App({
             {/* Flagship AI Pro Accounts Spotlight + 1-2-3 Steps + 100% Trusted Reviews Sections */}
             {siteVisibility.showReviewsSection && (
               <ShowcaseSections
+                siteConfig={siteConfig}
                 servicesCatalog={visibleServicesCatalog}
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
@@ -3530,7 +3537,7 @@ export default function App({
             <div data-scroll="up" className="text-center space-y-1">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 border border-white text-xs font-bold text-indigo-700 shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span>SAQIB VISUALS • LIVE WEB TOOLS &amp; AI LAUNCHER HUB</span>
+                <span>{fullBrandTitle.toUpperCase()} • LIVE WEB TOOLS &amp; AI LAUNCHER HUB</span>
               </div>
               <h2 className="title-3d-rose text-2xl sm:text-4xl font-extrabold tracking-tight">
                 Instant Online Tools &amp; AI Studio 🛠️
@@ -3619,7 +3626,7 @@ export default function App({
             <div data-scroll="up" className="text-center space-y-1">
               <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/75 border border-white text-xs font-extrabold text-purple-700 shadow-sm">
                 <i className="fa-solid fa-wand-magic-sparkles text-amber-500"></i>
-                <span>ABOUT MUHAMMAD SAQIB &amp; SAQIB VISUALS</span>
+                <span>ABOUT {brandOwnerName.toUpperCase()} &amp; {brandAccentName.toUpperCase()}</span>
               </div>
               <h2 className="title-3d-rose text-2xl sm:text-4xl font-extrabold tracking-tight">
                 Pakistan&apos;s #1 3D Digital &amp; SMM Hub
@@ -3706,8 +3713,8 @@ export default function App({
                   <div className="flex flex-col items-center text-center flex-shrink-0 space-y-2">
                     <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl p-1.5 bg-white shadow-xl border-2 border-pink-300 relative">
                       <img
-                        src="https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png"
-                        alt="Muhammad Saqib"
+                        src={siteConfig.banner.portraitUrl || "https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png"}
+                        alt={brandOwnerName}
                         className="w-full h-full object-cover object-[center_15%] rounded-2xl"
                       />
                       <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-extrabold border-2 border-white shadow">
@@ -3715,8 +3722,8 @@ export default function App({
                       </span>
                     </div>
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900">Muhammad Saqib</h3>
-                      <p className="text-[11px] font-bold text-pink-600">Full-Stack Dev &amp; Digital Seller</p>
+                      <h3 className="text-base font-extrabold text-slate-900">{brandOwnerName}</h3>
+                      <p className="text-[11px] font-bold text-pink-600">Founder &amp; Digital Services Leader</p>
                     </div>
                   </div>
 
@@ -3729,8 +3736,8 @@ export default function App({
                       Empowering Creators, Agencies &amp; Everyday Users with Instant Digital Solutions
                     </h3>
                     <p className="text-xs sm:text-sm font-medium text-slate-700 leading-relaxed">
-                      Assalam-o-Alaikum! Main <strong>Muhammad Saqib</strong> hoon — ek Full-Stack Web Developer, AI Enthusiast, aur Digital Services Provider.{' '}
-                      <strong>Saqib Visuals</strong> par aapko milte hain{' '}
+                      Assalam-o-Alaikum! Main <strong>{brandOwnerName}</strong> hoon — ek Digital Services Provider &amp; Developer.{' '}
+                      <strong>{fullBrandTitle}</strong> par aapko milte hain{' '}
                       <strong>CapCut Pro, Lovable Pro, Gemini 18-Month Pro, ChatGPT Plus, Claude AI, Muse AI 1B Tokens, ElevenLabs 300k Credits, Hostinger 12M</strong>,{' '}
                       <strong>TikTok UK/USA &amp; Ad Agency Accounts</strong>, aur{' '}
                       <strong>Franchise SIM/CDR &amp; NADRA Verification</strong> services wholesale rates par!
@@ -3807,7 +3814,7 @@ export default function App({
                   <div>
                     <h4 className="text-xs sm:text-base font-extrabold text-slate-900 leading-snug">24/7 Live Support</h4>
                     <p className="text-[10px] sm:text-xs font-medium text-slate-700 mt-1 leading-snug sm:leading-relaxed">
-                      Muhammad Saqib ki WhatsApp support team 24/7 active hai taake aapka har order foran mukammal ho.
+                      {brandOwnerName} ki WhatsApp support team 24/7 active hai taake aapka har order foran mukammal ho.
                     </p>
                   </div>
                 </div>
@@ -3959,7 +3966,7 @@ export default function App({
                 <span>24/7 LIVE CUSTOMER SUPPORT &amp; SOCIAL HUB</span>
               </div>
               <h2 className="title-3d-rose text-2xl sm:text-4xl font-extrabold tracking-tight">
-                Get In Touch With Muhammad Saqib
+                Get In Touch With {brandOwnerName}
               </h2>
               <p className="text-xs sm:text-sm font-semibold text-slate-700 max-w-lg mx-auto">
                 Send a support ticket, inquire about custom orders, or connect across our official social channels.
@@ -4088,7 +4095,7 @@ export default function App({
                       className="sim-btn-glow w-full py-3 px-4 font-display font-bold text-xs sm:text-sm tracking-wider flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <i className="fa-brands fa-whatsapp text-base"></i>
-                      <span>SEND MESSAGE TO MUHAMMAD SAQIB</span>
+                      <span>SEND MESSAGE TO {brandOwnerName.toUpperCase()}</span>
                     </button>
                   </form>
                 </div>
@@ -4482,7 +4489,7 @@ export default function App({
                             </h3>
                             <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
                               {authMode === 'signup'
-                                ? 'Join Saqib Visuals for 20% reseller SMM rates, AI tools & priority SIM lookups.'
+                                ? `Join ${fullBrandTitle} for 20% reseller SMM rates, AI tools & priority service delivery.`
                                 : 'Sign in right here at the top to access your VIP Wallet & instant AI renewals.'}
                             </p>
                           </div>
@@ -4557,7 +4564,7 @@ export default function App({
                                   playPopSound(600);
                                   const id = authIdentifier.trim() || 'My VIP Account';
                                   openExternalWhatsApp(
-                                    `🔑 *VIP Password Reset — Saqib Visuals*\nHello Muhammad Saqib, please reset the VIP Portal PIN/Password for: *${id}*`
+                                    `🔑 *VIP Password Reset — ${fullBrandTitle}*\nHello ${brandOwnerName}, please reset the VIP Portal PIN/Password for: *${id}*`
                                   );
                                 }}
                                 className="text-[11px] font-extrabold text-pink-600 hover:underline cursor-pointer"
@@ -4664,13 +4671,13 @@ export default function App({
                       <div className="plush-pillow plush-hero rounded-[24px] sm:rounded-[26px] p-4 sm:p-6 flex flex-col justify-between h-full space-y-4">
                         <div className="space-y-2.5">
                           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/85 border border-white text-[10px] font-extrabold text-pink-600 shadow-sm">
-                            <i className="fa-solid fa-crown text-amber-500"></i> SAQIB VISUALS VIP MEMBER CLUB
+                            <i className="fa-solid fa-crown text-amber-500"></i> {fullBrandTitle.toUpperCase()} VIP MEMBER CLUB
                           </div>
                           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
                             Unlock Wholesale Reseller Rates, Instant AI Renewals &amp; Priority Support
                           </h2>
                           <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                            Sign in to your <strong>Saqib Visuals VIP Account</strong> to track active AI subscriptions, view order history, and get up to 20% reseller discounts.
+                            Sign in to your <strong>{fullBrandTitle} VIP Account</strong> to track active AI subscriptions, view order history, and get up to 20% reseller discounts.
                           </p>
                         </div>
 
@@ -5047,9 +5054,9 @@ export default function App({
       </main>
 
       {/* FOOTER */}
-      <footer className="relative z-10 text-center pb-24 md:pb-6 px-3 sm:px-4">
+      <footer className="relative z-10 text-center pb-24 md:pb-6 px-3 sm:px-4 space-y-2">
         <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-3 px-4 sm:px-5 py-2.5 rounded-3xl sm:rounded-full bg-white/65 backdrop-blur-md border border-white/85 text-[11px] sm:text-xs font-bold text-slate-700 shadow-sm">
-          <span>{siteConfig.footer.brandName}</span>
+          <span>{siteConfig.footer.brandName || fullBrandTitle}</span>
           {siteConfig.footer.showQuickLinks && (
             <>
               <span>•</span>
@@ -5124,6 +5131,16 @@ export default function App({
               </span>
             </>
           )}
+        </div>
+
+        {/* Permanent Developer Attribution — Made by Saqib */}
+        <div className="text-[11px] text-slate-500 font-semibold flex items-center justify-center gap-1.5 select-none">
+          <span>Made with</span>
+          <span className="text-rose-500 animate-pulse text-xs">❤️</span>
+          <span>by</span>
+          <span className="font-extrabold text-slate-800 bg-white/70 px-2 py-0.5 rounded-full border border-slate-200 shadow-xs">
+            Muhammad Saqib
+          </span>
         </div>
       </footer>
 

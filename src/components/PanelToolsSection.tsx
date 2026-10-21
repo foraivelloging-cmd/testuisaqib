@@ -12,6 +12,7 @@ import {
   FaSatelliteDish
 } from './BrandIcons';
 import { SiteStoreBarsConfig } from './AdminStepByStepSettingsHub';
+import { SiteSettingsConfig } from '../types/siteConfig';
 
 interface MarqueeItem {
   id: string;
@@ -278,6 +279,7 @@ interface TrackedOrderData {
 }
 
 interface PanelToolsProps {
+  siteConfig?: SiteSettingsConfig;
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: CategoryId, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
@@ -286,12 +288,16 @@ interface PanelToolsProps {
 }
 
 export const MarqueeAndPulseBanner: React.FC<{
+  siteConfig?: SiteSettingsConfig;
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: CategoryId, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
   storeBarsConfig?: SiteStoreBarsConfig;
   siteLang?: 'en' | 'ur';
-}> = ({ onSelectServiceById, onQuickFilter, onPlayPop, storeBarsConfig, siteLang = 'en' }) => {
+}> = ({ siteConfig, onSelectServiceById, onQuickFilter, onPlayPop, storeBarsConfig, siteLang = 'en' }) => {
+  const brandOwner = siteConfig?.banner?.mainTitle?.trim() || 'Saqib Bhai';
+  const brandAccent = siteConfig?.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Visuals';
+  const fullBrand = `${brandOwner} ${siteConfig?.banner?.highlightTitle?.trim() || ''}`.trim();
   const bars = storeBarsConfig;
   return (
     <div className="space-y-3">
@@ -415,11 +421,15 @@ export const MarqueeAndPulseBanner: React.FC<{
 };
 
 export const PanelToolsSection: React.FC<PanelToolsProps> = ({
+  siteConfig,
   onSelectServiceById,
   onPlayPop,
   primaryWaNumber,
   servicesCatalog = []
 }) => {
+  const brandOwner = siteConfig?.banner?.mainTitle?.trim() || 'Saqib Bhai';
+  const brandAccent = siteConfig?.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Visuals';
+  const fullBrand = `${brandOwner} ${siteConfig?.banner?.highlightTitle?.trim() || ''}`.trim();
   // 1. State for Interactive SMM & AI Reseller Calculator
   const [selectedPresetId, setSelectedPresetId] = useState<string>(CALCULATOR_PRESETS[0].id);
   const [calcUnits, setCalcUnits] = useState<number>(CALCULATOR_PRESETS[0].defaultUnits);
@@ -708,7 +718,7 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
               <div className="space-y-2 pt-2 border-t border-white/15">
                 <a
                   href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
-                    `Assalam-o-Alaikum Saqib Bhai! 🧮 *CALCULATOR DEAL ORDER*\n\n📦 *Service:* ${activePreset.name}\n🔢 *Quantity:* ${calcUnits} (${activePreset.unitLabel})\n💰 *Calculated Wholesale Total:* Rs. ${totalWholesale.toLocaleString()}\n\nPlease share EasyPaisa / JazzCash details for instant activation!`
+                    `Assalam-o-Alaikum ${brandOwner}! 🧮 *CALCULATOR DEAL ORDER*\n\n📦 *Service:* ${activePreset.name}\n🔢 *Quantity:* ${calcUnits} (${activePreset.unitLabel})\n💰 *Calculated Wholesale Total:* Rs. ${totalWholesale.toLocaleString()}\n\nPlease share EasyPaisa / JazzCash details for instant activation!`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -794,7 +804,7 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                 <p>{trackError}</p>
                 <a
                   href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
-                    `Assalam-o-Alaikum Saqib Bhai! I am checking status for Order: ${orderInput}. Please check manually.`
+                    `Assalam-o-Alaikum ${brandOwner}! I am checking status for Order: ${orderInput}. Please check manually.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -879,7 +889,7 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                   </span>
                   <a
                     href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
-                      `Assalam-o-Alaikum Saqib Bhai! Please share priority status update for my Order ID: ${trackedOrder.orderId} (${trackedOrder.serviceTitle}).`
+                      `Assalam-o-Alaikum ${brandOwner}! Please share priority status update for my Order ID: ${trackedOrder.orderId} (${trackedOrder.serviceTitle}).`
                     )}`}
                     target="_blank"
                     rel="noopener noreferrer"

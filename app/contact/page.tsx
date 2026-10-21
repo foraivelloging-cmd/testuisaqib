@@ -3,6 +3,9 @@ import { getServerStoreData } from '@/src/lib/serverDataLoader';
 import { DEFAULT_SITE_SEO } from '@/src/types/siteConfig';
 import ClientStoreApp from '../ClientStoreApp';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Dynamic Server-Side Generated SEO Metadata for Contact Page
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
@@ -10,12 +13,15 @@ export async function generateMetadata(): Promise<Metadata> {
   const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const effectiveCanonical = `${origin}/contact`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
-  const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';
+  const brandOwner = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const fullBrand = `${brandOwner} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
+  const brand = siteConfig.footer?.brandName || fullBrand;
+  const waDisplay = siteConfig.contact?.whatsappNumberDisplay || '+92 347 8936242';
 
   return {
     title: `Contact Us — 24/7 WhatsApp & Live Support | ${brand}`,
     description:
-      `Get in direct contact with Muhammad Saqib on official WhatsApp (+92 347 8936242), Telegram, or submit a direct customer support ticket for AI Tools, SMM orders, and subscriptions.`,
+      `Get in direct contact with ${brandOwner} on official WhatsApp (${waDisplay}), or submit a direct customer support ticket for AI Tools, SMM orders, and subscriptions.`,
     alternates: {
       canonical: effectiveCanonical,
     },
@@ -24,8 +30,8 @@ export async function generateMetadata(): Promise<Metadata> {
       follow: seo.robotsFollow !== false,
     },
     openGraph: {
-      title: `Contact Muhammad Saqib — 24/7 WhatsApp & Live Support`,
-      description: `Official direct customer support ticket dispatch and WhatsApp assistance for Saqib Visuals Hub.`,
+      title: `Contact ${brandOwner} — 24/7 WhatsApp & Live Support`,
+      description: `Official direct customer support ticket dispatch and WhatsApp assistance for ${fullBrand}.`,
       url: effectiveCanonical,
       siteName: brand,
       images: [
@@ -41,7 +47,7 @@ export async function generateMetadata(): Promise<Metadata> {
     twitter: {
       card: 'summary_large_image',
       title: `Contact Us | ${brand}`,
-      description: `Official direct customer support ticket dispatch and WhatsApp assistance for Saqib Visuals Hub.`,
+      description: `Official direct customer support ticket dispatch and WhatsApp assistance for ${fullBrand}.`,
       images: [seo.ogImageUrl || portrait],
     },
   };
@@ -51,7 +57,6 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const { services, webTools, siteConfig, reviews } = await getServerStoreData();
 
-  
   return (
     <main className="min-h-screen">
       <ClientStoreApp

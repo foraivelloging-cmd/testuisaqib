@@ -45,12 +45,19 @@ export function WhatsAppChatWidget({
       ? 'آن لائن • فوری جواب ~2 منٹ ⚡'
       : 'Online • Typically replies in ~2 mins ⚡');
 
-  const defaultGreeting =
+  const brandOwner = siteConfig?.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const fullBrand = `${brandOwner} ${siteConfig?.banner?.highlightTitle?.trim() || ''}`.trim();
+
+  const rawGreeting =
     siteLang === 'ur'
       ? (siteConfig?.contact?.whatsappWidgetGreetingUr ||
         'السلام علیکم! 👋 ثاقب ویژولز ہب میں خوش آمدید۔<br/>آج میں کیپ کٹ پرو، اے آئی ٹولز، ٹک ٹاک ایڈز یا نادرا سروسز میں آپ کی کیا مدد کر سکتا ہوں؟')
       : (siteConfig?.contact?.whatsappWidgetGreeting ||
         'Assalam-o-Alaikum! 👋 Welcome to <b>Saqib Visuals Hub</b>.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Franchise/NADRA records?');
+
+  const defaultGreeting = rawGreeting
+    .replace(/Saqib Visuals Hub/gi, fullBrand)
+    .replace(/ثاقب ویژولز ہب/g, fullBrand);
 
   useEffect(() => {
     try {

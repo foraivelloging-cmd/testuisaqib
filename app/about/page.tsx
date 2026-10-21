@@ -2,23 +2,28 @@ import { Metadata } from 'next';
 import { getServerStoreData } from '@/src/lib/serverDataLoader';
 import ClientStoreApp from '../ClientStoreApp';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();
   const origin = process.env.APP_URL || 'https://testuisaqib.vercel.app';
   const canonical = `${origin}/about`;
   const portrait = siteConfig.banner?.portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png';
-  const brand = siteConfig.footer?.brandName || 'Muhammad Saqib Visuals Hub';
+  const brandOwner = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const fullBrand = `${brandOwner} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
+  const brand = siteConfig.footer?.brandName || fullBrand;
 
   return {
-    title: `About Muhammad Saqib — Visuals Hub & Digital Agency`,
+    title: `About ${brandOwner} — ${fullBrand}`,
     description:
-      `Learn about Muhammad Saqib, certified digital creator, AI tools supplier, SMM provider, and telecommunication data consultant in Pakistan.`,
+      `Learn about ${brandOwner}, certified digital creator, AI tools supplier, SMM provider, and telecommunication data consultant.`,
     alternates: {
       canonical,
     },
     openGraph: {
-      title: `About Muhammad Saqib — Saqib Visuals`,
-      description: `Official biography, credentials, and digital services offered by Muhammad Saqib.`,
+      title: `About ${brandOwner} — ${fullBrand}`,
+      description: `Official biography, credentials, and digital services offered by ${brandOwner}.`,
       url: canonical,
       siteName: brand,
       images: [
@@ -26,7 +31,7 @@ export async function generateMetadata(): Promise<Metadata> {
           url: portrait,
           width: 1200,
           height: 630,
-          alt: `About Muhammad Saqib`,
+          alt: `About ${brandOwner}`,
         },
       ],
       type: 'website',

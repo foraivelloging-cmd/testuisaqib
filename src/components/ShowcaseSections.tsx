@@ -5,6 +5,7 @@
 
 import React from 'react';
 import { StoreService } from '../data/defaultCatalog';
+import { SiteSettingsConfig } from '../types/siteConfig';
 import {
   RiOpenaiFill,
   SiGooglegemini,
@@ -160,6 +161,7 @@ export const DEFAULT_SHOWCASE_BANNERS: ShowcaseBannerItem[] = [
 ];
 
 interface ShowcaseSectionsProps {
+  siteConfig?: SiteSettingsConfig;
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: any, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
@@ -175,6 +177,7 @@ interface ShowcaseSectionsProps {
 }
 
 export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
+  siteConfig,
   onSelectServiceById,
   onQuickFilter,
   onPlayPop,
@@ -188,6 +191,10 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
   onToggleVerified,
   currentUserName = ''
 }) => {
+  const brandOwner = siteConfig?.banner?.mainTitle?.trim() || 'Muhammad Saqib';
+  const brandAccent = siteConfig?.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Saqib Visuals';
+  const fullBrand = `${brandOwner} ${siteConfig?.banner?.highlightTitle?.trim() || ''}`.trim();
+
   const [showWriteModal, setShowWriteModal] = React.useState(false);
   const [authorName, setAuthorName] = React.useState(currentUserName || '');
   const [selectedService, setSelectedService] = React.useState(
@@ -708,7 +715,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                   2. Pay via EasyPaisa / JazzCash
                 </h3>
                 <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                  Your order opens directly in <strong>Muhammad Saqib&apos;s WhatsApp (+92 347 8936242)</strong>. Send payment via EasyPaisa, JazzCash, SadaPay, Bank, or USDT.
+                  Your order opens directly in <strong>{brandOwner}&apos;s WhatsApp ({primaryWaNumber || '+92 347 8936242'})</strong>. Send payment via EasyPaisa, JazzCash, SadaPay, Bank, or USDT.
                 </p>
               </div>
               <div className="pt-2 border-t border-blue-900/10 flex items-center gap-1.5 text-[11px] font-extrabold text-blue-700">
@@ -764,7 +771,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                   <i className="fa-solid fa-certificate"></i> 100% VERIFIED PAKISTANI DIGITAL STORE
                 </div>
                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 mt-0.5">
-                  Why 18,500+ Creators &amp; Clients Trust Muhammad Saqib
+                  Why 18,500+ Creators &amp; Clients Trust {brandOwner}
                 </h2>
                 <p className="text-xs font-semibold text-slate-700">
                   Real WhatsApp Deal History • Zero Scam Guarantee • Instant Replacement Warranty
@@ -820,7 +827,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
             <div className="bg-white/80 p-3 rounded-2xl border border-white text-center space-y-1 shadow-sm">
               <i className="fa-brands fa-whatsapp text-teal-600 text-lg"></i>
               <div className="text-xs font-extrabold text-slate-900">Live WA Support</div>
-              <div className="text-[10px] font-semibold text-slate-600">Direct chat with Muhammad Saqib</div>
+              <div className="text-[10px] font-semibold text-slate-600">Direct chat with {brandOwner}</div>
             </div>
           </div>
 
@@ -929,7 +936,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                 100% Genuine Database Reviews
               </div>
               <p className="text-xs font-semibold text-slate-600 max-w-md mx-auto">
-                All client reviews on Saqib Visuals Hub are collected directly from verified customer orders. Have you used our services? Send your verified feedback to Muhammad Saqib on WhatsApp or write your review!
+                All client reviews on {fullBrand} are collected directly from verified customer orders. Have you used our services? Send your verified feedback to {brandOwner} on WhatsApp or write your review!
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
                 <button
@@ -941,7 +948,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                 </button>
                 <a
                   href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
-                    'Assalam-o-Alaikum Saqib Bhai! I want to share my client review for my order.'
+                    `Assalam-o-Alaikum ${brandOwner}! I want to share my client review for my order.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -1044,7 +1051,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                     rows={3}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    placeholder="Share your genuine experience with Muhammad Saqib (e.g. delivery time, account quality, support)..."
+                    placeholder={`Share your genuine experience with ${brandOwner} (e.g. delivery time, account quality, support)...`}
                     required
                     className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 resize-none"
                   />
