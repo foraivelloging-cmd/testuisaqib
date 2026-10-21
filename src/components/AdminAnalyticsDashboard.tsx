@@ -103,6 +103,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
     manage_admins: true,
   });
 
+  const [dbStatus, setDbStatus] = useState<{ database_url: string; project_id: string; status: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/database-status')
+      .then((r) => r.json())
+      .then((data) => setDbStatus(data))
+      .catch(() => {});
+  }, []);
+
   useEffect(() => {
     async function loadAdminSession() {
       try {
@@ -1344,8 +1353,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">
                 <div className="text-xs font-extrabold text-slate-700">Database Layer</div>
-                <div className="text-sm font-black text-slate-900">Supabase + SQLite Fallback</div>
-                <div className="text-[11px] text-slate-500">PostgreSQL cloud DB with zero-config local sync</div>
+                <div className="text-sm font-black text-slate-900 flex items-center gap-1.5">
+                  <span className={`w-2 h-2 rounded-full ${dbStatus?.status === 'CONNECTED_OK' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}></span>
+                  <span>Supabase PostgreSQL</span>
+                </div>
+                <div className="text-[11px] font-mono text-slate-600 break-all">
+                  {dbStatus?.project_id && dbStatus.project_id !== 'none'
+                    ? `Connected: ${dbStatus.project_id}.supabase.co`
+                    : 'Awaiting .env.local configuration'}
+                </div>
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1">

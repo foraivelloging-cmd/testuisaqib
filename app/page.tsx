@@ -3,6 +3,9 @@ import { getServerStoreData } from '@/src/lib/serverDataLoader';
 import { DEFAULT_SITE_SEO } from '@/src/types/siteConfig';
 import ClientStoreApp from './ClientStoreApp';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 // Dynamic Server-Side Generated SEO Metadata
 export async function generateMetadata(): Promise<Metadata> {
   const { siteConfig } = await getServerStoreData();

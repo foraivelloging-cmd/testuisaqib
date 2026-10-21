@@ -9,12 +9,60 @@ function cleanEnv(val?: string | null): string {
 }
 
 export function getSupabaseCredentials() {
+  let diskUrl = '';
+  let diskAnon = '';
+
+  // Server-side fallback disk check
+  if (typeof window === 'undefined') {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const fs = require('fs');
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const path = require('path');
+      const cwd = process.cwd();
+      const candidateFiles = [
+        '.env.local',
+        '.env',
+        'env.local',
+        'env',
+        '.env.txt',
+        '.env.local.txt',
+        '.env.development',
+        '.env.production',
+      ];
+      for (const fileName of candidateFiles) {
+        const fullPath = path.join(cwd, fileName);
+        if (fs.existsSync(fullPath)) {
+          const content = fs.readFileSync(fullPath, 'utf8');
+          for (const line of content.split('\n')) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx > 0) {
+              const k = trimmed.slice(0, eqIdx).trim();
+              const v = trimmed.slice(eqIdx + 1).trim().replace(/^['"]|['"]$/g, '');
+              if (!diskUrl && (k === 'NEXT_PUBLIC_SUPABASE_URL' || k === 'SUPABASE_URL' || k === 'NEXT_PUBLIC_SUPABASE_PROJECT_URL' || k === 'SUPABASE_PROJECT_URL')) {
+                diskUrl = v;
+              }
+              if (!diskAnon && (k === 'NEXT_PUBLIC_SUPABASE_ANON_KEY' || k === 'SUPABASE_ANON_KEY' || k === 'NEXT_PUBLIC_SUPABASE_KEY' || k === 'SUPABASE_KEY' || k === 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY')) {
+                diskAnon = v;
+              }
+            }
+          }
+        }
+      }
+    } catch {
+      // Ignore
+    }
+  }
+
   const url =
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_URL) ||
     cleanEnv(process.env.SUPABASE_URL) ||
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PROJECT_URL) ||
     cleanEnv(process.env.SUPABASE_PROJECT_URL) ||
-    'https://ratihfmqpiqervqpkaml.supabase.co';
+    diskUrl ||
+    '';
 
   const anonKey =
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) ||
@@ -22,17 +70,20 @@ export function getSupabaseCredentials() {
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_KEY) ||
     cleanEnv(process.env.SUPABASE_KEY) ||
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
-    'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+    diskAnon ||
+    '';
 
   return { url, anonKey };
 }
 
 export function getSupabase(): SupabaseClient {
   const { url, anonKey } = getSupabaseCredentials();
-  const cacheKey = `${url}::${anonKey}`;
+  const effectiveUrl = url || 'https://placeholder.supabase.co';
+  const effectiveKey = anonKey || 'placeholder-key';
+  const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {
-    cachedClient = createClient(url, anonKey, {
+    cachedClient = createClient(effectiveUrl, effectiveKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
