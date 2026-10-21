@@ -1,5 +1,6 @@
 'use client';
 import { uploadImageToImageKit } from '../lib/clientImageUpload';
+import { ImageKitUploadField } from './ImageKitUploadField';
 
 import React, { useState } from 'react';
 import {
@@ -534,36 +535,22 @@ ${JSON.stringify(schemaJsonObj, null, 2)}
                       Use Hero Portrait
                     </button>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={seo.ogImageUrl}
-                      onChange={(e) => updateSeoField('ogImageUrl', e.target.value)}
-                      placeholder="https://.../preview-card.png (or click Upload to ImageKit)"
-                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-emerald-200 font-mono-code text-xs text-slate-900"
+                  <div>
+                    <ImageKitUploadField
+                      value={seo.ogImageUrl || ''}
+                      onChange={(url) => updateSeoField('ogImageUrl', url)}
+                      folder="/saqib-hub/seo"
+                      label="Social Share Card (og:image)"
+                      shape="banner"
+                      presets={[
+                        {
+                          label: 'Hero Portrait Photo',
+                          url: siteConfig.banner.portraitUrl,
+                        },
+                      ]}
+                      showToast={showToast}
+                      playPop={playPopSound}
                     />
-                    <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition flex-shrink-0">
-                      <i className="fa-solid fa-cloud-arrow-up"></i>
-                      <span>Upload Card</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          showToast('⚡ Uploading social card to ImageKit...');
-                          const res = await uploadImageToImageKit(file, '/saqib-hub/seo');
-                          if (res.success && res.url) {
-                            updateSeoField('ogImageUrl', res.url);
-                            playPopSound(780);
-                            showToast('✓ Social card uploaded to ImageKit CDN!');
-                          } else {
-                            showToast('Upload failed: ' + (res.error || 'Unknown error'));
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
                   </div>
                 </div>
 

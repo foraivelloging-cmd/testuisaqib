@@ -1,5 +1,6 @@
 'use client';
 import { uploadImageToImageKit } from '../lib/clientImageUpload';
+import { ImageKitUploadField } from './ImageKitUploadField';
 
 import React, { useState } from 'react';
 import {
@@ -403,41 +404,14 @@ export const AdminPromoPopupStudio: React.FC<Props> = ({
               </div>
 
               {form.showImage && (
-                <div className="space-y-2">
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="url"
-                      value={form.imageUrl || ''}
-                      onChange={(e) => setForm((prev) => ({ ...prev, imageUrl: e.target.value }))}
-                      placeholder="https://.../banner.jpg (or click Upload to ImageKit)"
-                      className="flex-1 bg-slate-950 border border-white/20 focus:border-pink-500 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition font-mono"
-                    />
-                    <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition flex-shrink-0">
-                      <i className="fa-solid fa-cloud-arrow-up"></i>
-                      <span>Upload to ImageKit</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          showToast('⚡ Uploading popup banner to ImageKit...');
-                          const res = await uploadImageToImageKit(file, '/saqib-hub/popups');
-                          if (res.success && res.url) {
-                            setForm((prev) => ({ ...prev, imageUrl: res.url, showImage: true }));
-                            playPopSound(780);
-                            showToast('✓ Popup banner uploaded to ImageKit CDN!');
-                          } else {
-                            showToast('Upload failed: ' + (res.error || 'Unknown error'));
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-                  <div className="flex flex-wrap gap-1.5">
-                    <span className="text-[10px] text-slate-400 self-center">Presets:</span>
-                    {[
+                <div>
+                  <ImageKitUploadField
+                    value={form.imageUrl || ''}
+                    onChange={(url) => setForm((prev) => ({ ...prev, imageUrl: url, showImage: Boolean(url) }))}
+                    folder="/saqib-hub/popups"
+                    label="Popup Banner Image"
+                    shape="banner"
+                    presets={[
                       {
                         label: 'Neon Wave',
                         url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
@@ -450,17 +424,10 @@ export const AdminPromoPopupStudio: React.FC<Props> = ({
                         label: 'Purple 3D',
                         url: 'https://images.unsplash.com/photo-1634017839464-5c339ebe3cb4?auto=format&fit=crop&w=800&q=80',
                       },
-                    ].map((p) => (
-                      <button
-                        key={p.label}
-                        type="button"
-                        onClick={() => setForm((prev) => ({ ...prev, imageUrl: p.url }))}
-                        className="px-2 py-0.5 rounded-lg text-[10px] font-bold bg-white/10 hover:bg-white/20 text-slate-300 transition cursor-pointer"
-                      >
-                        {p.label}
-                      </button>
-                    ))}
-                  </div>
+                    ]}
+                    showToast={showToast}
+                    playPop={playPopSound}
+                  />
                 </div>
               )}
             </div>

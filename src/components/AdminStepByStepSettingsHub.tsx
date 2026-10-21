@@ -1,5 +1,6 @@
 'use client';
 import { uploadImageToImageKit } from '../lib/clientImageUpload';
+import { ImageKitUploadField } from './ImageKitUploadField';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -5449,88 +5450,47 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
             {/* STEP 4: PORTRAIT PHOTO URL & LIVE REAL-TIME PREVIEW */}
             {bannerStep === 4 && (
               <div className="space-y-4">
-                {/* Photo URL Input */}
-                <div className="p-4 rounded-2xl bg-white/90 border border-pink-200 space-y-3 shadow-xs">
-                  <div className="flex items-center justify-between gap-2">
-                    <label className="block text-xs font-extrabold text-slate-900">
-                      Hero Circular Portrait Image URL
-                    </label>
+                {/* Photo Upload & Preview Card */}
+                <div className="p-4 sm:p-5 rounded-2xl bg-white/95 border border-pink-200 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between gap-2 border-b border-pink-100 pb-3">
+                    <div>
+                      <h4 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                        <i className="fa-solid fa-camera text-pink-500"></i>
+                        <span>Hero Circular Portrait Photo</span>
+                      </h4>
+                      <p className="text-[11px] font-semibold text-slate-600 mt-0.5">
+                        Direct ImageKit CDN Upload • Auto-saves to your store profile without copying links
+                      </p>
+                    </div>
                     <span className="text-[11px] font-bold text-pink-600">
                       {siteConfig.banner.showPortraitPhoto !== false ? '✅ Photo is ON' : '🙈 Photo is HIDDEN'}
                     </span>
                   </div>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <input
-                      type="text"
-                      value={siteConfig.banner.portraitUrl}
-                      onChange={(e) =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          banner: { ...prev.banner, portraitUrl: e.target.value }
-                        }))
-                      }
-                      placeholder="https://... (or click Upload to ImageKit)"
-                      className="flex-1 px-3.5 py-2.5 rounded-xl bg-white border-2 border-pink-300 font-mono-code text-xs text-slate-900 shadow-inner"
-                    />
-                    <label className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 transition flex-shrink-0">
-                      <i className="fa-solid fa-cloud-arrow-up"></i>
-                      <span>Upload Photo to ImageKit</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          showToast('⚡ Uploading photo directly to ImageKit CDN...');
-                          const res = await uploadImageToImageKit(file, '/saqib-hub/portrait');
-                          if (res.success && res.url) {
-                            onUpdateSiteConfig((prev) => ({
-                              ...prev,
-                              banner: { ...prev.banner, portraitUrl: res.url }
-                            }));
-                            playPopSound(780);
-                            showToast('✓ Photo uploaded & saved to ImageKit CDN!');
-                          } else {
-                            showToast('Upload failed: ' + (res.error || 'Unknown error'));
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="text-[11px] font-bold text-slate-600">Preset Avatars:</span>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          banner: {
-                            ...prev.banner,
-                            portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png'
-                          }
-                        }))
-                      }
-                      className="px-2.5 py-1 rounded-lg bg-pink-50 border border-pink-200 text-[11px] font-bold text-pink-700 hover:bg-pink-100 transition"
-                    >
-                      Muhammad Saqib Official
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        onUpdateSiteConfig((prev) => ({
-                          ...prev,
-                          banner: {
-                            ...prev.banner,
-                            portraitUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80'
-                          }
-                        }))
-                      }
-                      className="px-2.5 py-1 rounded-lg bg-purple-50 border border-purple-200 text-[11px] font-bold text-purple-700 hover:bg-purple-100 transition"
-                    >
-                      Creative Studio Avatar
-                    </button>
-                  </div>
+
+                  <ImageKitUploadField
+                    value={siteConfig.banner.portraitUrl}
+                    onChange={(url) =>
+                      onUpdateSiteConfig((prev) => ({
+                        ...prev,
+                        banner: { ...prev.banner, portraitUrl: url }
+                      }))
+                    }
+                    folder="/saqib-hub/portrait"
+                    label="Portrait Photo"
+                    shape="circle"
+                    presets={[
+                      {
+                        label: 'Muhammad Saqib Official',
+                        url: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png',
+                      },
+                      {
+                        label: 'Creative Studio Avatar',
+                        url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+                      },
+                    ]}
+                    showToast={showToast}
+                    playPop={playPopSound}
+                  />
                 </div>
 
                 {/* Real-Time Live Preview of How Hero Looks */}
@@ -8710,21 +8670,29 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                       />
                     </div>
 
-                    <div className="sm:col-span-2">
-                      <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                        Widget Avatar / DP URL (Image Link)
+                    <div className="sm:col-span-2 space-y-2">
+                      <label className="block text-[11px] font-extrabold text-slate-800">
+                        WhatsApp Widget Avatar / DP Photo
                       </label>
-                      <input
-                        type="text"
+                      <ImageKitUploadField
                         value={siteConfig.contact.whatsappWidgetAvatar || ''}
-                        onChange={(e) =>
+                        onChange={(url) =>
                           onUpdateSiteConfig((prev) => ({
                             ...prev,
-                            contact: { ...prev.contact, whatsappWidgetAvatar: e.target.value }
+                            contact: { ...prev.contact, whatsappWidgetAvatar: url }
                           }))
                         }
-                        placeholder="https://testuisaqib.vercel.app/saqib-pic.png"
-                        className="w-full px-3 py-2 rounded-xl bg-white border border-emerald-300 font-mono-code text-xs text-slate-900"
+                        folder="/saqib-hub/whatsapp"
+                        label="WhatsApp DP"
+                        shape="circle"
+                        presets={[
+                          {
+                            label: 'Saqib Official Pic',
+                            url: 'https://testuisaqib.vercel.app/saqib-pic.png',
+                          },
+                        ]}
+                        showToast={showToast}
+                        playPop={playPopSound}
                       />
                     </div>
                   </div>
