@@ -106,14 +106,15 @@ All production database queries, schema definitions, RLS policies, and triggers 
   - Thumb-friendly triggers: Left header hamburger and right-side mobile `Menu` pill.
 
 ### B. Mobile 60-120 FPS Performance Optimizations
-- **File**: `src/index.css` (`@media (max-width: 768px)`)
+- **File**: `src/index.css` (`@media (max-width: 768px)`), `src/App.tsx`, `src/components/ShowcaseSections.tsx`
 - **Key Enhancements**:
-  - **No Backdrop Blur Stalls**: Eliminated 30+ nested `backdrop-filter: blur(...)` calls across mobile cards that previously choked mobile GPUs.
-  - **Lightweight Single-Layer Shadows**: Replaced 4-tier heavy shadow stacks with sleek `0 4px 12px rgba(0,0,0,0.07)`.
-  - **No Continuous Animations on Mobile**: Suppressed infinite CSS angle rotations (`rgbAngleRotate`) and float loops to avoid continuous document repaints.
-  - **Mobile DOM Virtualization**: Added `content-visibility: auto; contain-intrinsic-size: 0 320px;` so offscreen service cards do not consume mobile RAM/GPU.
-  - **Zero Tap Delay**: Enforced `touch-action: manipulation;` and disabled `-webkit-tap-highlight-color`.
-  - **Native Momentum Scrolling**: Enforced `-webkit-overflow-scrolling: touch;`.
+  - **Zero React Re-render on Scroll**: Replaced state setter with direct DOM `ref` class manipulation (`scrollTopBtnRef`), completely eliminating component re-renders while scrolling.
+  - **Comprehensive Backdrop-Filter Neutralization**: Target `[class*="backdrop-blur"]` across all cards, badges, and header elements on mobile.
+  - **Single-Layer GPU Shadows**: Replaced multi-layer box shadows across `.acrylic-frame`, `.plush-pillow`, `.neu-card`, `.space-navy-box`, and `.fluffy-orb` with a featherweight `0 3px 10px rgba(0,0,0,0.08)`.
+  - **Continuous Repaint Termination**: Disabled `btnShine`, rotating RGB halos, radar rings, and floating keyframes on mobile.
+  - **Full DOM Virtualization**: Applied `content-visibility-auto` across all service cards and editorial showcase banners.
+  - **120Hz Native Momentum Touch Physics**: Set `scroll-behavior: auto; overscroll-behavior-y: contain;` for instantaneous, drag-free touch responsiveness on 90Hz/120Hz mobile screens.
+  - **Marquee Paint Containment**: Added `contain: paint; transform: translateZ(0);` to brand marquees.
 
 ---
 

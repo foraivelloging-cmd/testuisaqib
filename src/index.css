@@ -489,16 +489,24 @@ header nav.acrylic-frame {
   0% { transform: translate3d(-50%, 0, 0); }
   100% { transform: translate3d(0%, 0, 0); }
 }
+.marquee-wrapper {
+  contain: paint;
+  transform: translateZ(0);
+}
 .marquee-track-left {
   display: flex;
   width: max-content;
   will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   animation: marqueeLeft 34s linear infinite;
 }
 .marquee-track-right {
   display: flex;
   width: max-content;
   will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
   animation: marqueeRight 38s linear infinite;
 }
 .marquee-wrapper:hover .marquee-track-left,
@@ -551,51 +559,85 @@ header nav.acrylic-frame {
   }
 
   /* 1. Turn off expensive GPU-stalling backdrop-filter blurs across mobile elements */
+  [class*="backdrop-blur"],
   .acrylic-frame,
   .plush-pillow,
   .glass-card,
   .orbit-badge,
   .sim-input-box,
   .space-navy-box,
-  .mobile-bottom-dock {
+  .mobile-bottom-dock,
+  header nav.acrylic-frame {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
 
+  header nav.acrylic-frame {
+    background: rgba(255, 255, 255, 0.98) !important;
+  }
+
   /* 2. Remove heavy pseudo shine and inner border layers on mobile */
   .acrylic-frame::before,
-  .acrylic-frame::after {
+  .acrylic-frame::after,
+  .sim-btn-glow::after,
+  .space-navy-box::before {
     display: none !important;
   }
 
-  /* 3. Streamlined single-layer shadows instead of 4-layer box-shadow stacks */
+  /* 3. Streamlined single-layer shadows across all theme components on mobile */
   .acrylic-frame,
   .plush-pillow,
-  .orbit-badge {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07) !important;
+  .orbit-badge,
+  .neu-card,
+  .neu-pill-sm,
+  .neu-inset,
+  .space-navy-box,
+  .fluffy-orb,
+  .sim-btn-glow,
+  .sim-input-box {
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08) !important;
   }
 
   /* 4. Kill expensive continuous CSS animations that cause frame drops on mobile */
   body.rgb-light-on .hero-rgb-card,
-  body.rgb-light-on .acrylic-frame:not(.portrait-lens) {
-    animation: none !important;
-  }
-
+  body.rgb-light-on .acrylic-frame,
+  body.rgb-light-on .portrait-lens,
+  body.rgb-light-on .portrait-lens::before,
   .float-slow,
-  .float-reverse {
+  .float-reverse,
+  .sparkle-anim,
+  .radar-ring,
+  .auth-float-badge,
+  .animate-bounce-subtle {
     animation: none !important;
   }
 
-  /* 5. Mobile DOM Virtualization: only paint visible cards on screen */
+  /* 5. Suppress active scale transform on touch drag to prevent jitter */
+  .acrylic-interactive:active {
+    transform: none !important;
+  }
+
+  /* 6. Instant scroll response: no transition tracking during rapid flings */
+  [data-scroll] {
+    transition: none !important;
+  }
+
+  /* 7. Mobile DOM Virtualization: only paint visible cards on screen */
   .content-visibility-auto {
     content-visibility: auto;
     contain-intrinsic-size: 0 320px;
   }
 
-  /* 6. Native momentum touch scrolling */
-  body, html {
-    -webkit-overflow-scrolling: touch;
-    scroll-behavior: smooth;
+  /* 8. Native 120Hz high-refresh momentum touch scrolling */
+  html {
+    scroll-behavior: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    overscroll-behavior-y: contain;
+  }
+
+  body {
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y pinch-zoom;
   }
 
   input, select, textarea {

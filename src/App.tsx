@@ -754,28 +754,6 @@ export default function App({
     }
   }, []);
 
-  // Hardware-accelerated Scroll Reveal Observer
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const elements = document.querySelectorAll('[data-scroll]');
-    elements.forEach((el) => el.classList.add('scroll-in-view'));
-
-    if ('IntersectionObserver' in window) {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('scroll-in-view');
-            }
-          });
-        },
-        { threshold: 0.05 }
-      );
-      elements.forEach((el) => observer.observe(el));
-      return () => observer.disconnect();
-    }
-  }, [activeTab]);
-
   // Admin Service Manager Form State
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [adminTitle, setAdminTitle] = useState<string>('');
@@ -806,7 +784,6 @@ export default function App({
   const [toolOpenMode, setToolOpenMode] = useState<'new_tab' | 'embed_modal' | 'sim_tab'>('new_tab');
   const [toolSearchFilter, setToolSearchFilter] = useState<string>('');
   const [activeEmbeddedTool, setActiveEmbeddedTool] = useState<WebToolItem | null>(null);
-  const [showScrollTopBtn, setShowScrollTopBtn] = useState<boolean>(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -814,6 +791,7 @@ export default function App({
   const simInputRef = useRef<HTMLInputElement | null>(null);
   const modalInputRef = useRef<HTMLInputElement | null>(null);
   const scrollProgressBarRef = useRef<HTMLDivElement | null>(null);
+  const scrollTopBtnRef = useRef<HTMLButtonElement | null>(null);
 
   const playPopSound = (freq = 520) => {
     if (!soundEnabled) return;
@@ -2013,7 +1991,7 @@ export default function App({
     );
   });
 
-  // 1. 60FPS Passive Scroll Progress Bar & Scroll-To-Top Visibility Engine (Zero React Re-render on Scroll)
+  // 1. 120FPS Passive Scroll Engine (Zero React Re-render on Scroll)
   useEffect(() => {
     let ticking = false;
     const onWindowScroll = () => {
@@ -2026,10 +2004,16 @@ export default function App({
           if (scrollProgressBarRef.current) {
             scrollProgressBarRef.current.style.transform = `scaleX(${ratio})`;
           }
-          setShowScrollTopBtn((prev) => {
+          if (scrollTopBtnRef.current) {
             const shouldShow = scrollTop > 340;
-            return prev !== shouldShow ? shouldShow : prev;
-          });
+            if (shouldShow) {
+              scrollTopBtnRef.current.classList.remove('opacity-0', 'translate-y-6', 'scale-75', 'pointer-events-none');
+              scrollTopBtnRef.current.classList.add('opacity-100', 'translate-y-0', 'scale-100');
+            } else {
+              scrollTopBtnRef.current.classList.add('opacity-0', 'translate-y-6', 'scale-75', 'pointer-events-none');
+              scrollTopBtnRef.current.classList.remove('opacity-100', 'translate-y-0', 'scale-100');
+            }
+          }
           ticking = false;
         });
         ticking = true;
@@ -5055,17 +5039,14 @@ export default function App({
       {/* ==================== FLOATING 3D ROCKET SCROLL-TO-TOP BUTTON ==================== */}
       {siteVisibility.showFloatingScrollTop && (
         <button
+          ref={scrollTopBtnRef}
           type="button"
           onClick={() => {
             playPopSound(740);
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           title="Scroll Back to Top"
-          className={`fixed ${activeTab === 'saqibadmb' ? 'bottom-20 md:bottom-6' : 'bottom-34 md:bottom-22'} right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer ${
-            showScrollTopBtn
-              ? 'opacity-100 translate-y-0 scale-100'
-              : 'opacity-0 translate-y-6 scale-75 pointer-events-none'
-          }`}
+          className={`fixed ${activeTab === 'saqibadmb' ? 'bottom-20 md:bottom-6' : 'bottom-34 md:bottom-22'} right-3 sm:right-5 z-40 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-gradient-to-tr from-pink-500 via-purple-600 to-indigo-600 text-white border-2 border-white shadow-xl flex items-center justify-center transition-all duration-300 cursor-pointer opacity-0 translate-y-6 scale-75 pointer-events-none`}
         >
           <FaRocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 -rotate-45" />
         </button>

@@ -181,7 +181,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
   return (
     <div className="space-y-7 pt-2">
       {/* ==================== SECTION 1: FLAGSHIP AI PRO ACCOUNTS SPOTLIGHT (CHATGPT PRO, GEMINI 18M PRO, CAPCUT & LOVABLE) ==================== */}
-      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4">
+      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4 content-visibility-auto">
         <div className="plush-pillow plush-about rounded-[26px] p-4 sm:p-6 space-y-5">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-pink-200/80 pb-4 text-center md:text-left">
@@ -567,7 +567,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
           <section
             key={banner.id}
             data-scroll="up"
-            className="acrylic-frame rounded-[34px] p-3 sm:p-4"
+            className="acrylic-frame rounded-[34px] p-3 sm:p-4 content-visibility-auto"
           >
             <div className={`plush-pillow ${plushClass} rounded-[26px] p-4 sm:p-6`}>
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
@@ -696,7 +696,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
       </section>
 
       {/* ==================== SECTION 5: 100% TRUSTED SELLER & VERIFIED REVIEWS PROOF ==================== */}
-      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4">
+      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4 content-visibility-auto">
         <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
           {/* Top Trust Shield Header */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-pink-200/80 pb-4 text-center md:text-left">
