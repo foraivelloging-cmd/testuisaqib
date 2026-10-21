@@ -14,7 +14,7 @@ UPDATE public.site_config
 SET config = jsonb_set(
   config,
   '{authorizedDomains}',
-  COALESCE(config->'authorizedDomains', '["localhost", "127.0.0.1", "mrsaqib242.vercel.app"]'::jsonb) || '["myclientdomain.com", "clientbrand.vercel.app"]'::jsonb
+  COALESCE(config->'authorizedDomains', '["localhost", "127.0.0.1", "testuisaqib.vercel.app", "mrsaqib242.vercel.app"]'::jsonb) || '["myclientdomain.com", "clientbrand.vercel.app"]'::jsonb
 )
 WHERE id = 'default';
 

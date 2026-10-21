@@ -55,6 +55,11 @@ CREATE TABLE IF NOT EXISTS public.site_config (
     config JSONB NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS ban_reason TEXT DEFAULT '';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles (status);
+CREATE INDEX IF NOT EXISTS idx_profiles_last_login ON public.profiles (last_login_at DESC);
 
 -- 3.2 DIGITAL & AI SERVICES CATALOG TABLE
 CREATE TABLE IF NOT EXISTS public.services (
@@ -105,6 +110,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     password_hash TEXT,
     role TEXT NOT NULL DEFAULT 'member', -- member, reseller, admin
     balance NUMERIC NOT NULL DEFAULT 0 CHECK (balance >= 0),
+    status TEXT NOT NULL DEFAULT 'active', -- active, banned
+    ban_reason TEXT DEFAULT '',
+    last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
@@ -162,7 +170,7 @@ CREATE TABLE IF NOT EXISTS public.reviews (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
 
--- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 PROTECTED)
+-- 3.9 ADMIN SECURITY VAULT TABLE (PBKDF2 SHA-512 + RBAC MULTI-ADMIN PROTECTED)
 CREATE TABLE IF NOT EXISTS public.admin_vault (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username TEXT UNIQUE NOT NULL,
@@ -170,9 +178,76 @@ CREATE TABLE IF NOT EXISTS public.admin_vault (
     salt TEXT NOT NULL,
     iterations INTEGER NOT NULL DEFAULT 100000,
     algorithm TEXT NOT NULL DEFAULT 'sha512',
+    role TEXT NOT NULL DEFAULT 'subadmin',
+    permissions JSONB NOT NULL DEFAULT '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":false,"view_telemetry":false,"manage_site_config":false,"manage_admins":false}'::jsonb,
+    token_version INTEGER NOT NULL DEFAULT 1,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_by TEXT DEFAULT 'superadmin',
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+ALTER TABLE IF EXISTS public.admin_vault
+  ADD COLUMN IF NOT EXISTS role TEXT NOT NULL DEFAULT 'subadmin',
+  ADD COLUMN IF NOT EXISTS permissions JSONB NOT NULL DEFAULT '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":false,"view_telemetry":false,"manage_site_config":false,"manage_admins":false}'::jsonb,
+  ADD COLUMN IF NOT EXISTS token_version INTEGER NOT NULL DEFAULT 1,
+  ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT true,
+  ADD COLUMN IF NOT EXISTS created_by TEXT DEFAULT 'superadmin';
+
+-- 3.10 SECURITY LOCKOUTS & BRUTE FORCE DEFENSE TABLE
+CREATE TABLE IF NOT EXISTS public.security_lockouts (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    identifier TEXT NOT NULL UNIQUE,
+    failed_attempts INTEGER DEFAULT 1,
+    locked_until TIMESTAMPTZ,
+    last_attempt_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now())
+);
+
+-- 3.11 VISITOR FINGERPRINTS & DEVICE TELEMETRY TABLE
+CREATE TABLE IF NOT EXISTS public.visitor_fingerprints (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    fingerprint TEXT NOT NULL UNIQUE,
+    ip_address TEXT DEFAULT '127.0.0.1',
+    country TEXT DEFAULT 'Pakistan',
+    city TEXT DEFAULT '',
+    device_type TEXT DEFAULT 'Desktop',
+    os TEXT DEFAULT 'Unknown',
+    browser TEXT DEFAULT 'Unknown',
+    battery_level TEXT DEFAULT 'N/A',
+    battery_raw INTEGER DEFAULT -1,
+    battery_charging BOOLEAN DEFAULT false,
+    screen_resolution TEXT DEFAULT '',
+    hardware_specs TEXT DEFAULT '',
+    language TEXT DEFAULT 'en',
+    last_path TEXT DEFAULT '/',
+    total_visits INTEGER DEFAULT 1,
+    first_seen TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    last_seen TIMESTAMPTZ DEFAULT timezone('utc'::text, now()),
+    user_agent TEXT DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_fingerprint ON public.visitor_fingerprints (fingerprint);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_ip ON public.visitor_fingerprints (ip_address);
+CREATE INDEX IF NOT EXISTS idx_visitor_fp_last_seen ON public.visitor_fingerprints (last_seen DESC);
+
+-- 3.12 COUPONS & PROMO DISCOUNTS TABLE
+CREATE TABLE IF NOT EXISTS public.coupons (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code TEXT UNIQUE NOT NULL,
+    discount_type TEXT NOT NULL CHECK (discount_type IN ('percentage', 'fixed')),
+    discount_value NUMERIC NOT NULL,
+    max_discount_amount NUMERIC,
+    min_order_amount NUMERIC DEFAULT 0,
+    max_uses INTEGER,
+    used_count INTEGER DEFAULT 0,
+    expires_at TIMESTAMPTZ,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    applicable_category TEXT DEFAULT 'all',
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
+);
+CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons (code);
+CREATE INDEX IF NOT EXISTS idx_coupons_active ON public.coupons (is_active);
 
 -- ---------------------------------------------------------------------
 -- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
@@ -280,6 +355,24 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
 
 -- 6.4 Admin Security Vault — ZERO Public / Client Access
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
+ALTER TABLE public.security_lockouts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "No Public Access to Lockouts" ON public.security_lockouts FOR ALL TO anon, authenticated USING (false);
+ALTER TABLE public.visitor_fingerprints ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow Public Insert Visitor Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Allow Public Insert Visitor Telemetry" ON public.visitor_fingerprints FOR INSERT TO anon, authenticated WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow Public Update Visitor Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Allow Public Update Visitor Telemetry" ON public.visitor_fingerprints FOR UPDATE TO anon, authenticated USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "Deny Public Select Direct Telemetry" ON public.visitor_fingerprints;
+CREATE POLICY "Deny Public Select Direct Telemetry" ON public.visitor_fingerprints FOR SELECT TO anon, authenticated USING (false);
+GRANT ALL ON public.visitor_fingerprints TO service_role;
+
+-- Coupons RLS
+ALTER TABLE public.coupons ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Public can view active coupons" ON public.coupons;
+CREATE POLICY "Public can view active coupons" ON public.coupons FOR SELECT TO anon, authenticated USING (is_active = true);
+DROP POLICY IF EXISTS "Service role full access to coupons" ON public.coupons;
+CREATE POLICY "Service role full access to coupons" ON public.coupons FOR ALL TO service_role USING (true) WITH CHECK (true);
+
 
 -- Grant privileges
 GRANT USAGE ON SCHEMA public TO anon, authenticated, service_role;
@@ -306,7 +399,7 @@ VALUES (
     "schemaType": "WebApplication",
     "robotsIndex": true,
     "twitterCard": "summary_large_image",
-    "canonicalUrl": "https://mrsaqib242.vercel.app",
+    "canonicalUrl": "https://testuisaqib.vercel.app",
     "robotsFollow": true,
     "ogDescription": "Instant CapCut Pro, Lovable Pro, Gemini 18M, ChatGPT Plus, TikTok UK/USA Agency Accounts, Franchise SIM Records & SMM Services by Muhammad Saqib.",
     "twitterCreator": "@mrsaqib242",
@@ -349,11 +442,11 @@ VALUES (
   },
   "contact": {
     "supportEmail": "support@saqibvisuals.com",
-    "officialWebsiteUrl": "https://mrsaqib242.vercel.app",
+    "officialWebsiteUrl": "https://testuisaqib.vercel.app",
     "whatsappWidgetName": "Muhammad Saqib",
     "whatsappNumberClean": "923478936242",
-    "officialWebsiteLabel": "mrsaqib242.vercel.app",
-    "whatsappWidgetAvatar": "https://mrsaqib242.vercel.app/saqib-pic.png",
+    "officialWebsiteLabel": "testuisaqib.vercel.app",
+    "whatsappWidgetAvatar": "https://testuisaqib.vercel.app/saqib-pic.png",
     "whatsappNumberDisplay": "+92 347 8936242",
     "whatsappDefaultMessage": "Assalam-o-Alaikum Muhammad Saqib! Mujhe apki services chahiye.",
     "whatsappWidgetGreeting": "Assalam-o-Alaikum! 👋 Welcome to Saqib Visuals Hub.<br/>How can I help you today with CapCut Pro, AI Tools, TikTok Ads or Nadra services?"
@@ -660,6 +753,7 @@ VALUES (
   "authorizedDomains": [
     "localhost",
     "127.0.0.1",
+    "testuisaqib.vercel.app",
     "mrsaqib242.vercel.app"
   ]
 }'::jsonb,
@@ -748,40 +842,68 @@ ON CONFLICT (id) DO UPDATE SET
 -- ---------------------------------------------------------------------
 -- 11. SEED DATA: VERIFIED CUSTOMER REVIEWS
 -- ---------------------------------------------------------------------
-INSERT INTO public.reviews (id, name, service, rating, comment, verified)
-VALUES
-  ('rev-1', 'Hamza Ali — Lahore', 'Google Gemini 18M & CapCut Pro', 5, 'Maine Saqib bhai se Google Gemini 18-Month Pro aur CapCut Pro liya. Sirf 5 minute mein mere apne Gmail par 2TB storage ke sath activate ho gaya. 100% trusted!', true),
-  ('rev-2', 'Zainab Khan — Islamabad', 'TikTok UK & ElevenLabs 300k', 5, 'Bought TikTok UK Account + 10K Followers and ElevenLabs 300k Credits for my faceless automation channel. Best wholesale rates in Pakistan!', true),
-  ('rev-3', 'Usman Tariq — Karachi', 'Fresh SIM CDR & ChatGPT Plus', 5, 'Urgent Fresh 2026 SIM Owner & CDR report chahiye thi aur sath ChatGPT Plus. EasyPaisa bhejte hi 10 mins mein WhatsApp par PDF report mil gayi. Highly recommended!', true),
-  ('rev-4', 'Bilal Ahmad — Rawalpindi', 'Remini AI Pro & Lovable Pro', 5, 'Remini Pro 1-year activation and Lovable AI builder subscription instant receive hui. Full replacement warranty support best hai!', true)
-ON CONFLICT (id) DO NOTHING;
+-- Clean up any legacy dummy / demo reviews to ensure 100% real database records:
+DELETE FROM public.reviews WHERE id IN ('rev-1', 'rev-2', 'rev-3', 'rev-4');
+-- Note: Real customer reviews submitted through the website or admin panel will be stored directly in this table.
 
 -- ---------------------------------------------------------------------
 -- 12. SEED DATA: ADMIN SECURITY VAULT
 -- (Pass: saqibadmin / deleefue - PBKDF2 SHA-512)
 -- ---------------------------------------------------------------------
-INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm)
+INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm, role, permissions, token_version, is_active, created_by)
 VALUES 
 (
   'saqib',
   'f195d908c20941fc855a591ebb1f51c35bfc901443149fe091cb7201c924dbf7c7e88e68c629b5dddc612e843e10a4d6dec320e0961c849699604be04c2074b7',
   'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2',
   100000,
-  'sha512'
+  'sha512',
+  'superadmin',
+  '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":true,"view_telemetry":true,"manage_site_config":true,"manage_admins":true}'::jsonb,
+  1,
+  true,
+  'system'
 ),
 (
   'saqibadmin',
   '3642eaba715b6694284a57ad3cb1821772189998788f4691da77a4893a90a584c4f5c54922f66b8362e14590b9e1b24a61003185c23a3dd2c1bf22f800696e52',
   '7d9d759b0d4f90db22f8e1431fd6a2f8108bee697ad551a386964df3e2ce789c',
   100000,
-  'sha512'
+  'sha512',
+  'superadmin',
+  '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":true,"view_telemetry":true,"manage_site_config":true,"manage_admins":true}'::jsonb,
+  1,
+  true,
+  'system'
 )
 ON CONFLICT (username) DO UPDATE SET
   password_hash = EXCLUDED.password_hash,
   salt = EXCLUDED.salt,
   iterations = EXCLUDED.iterations,
   algorithm = EXCLUDED.algorithm,
+  role = EXCLUDED.role,
+  permissions = EXCLUDED.permissions,
+  is_active = true,
   updated_at = timezone('utc'::text, now());
+
+-- ---------------------------------------------------------------------
+-- 13. SEED DATA: OFFICIAL PROMO COUPONS
+-- ---------------------------------------------------------------------
+INSERT INTO public.coupons (
+  code, 
+  discount_type, 
+  discount_value, 
+  min_order_amount, 
+  max_discount_amount, 
+  max_uses, 
+  description
+)
+VALUES 
+  ('WELCOME10', 'percentage', 10, 200, 300, 500, 'Welcome Special: 10% OFF on all orders over Rs. 200 (Max Rs. 300 discount)'),
+  ('SAQIB50', 'fixed', 50, 300, NULL, 200, 'VIP Flat Discount: Rs. 50 OFF on orders over Rs. 300'),
+  ('SAQIB20', 'percentage', 20, 500, 500, 1000, 'Special Promo: 20% OFF on orders over Rs. 500 (Max Rs. 500 discount)'),
+  ('EID20', 'percentage', 20, 500, 500, 1000, 'Festive Special: 20% OFF on orders over Rs. 500 (Max Rs. 500 discount)')
+ON CONFLICT (code) DO NOTHING;
 
 -- =====================================================================
 -- 🛠️ USEFUL ADMIN MAINTENANCE CHEAT-SHEET QUERIES
@@ -875,6 +997,71 @@ ON CONFLICT (username) DO UPDATE SET
 --   COALESCE(config->'authorizedDomains', '["localhost", "127.0.0.1", "mrsaqib242.vercel.app"]'::jsonb) || '["clientdomain.com"]'::jsonb
 -- )
 -- WHERE id = 'default';
+
+-- [I] Storefront Promo & Welcome 20% Discount Popup Modal Controls:
+-- -- 1. Turn ON 20% Discount Promo Popup:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(
+--   config,
+--   '{promoPopup}',
+--   jsonb_build_object(
+--     'enabled', true,
+--     'popupType', 'discount',
+--     'badgeText', '🔥 SPECIAL 20% DISCOUNT',
+--     'title', 'Limited Time Flash Offer — Save 20% Today!',
+--     'description', 'Order any AI Pro Tool, CapCut Pro, or TikTok Agency Account right now and enjoy an instant 20% discount on your first order. WhatsApp Saqib directly!',
+--     'imageUrl', 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80',
+--     'showImage', true,
+--     'couponCode', 'SAQIB20',
+--     'showCoupon', true,
+--     'countdownMinutes', 15,
+--     'showCountdown', true,
+--     'primaryBtnText', 'Claim 20% Off on WhatsApp',
+--     'primaryBtnAction', 'whatsapp',
+--     'secondaryBtnText', 'Maybe Later',
+--     'showOncePerSession', true
+--   ),
+--   true
+-- ),
+-- updated_at = now()
+-- WHERE id = 'default';
+
+-- -- 2. Turn OFF / Disable Popup:
+-- UPDATE public.site_config
+-- SET config = jsonb_set(config, '{promoPopup,enabled}', 'false', true),
+-- updated_at = now()
+-- WHERE id = 'default';
+
+
+-- [J] Ban / Suspend a User Account:
+-- UPDATE public.profiles
+-- SET status = 'banned', ban_reason = 'Suspended: Suspicious activity', updated_at = now()
+-- WHERE id = 'TARGET_USER_ID_OR_PHONE';
+
+-- [K] Unban / Restore User Account:
+-- UPDATE public.profiles
+-- SET status = 'active', ban_reason = '', updated_at = now()
+-- WHERE id = 'TARGET_USER_ID_OR_PHONE';
+
+-- [L] Add New Sub-Admin Account:
+-- INSERT INTO public.admin_vault (username, password_hash, salt, iterations, algorithm, role, permissions, token_version, is_active)
+-- VALUES (
+--   'staff_ali',
+--   'f195d908c20941fc855a591ebb1f51c35bfc901443149fe091cb7201c924dbf7c7e88e68c629b5dddc612e843e10a4d6dec320e0961c849699604be04c2074b7',
+--   'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2',
+--   100000,
+--   'sha512',
+--   'subadmin',
+--   '{"manage_services":true,"manage_tools":true,"manage_orders":true,"manage_users":false,"view_telemetry":false,"manage_site_config":false,"manage_admins":false}'::jsonb,
+--   1,
+--   true
+-- );
+
+-- [M] View Real Visitor Telemetry & Hardware Fingerprints:
+-- SELECT fingerprint, ip_address, country, device_type, os, browser, battery_level, last_seen
+-- FROM public.visitor_fingerprints
+-- ORDER BY last_seen DESC
+-- LIMIT 25;
 
 -- =====================================================================
 -- ✅ MASTER DATABASE SETUP COMPLETED SUCCESSFULLY!
