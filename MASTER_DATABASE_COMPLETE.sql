@@ -76,11 +76,6 @@ CREATE TABLE IF NOT EXISTS public.services (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
-ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
-ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS ban_reason TEXT DEFAULT '';
-ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
-CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles (status);
-CREATE INDEX IF NOT EXISTS idx_profiles_last_login ON public.profiles (last_login_at DESC);
 
 -- 3.3 LIVE ONLINE WEB TOOLS TABLE
 CREATE TABLE IF NOT EXISTS public.web_tools (
@@ -116,6 +111,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS ban_reason TEXT DEFAULT '';
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
 
 -- 3.5 ORDERS TABLE
 CREATE TABLE IF NOT EXISTS public.orders (
@@ -288,6 +286,8 @@ FOR EACH ROW EXECUTE FUNCTION public.handle_updated_at();
 -- ---------------------------------------------------------------------
 -- 5. ULTRA-FAST PERFORMANCE INDEXES
 -- ---------------------------------------------------------------------
+CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles (status);
+CREATE INDEX IF NOT EXISTS idx_profiles_last_login ON public.profiles (last_login_at DESC);
 CREATE INDEX IF NOT EXISTS idx_services_category_hidden ON public.services(category, hidden, sort_order);
 CREATE INDEX IF NOT EXISTS idx_services_sort ON public.services(sort_order);
 CREATE INDEX IF NOT EXISTS idx_web_tools_hidden_sort ON public.web_tools(hidden, sort_order);
