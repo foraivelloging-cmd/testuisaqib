@@ -76,16 +76,19 @@ All production database queries, schema definitions, RLS policies, and triggers 
 1. `master_query.sql` — Instant executable SQL script for Supabase SQL Editor.
 2. `MASTER_DATABASE_COMPLETE.sql` — Full migration script with all seed data, storage buckets, and performance indexes.
 
-### Core Tables:
+### Core Tables (All 12 Production Tables):
 - `site_config` (Key-value and master JSON configuration for all storefront settings, banners, WhatsApp widget, SEO, and promo popups).
-- `services` (Catalog of all digital accounts, SMM packages, tools, and pricing).
-- `web_tools` (SIM tracker, IMEI finder, Nadra portal links).
-- `orders` (Customer purchase orders, status tracking, delivery credentials).
-- `payment_proofs` (Deposit requests, payment receipts, screenshot verification — strictly real database records with zero mock proofs or fake balances).
-- `wallet_transactions` (Balance credit/debit history).
-- `subadmins` (Sub-admin accounts, passwords, allowed tab permissions).
-- `coupons` (Discount coupon codes, percentage/fixed amounts, usage limits).
-- `reviews` (Customer ratings and testimonials).
+- `services` (Catalog of all 32+ digital accounts, SMM packages, tools, and pricing tiers).
+- `web_tools` (SIM tracker, IMEI finder, Nadra portal, and AI web studio tools).
+- `profiles` (User management, wallet balance, active/banned status, ban reasons, and login timestamps).
+- `orders` (Live customer purchase orders, real-time database status tracking, server node telemetry).
+- `payment_proofs` (Manual deposit requests, payment receipts, screenshot verification — strictly real database records with zero mock proofs or fake balances).
+- `reviews` (Verified customer ratings and testimonials stored directly in database, zero fake seed reviews).
+- `admin_vault` (PBKDF2 SHA-512 admin passwords, Superadmin & Sub-admin RBAC granular permissions).
+- `coupons` (Discount coupon codes, percentage/fixed amounts, usage limits, and category restrictions).
+- `contact_inquiries` (Customer support inbox, contact form messages, and priority ticketing).
+- `visitor_fingerprints` (Hardware & device telemetry, battery level, charging status, OS, browser, screen resolution).
+- `security_lockouts` (Anti brute-force rate limiter and IP lockout tracking).
 
 ---
 
