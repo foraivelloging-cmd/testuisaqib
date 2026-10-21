@@ -133,29 +133,4 @@ export function createSampleReceiptDataUrl(
   return `data:image/svg+xml;utf8,${encodeURIComponent(svg)}`;
 }
 
-export const DEFAULT_PAYMENT_PROOFS: PaymentProofRequest[] = [
-  {
-    id: 'DEP-9042',
-    amount: 2500,
-    method: 'EasyPaisa',
-    senderAccountName: 'Hamza Tariq',
-    senderAccountNumber: '0312-4982310',
-    trxId: '8492019482',
-    screenshotUrl: createSampleReceiptDataUrl('EasyPaisa', 2500, 'Hamza Tariq', '0312-4982310', '8492019482'),
-    status: 'pending',
-    createdAt: 'Just now',
-    userNote: 'Top-up for Gemini 18M Pro & TikTok UK Account'
-  },
-  {
-    id: 'DEP-9038',
-    amount: 1800,
-    method: 'JazzCash',
-    senderAccountName: 'Zainab Ali',
-    senderAccountNumber: '0304-7721904',
-    trxId: '7381904512',
-    screenshotUrl: createSampleReceiptDataUrl('JazzCash', 1800, 'Zainab Ali', '0304-7721904', '7381904512'),
-    status: 'approved',
-    createdAt: '25 mins ago',
-    userNote: 'Wallet Balance Deposit'
-  }
-];
+export const DEFAULT_PAYMENT_PROOFS: PaymentProofRequest[] = [];

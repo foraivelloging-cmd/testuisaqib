@@ -6,7 +6,10 @@ import { sanitizeString } from '@/src/lib/securitySanitizer';
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
-    const userId = sanitizeString(searchParams.get('userId') || '+92 347 8936242');
+    const userId = sanitizeString(searchParams.get('userId') || '');
+    if (!userId) {
+      return NextResponse.json({ success: true, source: 'guest', balance: 0 });
+    }
 
     const { data, error } = await supabaseAdmin
       .from('profiles')
@@ -18,7 +21,7 @@ export async function GET(req: Request) {
       return NextResponse.json({
         success: true,
         source: 'default',
-        balance: 1800,
+        balance: 0,
       });
     }
 
@@ -32,7 +35,7 @@ export async function GET(req: Request) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json(
-      { success: true, source: 'fallback', balance: 1800, warning: message },
+      { success: true, source: 'fallback', balance: 0, warning: message },
       { status: 200 }
     );
   }

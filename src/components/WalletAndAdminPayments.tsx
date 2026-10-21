@@ -604,13 +604,7 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                       <i className="fa-solid fa-link"></i> Paste URL
                     </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleGenerateSampleSS}
-                    className="px-2.5 py-1 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-800 border border-purple-300 text-[10px] font-extrabold transition cursor-pointer"
-                  >
-                    <i className="fa-solid fa-wand-magic-sparkles mr-1"></i>Sample SS
-                  </button>
+
                 </div>
               </div>
 
@@ -765,7 +759,14 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
           </div>
 
           <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
-            {paymentProofs.map((req) => (
+            {paymentProofs.length === 0 ? (
+              <div className="p-6 text-center bg-slate-50/70 rounded-2xl border border-dashed border-pink-200 text-slate-500 font-semibold text-xs space-y-1">
+                <i className="fa-solid fa-receipt text-pink-400 text-xl block mb-1"></i>
+                <div className="font-extrabold text-slate-700">No Payment Proofs Submitted Yet</div>
+                <div className="text-[10px]">Jab aap upar se payment screenshot submit karenge to wo yahan real status tracking ke liye show hoga.</div>
+              </div>
+            ) : (
+              paymentProofs.map((req) => (
               <div
                 key={req.id}
                 className="p-3 rounded-2xl bg-white border border-pink-100 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3"
@@ -829,7 +830,7 @@ export const UserAddFundsExperience: React.FC<UserDepositProps> = ({
                   )}
                 </div>
               </div>
-            ))}
+            )))}
           </div>
         </div>
       )}

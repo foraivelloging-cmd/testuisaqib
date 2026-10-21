@@ -26,15 +26,11 @@ export async function GET(req: Request) {
 
     const { data, error } = await query;
 
-    if (error || !data || data.length === 0) {
-      return NextResponse.json({
-        success: true,
-        source: 'default',
-        proofs: DEFAULT_PAYMENT_PROOFS,
-      });
+    if (error) {
+      return NextResponse.json({ success: true, source: 'supabase', proofs: [] });
     }
 
-    const proofs: PaymentProofRequest[] = data.map((row) => ({
+    const proofs: PaymentProofRequest[] = (data || []).map((row) => ({
       id: row.id,
       amount: Number(row.amount),
       method: row.method,
@@ -55,7 +51,7 @@ export async function GET(req: Request) {
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json(
-      { success: true, source: 'fallback', proofs: DEFAULT_PAYMENT_PROOFS, warning: message },
+      { success: true, source: 'fallback', proofs: [], warning: message },
       { status: 200 }
     );
   }

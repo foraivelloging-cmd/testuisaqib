@@ -81,7 +81,7 @@ All production database queries, schema definitions, RLS policies, and triggers 
 - `services` (Catalog of all digital accounts, SMM packages, tools, and pricing).
 - `web_tools` (SIM tracker, IMEI finder, Nadra portal links).
 - `orders` (Customer purchase orders, status tracking, delivery credentials).
-- `payments` (Deposit requests, payment receipts, screenshot verification).
+- `payment_proofs` (Deposit requests, payment receipts, screenshot verification — strictly real database records with zero mock proofs or fake balances).
 - `wallet_transactions` (Balance credit/debit history).
 - `subadmins` (Sub-admin accounts, passwords, allowed tab permissions).
 - `coupons` (Discount coupon codes, percentage/fixed amounts, usage limits).

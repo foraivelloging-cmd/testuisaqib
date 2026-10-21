@@ -539,8 +539,8 @@ export default function App({
   const [loginPortalSection, setLoginPortalSection] = useState<'auth' | 'wallet'>('auth');
 
   // Live User Wallet Balance & Submitted Payment Proofs State (persisted in localStorage)
-  const [walletBalance, setWalletBalance] = useState<number>(1800);
-  const [paymentProofs, setPaymentProofs] = useState<PaymentProofRequest[]>(DEFAULT_PAYMENT_PROOFS);
+  const [walletBalance, setWalletBalance] = useState<number>(0);
+  const [paymentProofs, setPaymentProofs] = useState<PaymentProofRequest[]>([]);
 
   const [addFundsModalOpen, setAddFundsModalOpen] = useState<boolean>(false);
   const [themeModalOpen, setThemeModalOpen] = useState<boolean>(false);
@@ -596,14 +596,15 @@ export default function App({
     fetch('/api/payments')
       .then((res) => res.json())
       .then((data) => {
-        if (data.success && Array.isArray(data.proofs) && data.proofs.length > 0) {
+        if (data.success && Array.isArray(data.proofs)) {
           setPaymentProofs(data.proofs);
         }
       })
       .catch(() => {});
 
     // 4. Fetch Cloud Wallet Balance
-    const targetUserId = vipUser?.identifier || '+92 347 8936242';
+    const targetUserId = vipUser?.identifier;
+    if (targetUserId) {
     fetch(`/api/wallet?userId=${encodeURIComponent(targetUserId)}`)
       .then((res) => res.json())
       .then((data) => {
@@ -612,6 +613,7 @@ export default function App({
         }
       })
       .catch(() => {});
+    }
 
     // 5. Fetch Cloud Web Tools
     fetch('/api/tools')
@@ -705,13 +707,21 @@ export default function App({
         const savedBalance = localStorage.getItem(WALLET_BALANCE_STORAGE_KEY);
         if (savedBalance !== null) {
           const parsed = Number(savedBalance);
-          if (!Number.isNaN(parsed) && parsed >= 0) setWalletBalance(parsed);
+          if (!Number.isNaN(parsed) && parsed >= 0) setWalletBalance(parsed === 1800 ? 0 : parsed);
         }
 
         const savedProofs = localStorage.getItem(PAYMENT_PROOFS_STORAGE_KEY);
         if (savedProofs) {
-          const parsed = JSON.parse(savedProofs);
-          if (Array.isArray(parsed) && parsed.length > 0) setPaymentProofs(parsed);
+          try {
+            const parsed = JSON.parse(savedProofs);
+            if (Array.isArray(parsed)) {
+              const realOnly = parsed.filter((p) => p && p.id !== 'DEP-9042' && p.id !== 'DEP-9038');
+              setPaymentProofs(realOnly);
+              localStorage.setItem(PAYMENT_PROOFS_STORAGE_KEY, JSON.stringify(realOnly));
+            }
+          } catch {
+            localStorage.removeItem(PAYMENT_PROOFS_STORAGE_KEY);
+          }
         }
 
         const savedTheme = localStorage.getItem('saqib_visuals_ui_theme_v1') as WebsiteUiThemeMode;
