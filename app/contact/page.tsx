@@ -51,6 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function ContactPage() {
   const { services, webTools, siteConfig, reviews } = await getServerStoreData();
 
+  
   return (
     <main className="min-h-screen">
       <ClientStoreApp
