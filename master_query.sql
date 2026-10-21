@@ -55,11 +55,6 @@ CREATE TABLE IF NOT EXISTS public.site_config (
     config JSONB NOT NULL,
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS ban_reason TEXT DEFAULT '';
-ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
-CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles (status);
-CREATE INDEX IF NOT EXISTS idx_profiles_last_login ON public.profiles (last_login_at DESC);
 
 -- 3.2 DIGITAL & AI SERVICES CATALOG TABLE
 CREATE TABLE IF NOT EXISTS public.services (
@@ -81,6 +76,11 @@ CREATE TABLE IF NOT EXISTS public.services (
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now())
 );
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'active';
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS ban_reason TEXT DEFAULT '';
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+CREATE INDEX IF NOT EXISTS idx_profiles_status ON public.profiles (status);
+CREATE INDEX IF NOT EXISTS idx_profiles_last_login ON public.profiles (last_login_at DESC);
 
 -- 3.3 LIVE ONLINE WEB TOOLS TABLE
 CREATE TABLE IF NOT EXISTS public.web_tools (
