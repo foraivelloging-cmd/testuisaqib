@@ -167,16 +167,69 @@ interface ShowcaseSectionsProps {
   showcaseBanners?: ShowcaseBannerItem[];
   primaryWaNumber?: string;
   reviews?: any[];
+  isAdmin?: boolean;
+  onAddReview?: (review: { name: string; service: string; rating: number; comment: string; verified?: boolean }) => Promise<boolean>;
+  onDeleteReview?: (id: string) => Promise<boolean>;
+  onToggleVerified?: (id: string, currentStatus: boolean) => Promise<boolean>;
+  currentUserName?: string;
 }
 
 export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
   onSelectServiceById,
   onQuickFilter,
   onPlayPop,
+  servicesCatalog = [],
   showcaseBanners,
   primaryWaNumber,
-  reviews = []
+  reviews = [],
+  isAdmin = false,
+  onAddReview,
+  onDeleteReview,
+  onToggleVerified,
+  currentUserName = ''
 }) => {
+  const [showWriteModal, setShowWriteModal] = React.useState(false);
+  const [authorName, setAuthorName] = React.useState(currentUserName || '');
+  const [selectedService, setSelectedService] = React.useState(
+    servicesCatalog[0]?.title || 'CapCut Pro 1 Year'
+  );
+  const [rating, setRating] = React.useState(5);
+  const [comment, setComment] = React.useState('');
+  const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [visibleCount, setVisibleCount] = React.useState(6);
+
+  React.useEffect(() => {
+    if (currentUserName && !authorName) {
+      setAuthorName(currentUserName);
+    }
+  }, [currentUserName]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!authorName.trim() || !comment.trim()) {
+      alert('Please enter your name and review feedback.');
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      if (onAddReview) {
+        const ok = await onAddReview({
+          name: authorName.trim(),
+          service: selectedService,
+          rating,
+          comment: comment.trim(),
+          verified: true
+        });
+        if (ok) {
+          setShowWriteModal(false);
+          setComment('');
+          if (onPlayPop) onPlayPop(700);
+        }
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
   const banners =
     showcaseBanners && showcaseBanners.length > 0 ? showcaseBanners : DEFAULT_SHOWCASE_BANNERS;
   const activeBanners = banners.filter((b) => b.enabled !== false);
@@ -698,7 +751,7 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
       </section>
 
       {/* ==================== SECTION 5: 100% TRUSTED SELLER & VERIFIED REVIEWS PROOF ==================== */}
-      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4 content-visibility-auto">
+      <section data-scroll="up" className="acrylic-frame rounded-[34px] p-3 sm:p-5 space-y-4 content-visibility-auto relative">
         <div className="plush-pillow plush-hero rounded-[26px] p-4 sm:p-6 space-y-5">
           {/* Top Trust Shield Header */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-b border-pink-200/80 pb-4 text-center md:text-left">
@@ -719,17 +772,31 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
               </div>
             </div>
 
-            {/* Rating Summary Box */}
-            <div className="bg-white/85 px-4 py-2.5 rounded-2xl border border-white shadow-sm text-center flex-shrink-0">
-              <div className="text-amber-500 text-sm tracking-wider">
-                <i className="fa-solid fa-star"></i>
-                <i className="fa-solid fa-star"></i>
-                <i className="fa-solid fa-star"></i>
-                <i className="fa-solid fa-star"></i>
-                <i className="fa-solid fa-star"></i>
+            {/* Right Buttons: Rating Summary Box + Write a Review Button */}
+            <div className="flex flex-wrap items-center justify-center md:justify-end gap-2.5 flex-shrink-0">
+              <div className="bg-white/85 px-4 py-2.5 rounded-2xl border border-white shadow-sm text-center flex-shrink-0">
+                <div className="text-amber-500 text-sm tracking-wider">
+                  <i className="fa-solid fa-star"></i>
+                  <i className="fa-solid fa-star"></i>
+                  <i className="fa-solid fa-star"></i>
+                  <i className="fa-solid fa-star"></i>
+                  <i className="fa-solid fa-star"></i>
+                </div>
+                <div className="text-xs font-extrabold text-slate-900 mt-0.5">4.98 / 5.0 Rating</div>
+                <div className="text-[10px] font-bold text-emerald-700">Based on 3,400+ WA Reviews</div>
               </div>
-              <div className="text-xs font-extrabold text-slate-900 mt-0.5">4.98 / 5.0 Rating</div>
-              <div className="text-[10px] font-bold text-emerald-700">Based on 3,400+ WA Reviews</div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (onPlayPop) onPlayPop(550);
+                  setShowWriteModal(true);
+                }}
+                className="px-3.5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <i className="fa-solid fa-pen-to-square"></i>
+                <span>Write a Review</span>
+              </button>
             </div>
           </div>
 
@@ -759,50 +826,99 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
 
           {/* Verified Client Testimonials (Real Data from Supabase Database) */}
           {reviews && reviews.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-              {reviews.slice(0, 6).map((rev: any, idx: number) => {
-                const name = rev.name || 'Verified Client';
-                const initials =
-                  name
-                    .split(' ')
-                    .filter(Boolean)
-                    .map((w: string) => w[0])
-                    .slice(0, 2)
-                    .join('')
-                    .toUpperCase() || 'VC';
-                const ratingCount = Math.max(1, Math.min(5, Number(rev.rating) || 5));
-                const stars = '★'.repeat(ratingCount);
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                {reviews.slice(0, visibleCount).map((rev: any, idx: number) => {
+                  const name = rev.name || 'Verified Client';
+                  const initials =
+                    name
+                      .split(' ')
+                      .filter(Boolean)
+                      .map((w: string) => w[0])
+                      .slice(0, 2)
+                      .join('')
+                      .toUpperCase() || 'VC';
+                  const ratingCount = Math.max(1, Math.min(5, Number(rev.rating) || 5));
+                  const stars = '★'.repeat(ratingCount);
 
-                return (
-                  <div
-                    key={rev.id || idx}
-                    className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-amber-500 text-xs tracking-wider">{stars}</span>
-                        {rev.verified !== false && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
-                            Verified Buyer ✓
-                          </span>
+                  return (
+                    <div
+                      key={rev.id || idx}
+                      className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3 transition hover:shadow-md"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-amber-500 text-xs tracking-wider">{stars}</span>
+                          {rev.verified !== false ? (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
+                              Verified Buyer ✓
+                            </span>
+                          ) : (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[9px] font-extrabold">
+                              Client Review
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-slate-700 leading-relaxed">
+                          &ldquo;{rev.comment}&rdquo;
+                        </p>
+                      </div>
+
+                      <div className="space-y-2 pt-2 border-t border-pink-100">
+                        <div className="flex items-center gap-2.5">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                            {initials}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="text-xs font-extrabold text-slate-900 truncate">{name}</div>
+                            <div className="text-[10px] font-bold text-pink-600 truncate">{rev.service || 'Verified Service'}</div>
+                          </div>
+                        </div>
+
+                        {/* Admin Inline Actions */}
+                        {isAdmin && (
+                          <div className="flex items-center justify-between pt-2 border-t border-slate-200/70 text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => onToggleVerified && onToggleVerified(rev.id, rev.verified !== false)}
+                              className={`px-2 py-0.5 rounded-md font-bold transition cursor-pointer ${
+                                rev.verified !== false
+                                  ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200'
+                                  : 'bg-amber-100 text-amber-800 hover:bg-amber-200'
+                              }`}
+                              title="Click to toggle verification status"
+                            >
+                              {rev.verified !== false ? 'Verified ✓' : 'Pending ⏳'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => onDeleteReview && onDeleteReview(rev.id)}
+                              className="text-red-500 hover:text-red-700 font-bold flex items-center gap-1 hover:underline cursor-pointer"
+                              title="Delete review from database"
+                            >
+                              <i className="fa-solid fa-trash-can"></i> Delete
+                            </button>
+                          </div>
                         )}
                       </div>
-                      <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                        &ldquo;{rev.comment}&rdquo;
-                      </p>
                     </div>
-                    <div className="flex items-center gap-2.5 pt-2 border-t border-pink-100">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
-                        {initials}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="text-xs font-extrabold text-slate-900 truncate">{name}</div>
-                        <div className="text-[10px] font-bold text-pink-600 truncate">{rev.service || 'Verified Service'}</div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
+
+              {/* View More Reviews Button */}
+              {reviews.length > visibleCount && (
+                <div className="text-center pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((prev) => prev + 6)}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/90 hover:bg-white border border-pink-200 text-slate-800 font-extrabold text-xs shadow-sm hover:scale-105 transition cursor-pointer"
+                  >
+                    <i className="fa-solid fa-angles-down text-pink-500"></i>
+                    <span>View More Reviews ({reviews.length - visibleCount} more)</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-white/85 p-6 rounded-2xl border border-white shadow-sm text-center space-y-3">
@@ -813,9 +929,16 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                 100% Genuine Database Reviews
               </div>
               <p className="text-xs font-semibold text-slate-600 max-w-md mx-auto">
-                All client reviews on Saqib Visuals Hub are collected directly from verified customer orders. Have you used our services? Send your verified feedback to Muhammad Saqib on WhatsApp!
+                All client reviews on Saqib Visuals Hub are collected directly from verified customer orders. Have you used our services? Send your verified feedback to Muhammad Saqib on WhatsApp or write your review!
               </p>
-              <div>
+              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowWriteModal(true)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer"
+                >
+                  <i className="fa-solid fa-pen-to-square"></i> Write First Review
+                </button>
                 <a
                   href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
                     'Assalam-o-Alaikum Saqib Bhai! I want to share my client review for my order.'
@@ -824,12 +947,140 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition"
                 >
-                  <i className="fa-brands fa-whatsapp text-sm"></i> Share Your Verified Review via WhatsApp
+                  <i className="fa-brands fa-whatsapp text-sm"></i> Share via WhatsApp
                 </a>
               </div>
             </div>
           )}
         </div>
+
+        {/* ==================== INTERACTIVE WRITE A REVIEW MODAL ==================== */}
+        {showWriteModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-2xl border border-pink-100 space-y-4 relative">
+              {/* Close Button */}
+              <button
+                type="button"
+                onClick={() => setShowWriteModal(false)}
+                className="absolute top-4 right-4 w-8 h-8 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center text-xs font-bold transition cursor-pointer"
+              >
+                ✕
+              </button>
+
+              <div className="space-y-1 text-center sm:text-left">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-pink-100 text-pink-700 text-[10px] font-extrabold">
+                  <i className="fa-solid fa-star"></i> VERIFIED CLIENT FEEDBACK
+                </div>
+                <h3 className="text-lg font-extrabold text-slate-900">Share Your Experience</h3>
+                <p className="text-xs text-slate-600">
+                  Your feedback helps other creators and clients choose genuine services.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmitReview} className="space-y-3.5 pt-1">
+                {/* Name & City */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Your Name &amp; City:
+                  </label>
+                  <input
+                    type="text"
+                    value={authorName}
+                    onChange={(e) => setAuthorName(e.target.value)}
+                    placeholder="e.g. Ali Raza — Lahore"
+                    required
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+                  />
+                </div>
+
+                {/* Service */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Service Purchased / Used:
+                  </label>
+                  <input
+                    type="text"
+                    value={selectedService}
+                    onChange={(e) => setSelectedService(e.target.value)}
+                    placeholder="e.g. CapCut Pro 1 Year, Gemini 18M, TikTok UK"
+                    required
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+                  />
+                </div>
+
+                {/* Rating Selector */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Your Rating:
+                  </label>
+                  <div className="flex items-center gap-1.5">
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => {
+                          if (onPlayPop) onPlayPop(400 + s * 50);
+                          setRating(s);
+                        }}
+                        className={`text-2xl transition-transform hover:scale-125 cursor-pointer ${
+                          s <= rating ? 'text-amber-400' : 'text-slate-300'
+                        }`}
+                      >
+                        ★
+                      </button>
+                    ))}
+                    <span className="ml-2 text-xs font-bold text-slate-700">
+                      {rating === 5 ? '5/5 — 100% Exceptional' : `${rating}/5 Stars`}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Review Comment */}
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                    Your Review Feedback:
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    placeholder="Share your genuine experience with Muhammad Saqib (e.g. delivery time, account quality, support)..."
+                    required
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 resize-none"
+                  />
+                </div>
+
+                {/* Submit & Cancel Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowWriteModal(false)}
+                    className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs transition cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="px-5 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-600 hover:from-pink-600 hover:to-indigo-700 text-white font-extrabold text-xs shadow-md transition hover:scale-105 cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <i className="fa-solid fa-spinner fa-spin"></i>
+                        <span>Submitting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-paper-plane"></i>
+                        <span>Submit Review</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </section>
     </div>
   );

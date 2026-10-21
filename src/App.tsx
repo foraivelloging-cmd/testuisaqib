@@ -855,6 +855,82 @@ export default function App({
     }, 2600);
   };
 
+  const handleAddReview = async (reviewData: {
+    name: string;
+    service: string;
+    rating: number;
+    comment: string;
+    verified?: boolean;
+  }) => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: getAdminHeaders(),
+        body: JSON.stringify(reviewData),
+      });
+      const data = await res.json();
+      if (data && data.success && data.review) {
+        setReviews((prev) => [data.review, ...prev]);
+        showToast('Review submitted successfully! Shukriya!');
+        return true;
+      } else {
+        showToast(data.error || 'Failed to submit review');
+        return false;
+      }
+    } catch {
+      showToast('Network error submitting review');
+      return false;
+    }
+  };
+
+  const handleDeleteReview = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this review from the database?')) {
+      return false;
+    }
+    try {
+      const res = await fetch(`/api/reviews?id=${encodeURIComponent(id)}`, {
+        method: 'DELETE',
+        headers: getAdminHeaders(),
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        setReviews((prev) => prev.filter((r) => r.id !== id));
+        showToast('Review deleted from database');
+        return true;
+      } else {
+        showToast(data.error || 'Failed to delete review');
+        return false;
+      }
+    } catch {
+      showToast('Network error deleting review');
+      return false;
+    }
+  };
+
+  const handleToggleVerifiedReview = async (id: string, currentStatus: boolean) => {
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'PATCH',
+        headers: getAdminHeaders(),
+        body: JSON.stringify({ id, verified: !currentStatus }),
+      });
+      const data = await res.json();
+      if (data && data.success && data.review) {
+        setReviews((prev) =>
+          prev.map((r) => (r.id === id ? { ...r, verified: !currentStatus } : r))
+        );
+        showToast(`Review marked as ${!currentStatus ? 'Verified ✓' : 'Pending ⏳'}`);
+        return true;
+      } else {
+        showToast(data.error || 'Failed to update review status');
+        return false;
+      }
+    } catch {
+      showToast('Network error updating review');
+      return false;
+    }
+  };
+
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -3414,6 +3490,12 @@ export default function App({
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
                 reviews={reviews}
+                primaryWaNumber={siteConfig.contact.whatsappNumberClean}
+                isAdmin={Boolean(adminToken)}
+                currentUserName={vipUser?.name || ''}
+                onAddReview={handleAddReview}
+                onDeleteReview={handleDeleteReview}
+                onToggleVerified={handleToggleVerifiedReview}
                 onSelectServiceById={(id) => {
                   const found = visibleServicesCatalog.find((s) => s.id === id);
                   if (found) {
