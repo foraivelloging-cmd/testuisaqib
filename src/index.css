@@ -566,26 +566,19 @@ header nav.acrylic-frame {
 
 /* ==================== 60FPS HARDWARE-ACCELERATED SCROLL REVEAL ENGINE ==================== */
 [data-scroll] {
-  opacity: 0;
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
   transition:
     opacity 0.38s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-[data-scroll="up"] {
-  transform: translate3d(0, 20px, 0) scale(0.98);
-}
-
-[data-scroll="left"] {
-  transform: translate3d(-20px, 6px, 0) scale(0.98);
-}
-
-[data-scroll="right"] {
-  transform: translate3d(20px, 6px, 0) scale(0.98);
-}
-
+[data-scroll="up"],
+[data-scroll="left"],
+[data-scroll="right"],
 [data-scroll="zoom"] {
-  transform: translate3d(0, 14px, 0) scale(0.95);
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
 }
 
 [data-scroll].scroll-in-view {

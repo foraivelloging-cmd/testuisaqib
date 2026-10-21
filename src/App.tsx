@@ -753,6 +753,28 @@ export default function App({
     }
   }, []);
 
+  // Hardware-accelerated Scroll Reveal Observer
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const elements = document.querySelectorAll('[data-scroll]');
+    elements.forEach((el) => el.classList.add('scroll-in-view'));
+
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('scroll-in-view');
+            }
+          });
+        },
+        { threshold: 0.05 }
+      );
+      elements.forEach((el) => observer.observe(el));
+      return () => observer.disconnect();
+    }
+  }, [activeTab]);
+
   // Admin Service Manager Form State
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
   const [adminTitle, setAdminTitle] = useState<string>('');
