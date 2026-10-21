@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { CategoryId } from '../data/defaultCatalog';
+import { CategoryId, StoreService } from '../data/defaultCatalog';
 import {
   renderMarqueeIcon,
   SiGooglegemini,
@@ -277,170 +277,12 @@ interface TrackedOrderData {
   warrantyTag: string;
 }
 
-const DEMO_ORDERS: Record<string, TrackedOrderData> = {
-  'SV-9482': {
-    orderId: '#SV-9482',
-    clientName: 'Hamza A.',
-    city: 'Lahore',
-    serviceTitle: 'Google Gemini 18-Month Pro + 2TB Cloud',
-    packageTier: '18 Months Official Activation on Personal Gmail',
-    paymentMethod: 'EasyPaisa Verified',
-    amount: 'Rs. 1,800',
-    statusStep: 4,
-    statusLabel: 'COMPLETED & DELIVERED ON WHATSAPP',
-    serverNode: 'Google-One-PK-Node-01',
-    updatedAt: '4 mins ago',
-    warrantyTag: '18-Month Full Warranty Active'
-  },
-  'SV-8831': {
-    orderId: '#SV-8831',
-    clientName: 'Zainab K.',
-    city: 'Islamabad',
-    serviceTitle: 'ChatGPT Plus (GPT-4o) + CapCut Pro Bundle',
-    packageTier: 'Private Workspace + 4K Export Access',
-    paymentMethod: 'JazzCash Verified',
-    amount: 'Rs. 900',
-    statusStep: 3,
-    statusLabel: 'QUALITY & WARRANTY CHECK (90% DONE)',
-    serverNode: 'AI-Pro-Cluster-04',
-    updatedAt: 'Just now',
-    warrantyTag: '30-Day Replacement Warranty'
-  },
-  'SV-7619': {
-    orderId: '#SV-7619',
-    clientName: 'Usman T.',
-    city: 'Karachi',
-    serviceTitle: 'TikTok UK Monetizable Account + 10K Followers',
-    packageTier: 'Creator Rewards Ready (No VPN)',
-    paymentMethod: 'SadaPay Transfer',
-    amount: 'Rs. 3,100',
-    statusStep: 4,
-    statusLabel: 'COMPLETED & DELIVERED ON WHATSAPP',
-    serverNode: 'SMM-Turbo-UK-02',
-    updatedAt: '9 mins ago',
-    warrantyTag: '30-Day Non-Drop Refill Active'
-  },
-  'SV-9920': {
-    orderId: '#SV-9920',
-    clientName: 'Bilal M.',
-    city: 'Rawalpindi',
-    serviceTitle: 'Fresh 2026 SIM Owner & Call History (CDR)',
-    packageTier: 'Last 3 Months CDR + Live Tower Location',
-    paymentMethod: 'EasyPaisa Verified',
-    amount: 'Rs. 850',
-    statusStep: 2,
-    statusLabel: 'EXTRACTING TELECOM FRANCHISE PDF...',
-    serverNode: 'Telecom-PK-Desk-01',
-    updatedAt: '1 min ago',
-    warrantyTag: '100% Confidential Encrypted PDF'
-  }
-};
-
-interface LiveFeedItem {
-  id: string;
-  buyer: string;
-  city: string;
-  service: string;
-  price: string;
-  timeAgo: string;
-  speed: string;
-  method: string;
-  serviceId: string;
-  color: string;
-}
-
-const LIVE_FEED_ORDERS: LiveFeedItem[] = [
-  {
-    id: 'lf-1',
-    buyer: 'Ali R.',
-    city: 'Lahore',
-    service: 'Google Gemini 18-Month Pro + 2TB',
-    price: 'Rs. 1,800',
-    timeAgo: '1 min ago',
-    speed: 'Activated in 4m',
-    method: 'EasyPaisa',
-    serviceId: 'gemini-18m-pro',
-    color: 'bg-indigo-600'
-  },
-  {
-    id: 'lf-2',
-    buyer: 'Danish K.',
-    city: 'Karachi',
-    service: 'ChatGPT Plus (GPT-4o / o3 Access)',
-    price: 'Rs. 550',
-    timeAgo: '2 mins ago',
-    speed: 'Delivered in 3m',
-    method: 'JazzCash',
-    serviceId: 'chatgpt-plus',
-    color: 'bg-emerald-600'
-  },
-  {
-    id: 'lf-3',
-    buyer: 'Ayesha S.',
-    city: 'Islamabad',
-    service: 'CapCut Pro 1 Month (iOS/Android/PC)',
-    price: 'Rs. 350',
-    timeAgo: '4 mins ago',
-    speed: 'Delivered in 2m',
-    method: 'SadaPay',
-    serviceId: 'capcut-pro',
-    color: 'bg-pink-600'
-  },
-  {
-    id: 'lf-4',
-    buyer: 'Fahad M.',
-    city: 'Faisalabad',
-    service: 'TikTok UK Account + 5K Followers',
-    price: 'Rs. 1,650',
-    timeAgo: '6 mins ago',
-    speed: 'Delivered in 5m',
-    method: 'EasyPaisa',
-    serviceId: 'tiktok-uk-usa-acc',
-    color: 'bg-rose-600'
-  },
-  {
-    id: 'lf-5',
-    buyer: 'Hassan B.',
-    city: 'Multan',
-    service: 'ElevenLabs 300k Credits (No Expiry)',
-    price: 'Rs. 1,600',
-    timeAgo: '8 mins ago',
-    speed: 'Delivered in 5m',
-    method: 'USDT P2P',
-    serviceId: 'elevenlabs-300k',
-    color: 'bg-purple-600'
-  },
-  {
-    id: 'lf-6',
-    buyer: 'Saad W.',
-    city: 'Peshawar',
-    service: 'Fresh 2026 SIM Owner & Call CDR',
-    price: 'Rs. 850',
-    timeAgo: '11 mins ago',
-    speed: 'PDF Sent in 12m',
-    method: 'JazzCash',
-    serviceId: 'sim-owner-details',
-    color: 'bg-teal-600'
-  },
-  {
-    id: 'lf-7',
-    buyer: 'Noman J.',
-    city: 'Gujranwala',
-    service: 'Lovable Pro AI + Claude 3.7 Sonnet',
-    price: 'Rs. 1,450',
-    timeAgo: '14 mins ago',
-    speed: 'Delivered in 4m',
-    method: 'EasyPaisa',
-    serviceId: 'lovable-pro',
-    color: 'bg-blue-600'
-  }
-];
-
 interface PanelToolsProps {
   onSelectServiceById: (id: string) => void;
   onQuickFilter: (category: CategoryId, keyword?: string) => void;
   onPlayPop: (freq?: number) => void;
   primaryWaNumber: string;
+  servicesCatalog?: StoreService[];
 }
 
 export const MarqueeAndPulseBanner: React.FC<{
@@ -575,7 +417,8 @@ export const MarqueeAndPulseBanner: React.FC<{
 export const PanelToolsSection: React.FC<PanelToolsProps> = ({
   onSelectServiceById,
   onPlayPop,
-  primaryWaNumber
+  primaryWaNumber,
+  servicesCatalog = []
 }) => {
   // 1. State for Interactive SMM & AI Reseller Calculator
   const [selectedPresetId, setSelectedPresetId] = useState<string>(CALCULATOR_PRESETS[0].id);
@@ -597,56 +440,99 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
   const netProfitOrSavings = Math.max(0, totalRetail - totalWholesale);
   const savingsPercent = Math.round((netProfitOrSavings / totalRetail) * 100);
 
-  // 2. State for Live Order Status Tracker
-  const [orderInput, setOrderInput] = useState<string>('SV-9482');
-  const [trackedOrder, setTrackedOrder] = useState<TrackedOrderData>(DEMO_ORDERS['SV-9482']);
+  // 2. State for Live Order Status Tracker (Real Database Connected)
+  const [orderInput, setOrderInput] = useState<string>('');
+  const [trackedOrder, setTrackedOrder] = useState<TrackedOrderData | null>(null);
   const [isSearchingOrder, setIsSearchingOrder] = useState<boolean>(false);
+  const [trackError, setTrackError] = useState<string | null>(null);
 
-  const handleTrackOrder = (e?: React.FormEvent, quickCode?: string) => {
+  const handleTrackOrder = async (e?: React.FormEvent, customCode?: string) => {
     if (e) e.preventDefault();
     onPlayPop(650);
-    const raw = (quickCode ?? orderInput).trim().toUpperCase().replace(/^#/, '');
+    const raw = (customCode ?? orderInput).trim().replace(/^#/, '');
     if (!raw) return;
 
     setIsSearchingOrder(true);
-    setTimeout(() => {
-      setIsSearchingOrder(false);
-      if (DEMO_ORDERS[raw]) {
-        setTrackedOrder(DEMO_ORDERS[raw]);
-      } else {
-        // Generate realistic live tracking telemetry for any custom Order ID or WhatsApp number
-        const cleanDisplay = raw.startsWith('SV-') ? `#${raw}` : `#SV-${raw.slice(-4) || '2026'}`;
+    setTrackError(null);
+
+    try {
+      const res = await fetch(`/api/orders?orderId=${encodeURIComponent(raw)}`);
+      const data = await res.json();
+
+      if (data.success && Array.isArray(data.orders) && data.orders.length > 0) {
+        const o = data.orders[0];
+        let step: 1 | 2 | 3 | 4 = 1;
+        let label = 'VERIFICATION & PAYMENT REVIEW';
+        const st = String(o.status || '').toLowerCase();
+        if (st === 'processing') {
+          step = 2;
+          label = 'PROCESSING ON SERVER CLUSTER';
+        } else if (st === 'quality_check') {
+          step = 3;
+          label = 'QUALITY & WARRANTY VERIFICATION (90%)';
+        } else if (st === 'completed') {
+          step = 4;
+          label = 'COMPLETED & DELIVERED ON WHATSAPP';
+        } else if (st === 'rejected' || st === 'cancelled') {
+          step = 1;
+          label = 'ORDER CANCELLED / REJECTED (CONTACT SUPPORT)';
+        }
+
+        const dateStr = o.created_at
+          ? new Date(o.created_at).toLocaleDateString('en-PK', {
+              day: 'numeric',
+              month: 'short',
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+          : 'Just now';
+
         setTrackedOrder({
-          orderId: cleanDisplay,
-          clientName: `VIP Client (${raw})`,
-          city: 'Pakistan VIP Desk',
-          serviceTitle: 'Custom AI Pro / SMM / Franchise Order',
-          packageTier: 'Priority Fast-Track Execution',
-          paymentMethod: 'EasyPaisa / JazzCash Verified',
-          amount: 'Verified Deal',
-          statusStep: 3,
-          statusLabel: 'SERVER DISPATCH IN PROGRESS (85% COMPLETE)',
-          serverNode: 'Saqib-VIP-Master-Node',
-          updatedAt: 'Just now',
-          warrantyTag: 'Full Period Replacement Guarantee'
+          orderId: `#${o.id}`,
+          clientName: o.user_id ? `${o.user_id}` : 'Verified Client',
+          city: 'Pakistan Verified Desk',
+          serviceTitle: o.service_title || 'Digital Service Activation',
+          packageTier: o.package_tier || 'Official Lifetime / Period Plan',
+          paymentMethod: 'Verified Payment Gateway',
+          amount: o.price ? `Rs. ${Number(o.price).toLocaleString()}` : 'Custom Deal',
+          statusStep: step,
+          statusLabel: label,
+          serverNode: 'Saqib-Cloud-Node-01',
+          updatedAt: dateStr,
+          warrantyTag: 'Active Guarantee & Support'
         });
+        setTrackError(null);
+      } else {
+        setTrackedOrder(null);
+        setTrackError(
+          `Database me Order #${raw} ka record nahi mila. Barah-e-karam apna sahi Order ID ya WhatsApp number darj karein ya WhatsApp support par rabta karein.`
+        );
       }
-    }, 350);
+    } catch {
+      setTrackedOrder(null);
+      setTrackError('Network request failed. Please check your connection and try again.');
+    } finally {
+      setIsSearchingOrder(false);
+    }
   };
 
-  // 3. State for Real-Time Verified Orders Ticker
-  const [highlightedFeedIndex, setHighlightedFeedIndex] = useState<number>(0);
+  // 3. Top Store Highlights (100% Real Database Products from servicesCatalog)
+  const catalogList = (servicesCatalog && servicesCatalog.length > 0 ? servicesCatalog : [])
+    .filter((s) => !s.hidden)
+    .slice(0, 7);
+
+  const [highlightedCatalogIndex, setHighlightedCatalogIndex] = useState<number>(0);
   const [isFeedPaused, setIsFeedPaused] = useState<boolean>(false);
 
   useEffect(() => {
-    if (isFeedPaused) return;
+    if (isFeedPaused || catalogList.length === 0) return;
     const timer = setInterval(() => {
-      setHighlightedFeedIndex((prev) => (prev + 1) % LIVE_FEED_ORDERS.length);
-    }, 3200);
+      setHighlightedCatalogIndex((prev) => (prev + 1) % catalogList.length);
+    }, 3500);
     return () => clearInterval(timer);
-  }, [isFeedPaused]);
+  }, [isFeedPaused, catalogList.length]);
 
-  const activeHighlightOrder = LIVE_FEED_ORDERS[highlightedFeedIndex];
+  const activeHighlightService = catalogList[highlightedCatalogIndex] || catalogList[0];
 
   return (
     <div className="space-y-7 pt-2">
@@ -748,16 +634,16 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                           key={qty}
                           type="button"
                           onClick={() => {
-                            onPlayPop(580);
+                            onPlayPop(600);
                             setCalcUnits(qty);
                           }}
-                          className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold transition cursor-pointer ${
+                          className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold transition cursor-pointer ${
                             calcUnits === qty
                               ? 'bg-pink-600 text-white shadow-sm'
-                              : 'bg-pink-50 hover:bg-pink-100 text-slate-700 border border-pink-200'
+                              : 'bg-white hover:bg-pink-100 text-slate-700 border border-pink-200'
                           }`}
                         >
-                          {qty}x {qty >= 10 ? '🔥 -10%' : qty >= 5 ? '✨ -5%' : ''}
+                          {qty} {activePreset.unitLabel.includes('Account') ? 'Acc' : qty >= 1000 ? `${qty / 1000}k` : 'Units'}
                         </button>
                       ))}
                   </div>
@@ -765,34 +651,27 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
               </div>
             </div>
 
-            {/* Right (5 Cols): Live Cost & Profit Output Card */}
-            <div data-scroll="right" className="lg:col-span-5 rounded-[24px] p-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 text-white border-2 border-white shadow-xl flex flex-col justify-between space-y-4">
+            {/* Right (5 Cols): Live Price, Profit Summary & 1-Click WhatsApp Deal Lock */}
+            <div data-scroll="right" className="lg:col-span-5 bg-gradient-to-br from-slate-900 via-indigo-950 to-purple-950 rounded-[24px] p-4 sm:p-5 text-white shadow-md flex flex-col justify-between space-y-4">
               <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="px-2.5 py-1 rounded-full bg-white/15 border border-white/25 text-[10px] font-extrabold text-pink-300">
-                    {activePreset.badge}
+                <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-pink-300">
+                    Live Wholesale Quote
                   </span>
-                  <span className="text-[11px] font-mono-code font-bold text-emerald-300">
-                    Save {savingsPercent}%
+                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-extrabold">
+                    {savingsPercent}% Margin
                   </span>
                 </div>
 
+                {/* Big Total Wholesale Price */}
                 <div>
-                  <div className="text-[11px] font-bold text-pink-200 uppercase">
-                    Saqib Visuals Wholesale Total
-                  </div>
-                  <div className="flex items-baseline gap-2.5 mt-0.5">
-                    <span className="font-display font-bold text-3xl sm:text-4xl text-white">
-                      Rs. {totalWholesale.toLocaleString()}
-                    </span>
-                    <span className="text-xs text-slate-400 line-through font-bold">
-                      Rs. {totalRetail.toLocaleString()}
-                    </span>
+                  <div className="text-[11px] font-bold text-slate-300">Total Reseller Wholesale:</div>
+                  <div className="font-display font-extrabold text-2xl sm:text-3xl text-emerald-400 mt-0.5">
+                    Rs. {totalWholesale.toLocaleString()}
                   </div>
                   {calcUnits >= 5 && (
-                    <div className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-500/20 border border-emerald-400/40 text-[10px] font-extrabold text-emerald-300">
-                      <i className="fa-solid fa-tags"></i> Extra Bulk Discount Applied (
-                      {calcUnits >= 10 ? '10% OFF' : '5% OFF'})
+                    <div className="text-[10px] font-bold text-amber-300 mt-0.5">
+                      🎉 Bulk Discount Applied ({calcUnits >= 10 ? '10%' : '5%'} Extra Off Wholesale)
                     </div>
                   )}
                 </div>
@@ -851,18 +730,18 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
         </div>
       </section>
 
-      {/* ==================== LIVE ORDER TRACKER + REAL-TIME ACTIVITY TICKER (2-COLUMN PANEL SUITE) ==================== */}
+      {/* ==================== LIVE ORDER TRACKER + VERIFIED CATALOG HIGHLIGHTS ==================== */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
-        {/* Left (7 Cols): Live Order Status Tracker by Order ID or Phone */}
+        {/* Left (7 Cols): Real-Time Database Order Status Tracker */}
         <div data-scroll="left" className="lg:col-span-7 acrylic-frame rounded-[34px] p-3 sm:p-4 flex flex-col justify-between">
           <div className="plush-pillow plush-about rounded-[26px] p-4 sm:p-6 h-full flex flex-col justify-between space-y-4">
             <div className="space-y-3">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/90 border border-indigo-200 text-[10px] font-extrabold text-indigo-700 shadow-sm">
-                  <i className="fa-solid fa-satellite-dish text-pink-600"></i> LIVE PANEL ORDER TRACKER
+                  <i className="fa-solid fa-satellite-dish text-pink-600"></i> LIVE DATABASE ORDER TRACKER
                 </div>
                 <span className="text-[11px] font-mono-code font-bold text-emerald-700">
-                  ● Real-Time Telemetry
+                  ● Real-Time Supabase Telemetry
                 </span>
               </div>
 
@@ -870,10 +749,10 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                 Track Your Order Status Live 📦
               </h3>
               <p className="text-xs font-semibold text-slate-700">
-                Enter your Order ID (e.g., <code className="font-mono-code text-pink-600">#SV-9482</code>) or WhatsApp Number to view real-time server progress.
+                Enter your Order ID (e.g. <code className="font-mono-code text-pink-600">ORD-XXXX</code>) or registered phone number to view real-time delivery status directly from our database.
               </p>
 
-              {/* Search Input + Sample Chips */}
+              {/* Search Form */}
               <form onSubmit={(e) => handleTrackOrder(e)} className="flex flex-col sm:flex-row gap-2">
                 <div className="relative flex-1">
                   <i className="fa-solid fa-hashtag absolute left-3.5 top-1/2 -translate-y-1/2 text-pink-500 text-xs"></i>
@@ -881,13 +760,14 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                     type="text"
                     value={orderInput}
                     onChange={(e) => setOrderInput(e.target.value)}
-                    placeholder="Enter Order ID (e.g. SV-9482) or 0300..."
+                    placeholder="Enter Order ID (e.g. ORD-...) or phone number"
                     className="w-full pl-9 pr-3 py-2.5 rounded-2xl bg-white/95 border-2 border-pink-200 font-mono-code font-bold text-xs sm:text-sm text-slate-900 focus:outline-none focus:border-pink-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer whitespace-nowrap"
+                  disabled={isSearchingOrder || !orderInput.trim()}
+                  className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 text-white font-extrabold text-xs shadow-md hover:scale-105 transition cursor-pointer whitespace-nowrap"
                 >
                   {isSearchingOrder ? (
                     <span><i className="fa-solid fa-spinner fa-spin mr-1"></i>Checking...</span>
@@ -897,115 +777,136 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
                 </button>
               </form>
 
-              {/* Quick Sample Order IDs */}
-              <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
-                <span className="font-extrabold text-slate-600 text-[10px] uppercase">
-                  Sample IDs:
-                </span>
-                {Object.keys(DEMO_ORDERS).map((code) => (
-                  <button
-                    key={code}
-                    type="button"
-                    onClick={() => {
-                      setOrderInput(code);
-                      handleTrackOrder(undefined, code);
-                    }}
-                    className={`px-2.5 py-0.5 rounded-full font-mono-code font-bold transition cursor-pointer ${
-                      trackedOrder.orderId === `#${code}`
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'bg-white/85 hover:bg-white text-slate-700 border border-indigo-200'
-                    }`}
-                  >
-                    #{code}
-                  </button>
-                ))}
+              {/* Notice */}
+              <div className="flex items-center gap-1.5 text-[11px] text-slate-600">
+                <i className="fa-solid fa-circle-check text-emerald-600 text-xs"></i>
+                <span>Direct Supabase connection • Instant lookup for all verified customer orders</span>
               </div>
             </div>
 
-            {/* Tracked Order Telemetry Card */}
-            <div className="bg-white/90 rounded-[22px] p-4 border border-white shadow-sm space-y-3.5">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono-code font-extrabold text-sm text-indigo-700">
-                      {trackedOrder.orderId}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                      {trackedOrder.paymentMethod}
-                    </span>
-                  </div>
-                  <div className="text-xs font-extrabold text-slate-900 mt-0.5">
-                    {trackedOrder.serviceTitle}
-                  </div>
+            {/* Error State */}
+            {trackError && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-2">
+                <div className="flex items-center gap-2 font-bold">
+                  <i className="fa-solid fa-triangle-exclamation text-rose-600"></i>
+                  <span>Record Not Found</span>
                 </div>
-                <div className="text-right">
-                  <div className="font-display font-bold text-sm text-pink-600">
-                    {trackedOrder.amount}
-                  </div>
-                  <div className="text-[10px] font-bold text-slate-500">
-                    Updated: {trackedOrder.updatedAt}
-                  </div>
-                </div>
-              </div>
-
-              {/* 4-Stage Visual Progress Pipeline */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">
-                  <span>{trackedOrder.statusLabel}</span>
-                  <span>{trackedOrder.statusStep * 25}%</span>
-                </div>
-
-                <div className="grid grid-cols-4 gap-1.5">
-                  {[
-                    { step: 1, label: '1. Verified' },
-                    { step: 2, label: '2. Server Node' },
-                    { step: 3, label: '3. Warranty' },
-                    { step: 4, label: '4. Delivered' }
-                  ].map((s) => {
-                    const active = trackedOrder.statusStep >= s.step;
-                    return (
-                      <div key={s.step} className="space-y-1 text-center">
-                        <div
-                          className={`h-2 rounded-full transition-all duration-500 ${
-                            active
-                              ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-sm'
-                              : 'bg-slate-200'
-                          }`}
-                        ></div>
-                        <div
-                          className={`text-[10px] font-extrabold ${
-                            active ? 'text-slate-900' : 'text-slate-400'
-                          }`}
-                        >
-                          {s.label}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="pt-2 border-t border-pink-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                <span className="font-bold text-slate-600">
-                  <i className="fa-solid fa-server text-indigo-500 mr-1"></i>
-                  Node: <strong className="text-slate-900">{trackedOrder.serverNode}</strong>
-                </span>
+                <p>{trackError}</p>
                 <a
                   href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
-                    `Assalam-o-Alaikum Saqib Bhai! Please share priority status update for my Order ID: ${trackedOrder.orderId} (${trackedOrder.serviceTitle}).`
+                    `Assalam-o-Alaikum Saqib Bhai! I am checking status for Order: ${orderInput}. Please check manually.`
                   )}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-emerald-700 hover:underline font-extrabold flex items-center gap-1"
+                  className="inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 hover:underline"
                 >
-                  <i className="fa-brands fa-whatsapp"></i> Ping WhatsApp Support →
+                  <i className="fa-brands fa-whatsapp text-sm"></i> WhatsApp Support par Puchhein →
                 </a>
               </div>
-            </div>
+            )}
+
+            {/* Tracked Order Telemetry Card (When Found) */}
+            {trackedOrder && (
+              <div className="bg-white/90 rounded-[22px] p-4 border border-white shadow-sm space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b border-pink-100 pb-2.5">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono-code font-extrabold text-sm text-indigo-700">
+                        {trackedOrder.orderId}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
+                        {trackedOrder.paymentMethod}
+                      </span>
+                    </div>
+                    <div className="text-xs font-extrabold text-slate-900 mt-0.5">
+                      {trackedOrder.serviceTitle}
+                    </div>
+                    <div className="text-[10px] font-semibold text-slate-600">
+                      Tier: {trackedOrder.packageTier}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-display font-bold text-sm text-pink-600">
+                      {trackedOrder.amount}
+                    </div>
+                    <div className="text-[10px] font-bold text-slate-500">
+                      {trackedOrder.updatedAt}
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4-Stage Visual Progress Pipeline */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-[10px] font-extrabold uppercase tracking-wider text-emerald-700">
+                    <span>{trackedOrder.statusLabel}</span>
+                    <span>{trackedOrder.statusStep * 25}%</span>
+                  </div>
+
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { step: 1, label: '1. Verified' },
+                      { step: 2, label: '2. Server Node' },
+                      { step: 3, label: '3. Quality' },
+                      { step: 4, label: '4. Delivered' }
+                    ].map((s) => {
+                      const active = trackedOrder.statusStep >= s.step;
+                      return (
+                        <div key={s.step} className="space-y-1 text-center">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-500 ${
+                              active
+                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 shadow-sm'
+                                : 'bg-slate-200'
+                            }`}
+                          ></div>
+                          <div
+                            className={`text-[10px] font-extrabold ${
+                              active ? 'text-slate-900' : 'text-slate-400'
+                            }`}
+                          >
+                            {s.label}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-pink-100 flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                  <span className="font-bold text-slate-600">
+                    <i className="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
+                    Status: <strong className="text-slate-900">{trackedOrder.warrantyTag}</strong>
+                  </span>
+                  <a
+                    href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
+                      `Assalam-o-Alaikum Saqib Bhai! Please share priority status update for my Order ID: ${trackedOrder.orderId} (${trackedOrder.serviceTitle}).`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 hover:underline font-extrabold flex items-center gap-1"
+                  >
+                    <i className="fa-brands fa-whatsapp"></i> Ping WhatsApp Support →
+                  </a>
+                </div>
+              </div>
+            )}
+
+            {/* Empty State (When no order searched yet) */}
+            {!trackedOrder && !trackError && (
+              <div className="bg-white/80 rounded-[22px] p-5 border border-pink-100 text-center space-y-2">
+                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto text-xl shadow-sm">
+                  <i className="fa-solid fa-satellite-dish"></i>
+                </div>
+                <div className="text-sm font-extrabold text-slate-900">Live Database Order Telemetry</div>
+                <p className="text-xs text-slate-600 max-w-sm mx-auto">
+                  Have you placed an order? Enter your Order ID (generated at checkout) or your WhatsApp number to view real-time server dispatch progress and delivery steps directly from the database.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Right (5 Cols): Real-Time Recent Orders Activity Ticker */}
+        {/* Right (5 Cols): Real Store Packages & Verified Service Deals (From Database Catalog) */}
         <div data-scroll="right" className="lg:col-span-5 acrylic-frame rounded-[34px] p-3 sm:p-4 flex flex-col justify-between">
           <div
             onMouseEnter={() => setIsFeedPaused(true)}
@@ -1016,76 +917,82 @@ export const PanelToolsSection: React.FC<PanelToolsProps> = ({
               <div className="flex items-center justify-between">
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-[10px] font-extrabold text-emerald-800">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                  <span>LIVE ORDERS FEED</span>
+                  <span>ACTIVE CATALOG PACKAGES</span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-600">
-                  {isFeedPaused ? '⏸ Paused' : '⚡ Auto-Updating'}
+                  {isFeedPaused ? '⏸ Paused' : '⚡ Auto-Rotating'}
                 </span>
               </div>
 
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
-                Real-Time Verified Orders Across Pakistan 🇵🇰
+                Official Deals &amp; Featured Digital Packages 🇵🇰
               </h3>
 
               {/* Spotlight Live Pop Banner */}
-              <div className="p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-900 text-white shadow-md border border-white transition-all duration-300">
-                <div className="flex items-center justify-between text-[10px] text-pink-300 font-extrabold uppercase">
-                  <span>⚡ JUST COMPLETED ({activeHighlightOrder.timeAgo})</span>
-                  <span className="text-emerald-300">{activeHighlightOrder.speed}</span>
+              {activeHighlightService && (
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-900 text-white shadow-md border border-white transition-all duration-300">
+                  <div className="flex items-center justify-between text-[10px] text-pink-300 font-extrabold uppercase">
+                    <span>⚡ FEATURED PACKAGE</span>
+                    <span className="text-emerald-300">{activeHighlightService.badge || 'VERIFIED DEAL'}</span>
+                  </div>
+                  <div className="text-xs sm:text-sm font-extrabold text-white mt-1 truncate">
+                    {activeHighlightService.title}
+                  </div>
+                  <div className="flex items-center justify-between mt-1.5 text-[11px]">
+                    <span className="text-slate-300 truncate max-w-[200px]">
+                      {activeHighlightService.tiers && activeHighlightService.tiers[0]
+                        ? activeHighlightService.tiers[0]
+                        : 'Official Activation'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onSelectServiceById(activeHighlightService.id)}
+                      className="px-2.5 py-0.5 rounded-full bg-white text-slate-900 font-extrabold text-[10px] hover:bg-pink-100 transition cursor-pointer flex-shrink-0"
+                    >
+                      View / Order →
+                    </button>
+                  </div>
                 </div>
-                <div className="text-xs sm:text-sm font-extrabold text-white mt-1 truncate">
-                  {activeHighlightOrder.buyer} ({activeHighlightOrder.city}) bought{' '}
-                  <span className="text-amber-300">{activeHighlightOrder.service}</span>
-                </div>
-                <div className="flex items-center justify-between mt-1.5 text-[11px]">
-                  <span className="text-slate-300">
-                    Paid via <strong>{activeHighlightOrder.method}</strong> •{' '}
-                    <strong className="text-emerald-300">{activeHighlightOrder.price}</strong>
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => onSelectServiceById(activeHighlightOrder.serviceId)}
-                    className="px-2.5 py-0.5 rounded-full bg-white text-slate-900 font-extrabold text-[10px] hover:bg-pink-100 transition cursor-pointer"
-                  >
-                    Order Same →
-                  </button>
-                </div>
-              </div>
+              )}
             </div>
 
-            {/* Scrollable List of Recent Verified Orders */}
+            {/* Scrollable List of Verified Active Packages from Catalog */}
             <div className="space-y-2 max-h-[235px] overflow-y-auto pr-1">
-              {LIVE_FEED_ORDERS.map((item, idx) => (
-                <div
-                  key={item.id}
-                  onClick={() => onSelectServiceById(item.serviceId)}
-                  className={`p-2.5 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-2 ${
-                    idx === highlightedFeedIndex
-                      ? 'bg-white border-pink-400 shadow-md scale-[1.01]'
-                      : 'bg-white/75 hover:bg-white border-white shadow-sm'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <div
-                      className={`w-8 h-8 rounded-xl ${item.color} text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-sm`}
-                    >
-                      {item.buyer.slice(0, 2).toUpperCase()}
+              {catalogList.map((srv, idx) => {
+                const firstTier = (srv.tiers && srv.tiers[0]) || '';
+                const priceMatch = firstTier.match(/Rs\.?\s*([\d,]+)/i);
+                const displayPrice = priceMatch ? priceMatch[0] : (srv.badge || 'Official');
+
+                return (
+                  <div
+                    key={srv.id}
+                    onClick={() => onSelectServiceById(srv.id)}
+                    className={`p-2.5 rounded-2xl border transition cursor-pointer flex items-center justify-between gap-2 ${
+                      idx === highlightedCatalogIndex
+                        ? 'bg-white border-pink-400 shadow-md scale-[1.01]'
+                        : 'bg-white/75 hover:bg-white border-white shadow-sm'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-extrabold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <i className="fa-solid fa-cube text-xs"></i>
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-extrabold text-slate-900 truncate">
+                          {srv.title}
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-600 truncate">
+                          {srv.category ? srv.category.toUpperCase().replace('_', ' ') : 'VERIFIED'} • <span className="text-emerald-700">Instant Dispatch</span>
+                        </div>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-xs font-extrabold text-slate-900 truncate">
-                        {item.service}
-                      </div>
-                      <div className="text-[10px] font-bold text-slate-600">
-                        {item.buyer} ({item.city}) • <span className="text-emerald-700">{item.speed}</span>
-                      </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="font-display font-bold text-xs text-pink-600">{displayPrice}</div>
+                      <div className="text-[9px] font-bold text-slate-500">In Stock ✓</div>
                     </div>
                   </div>
-                  <div className="text-right flex-shrink-0">
-                    <div className="font-display font-bold text-xs text-pink-600">{item.price}</div>
-                    <div className="text-[9px] font-bold text-slate-500">{item.timeAgo}</div>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

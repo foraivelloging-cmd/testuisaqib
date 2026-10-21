@@ -272,11 +272,26 @@ export default function App({
   initialServices,
   initialTools,
   initialConfig,
+  initialReviews,
   initialTab,
 }: AppProps = {}) {
   // Admin Cryptographic Session Token (Server Verified)
   const [adminToken, setAdminToken] = useState<string | null>(null);
   const isClientStorageReadyRef = useRef<boolean>(false);
+
+  // Dynamic Reviews State (Real Database Connected)
+  const [reviews, setReviews] = useState<any[]>(() => initialReviews || []);
+
+  useEffect(() => {
+    fetch('/api/reviews')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.success && Array.isArray(data.reviews)) {
+          setReviews(data.reviews);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const getAdminHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
@@ -3380,6 +3395,7 @@ export default function App({
                 primaryWaNumber={PRIMARY_WA_NUMBER}
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
+                servicesCatalog={visibleServicesCatalog}
                 onSelectServiceById={(id) => {
                   const found = visibleServicesCatalog.find((s) => s.id === id);
                   if (found) {
@@ -3397,6 +3413,7 @@ export default function App({
                 servicesCatalog={visibleServicesCatalog}
                 onQuickFilter={(cat, kw) => filterStore(cat, kw)}
                 onPlayPop={playPopSound}
+                reviews={reviews}
                 onSelectServiceById={(id) => {
                   const found = visibleServicesCatalog.find((s) => s.id === id);
                   if (found) {

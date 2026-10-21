@@ -166,6 +166,7 @@ interface ShowcaseSectionsProps {
   servicesCatalog: StoreService[];
   showcaseBanners?: ShowcaseBannerItem[];
   primaryWaNumber?: string;
+  reviews?: any[];
 }
 
 export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
@@ -173,7 +174,8 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
   onQuickFilter,
   onPlayPop,
   showcaseBanners,
-  primaryWaNumber
+  primaryWaNumber,
+  reviews = []
 }) => {
   const banners =
     showcaseBanners && showcaseBanners.length > 0 ? showcaseBanners : DEFAULT_SHOWCASE_BANNERS;
@@ -755,77 +757,78 @@ export const ShowcaseSections: React.FC<ShowcaseSectionsProps> = ({
             </div>
           </div>
 
-          {/* 3 Verified Client Testimonials */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-            <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-amber-500 text-xs">★★★★★</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
-                    Verified Buyer ✓
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                  &ldquo;Maine Saqib bhai se <strong>Google Gemini 18-Month Pro</strong> aur <strong>CapCut Pro</strong> liya. Sirf 5 minute mein mere apne Gmail par 2TB storage ke sath activate ho gaya. 100% trusted!&rdquo;
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5 pt-2 border-t border-pink-100">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 text-white font-bold text-xs flex items-center justify-center">
-                  HA
-                </div>
-                <div>
-                  <div className="text-xs font-extrabold text-slate-900">Hamza Ali — Lahore</div>
-                  <div className="text-[10px] font-bold text-pink-600">Bought Gemini 18M &amp; CapCut Pro</div>
-                </div>
-              </div>
-            </div>
+          {/* Verified Client Testimonials (Real Data from Supabase Database) */}
+          {reviews && reviews.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {reviews.slice(0, 6).map((rev: any, idx: number) => {
+                const name = rev.name || 'Verified Client';
+                const initials =
+                  name
+                    .split(' ')
+                    .filter(Boolean)
+                    .map((w: string) => w[0])
+                    .slice(0, 2)
+                    .join('')
+                    .toUpperCase() || 'VC';
+                const ratingCount = Math.max(1, Math.min(5, Number(rev.rating) || 5));
+                const stars = '★'.repeat(ratingCount);
 
-            <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-amber-500 text-xs">★★★★★</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
-                    Verified Buyer ✓
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                  &ldquo;Bought <strong>TikTok UK Account + 10K Followers</strong> and <strong>ElevenLabs 300k Credits</strong> for my faceless automation channel. Best wholesale rates in Pakistan!&rdquo;
-                </p>
+                return (
+                  <div
+                    key={rev.id || idx}
+                    className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3"
+                  >
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-amber-500 text-xs tracking-wider">{stars}</span>
+                        {rev.verified !== false && (
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
+                            Verified Buyer ✓
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs font-medium text-slate-700 leading-relaxed">
+                        &ldquo;{rev.comment}&rdquo;
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2.5 pt-2 border-t border-pink-100">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center flex-shrink-0">
+                        {initials}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-extrabold text-slate-900 truncate">{name}</div>
+                        <div className="text-[10px] font-bold text-pink-600 truncate">{rev.service || 'Verified Service'}</div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-white/85 p-6 rounded-2xl border border-white shadow-sm text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center mx-auto text-xl shadow-sm">
+                <i className="fa-solid fa-star"></i>
               </div>
-              <div className="flex items-center gap-2.5 pt-2 border-t border-pink-100">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white font-bold text-xs flex items-center justify-center">
-                  ZK
-                </div>
-                <div>
-                  <div className="text-xs font-extrabold text-slate-900">Zainab Khan — Islamabad</div>
-                  <div className="text-[10px] font-bold text-purple-600">Bought TikTok UK &amp; ElevenLabs</div>
-                </div>
+              <div className="text-sm font-extrabold text-slate-900">
+                100% Genuine Database Reviews
+              </div>
+              <p className="text-xs font-semibold text-slate-600 max-w-md mx-auto">
+                All client reviews on Saqib Visuals Hub are collected directly from verified customer orders. Have you used our services? Send your verified feedback to Muhammad Saqib on WhatsApp!
+              </p>
+              <div>
+                <a
+                  href={`https://wa.me/${primaryWaNumber}?text=${encodeURIComponent(
+                    'Assalam-o-Alaikum Saqib Bhai! I want to share my client review for my order.'
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-extrabold text-xs shadow-md hover:scale-105 transition"
+                >
+                  <i className="fa-brands fa-whatsapp text-sm"></i> Share Your Verified Review via WhatsApp
+                </a>
               </div>
             </div>
-
-            <div className="bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex flex-col justify-between space-y-3">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-amber-500 text-xs">★★★★★</span>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
-                    Verified Buyer ✓
-                  </span>
-                </div>
-                <p className="text-xs font-medium text-slate-700 leading-relaxed">
-                  &ldquo;Urgent <strong>Fresh 2026 SIM Owner &amp; CDR report</strong> chahiye thi aur sath <strong>ChatGPT Plus</strong>. EasyPaisa bhejte hi 10 mins mein WhatsApp par PDF report mil gayi. Highly recommended!&rdquo;
-                </p>
-              </div>
-              <div className="flex items-center gap-2.5 pt-2 border-t border-pink-100">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold text-xs flex items-center justify-center">
-                  UT
-                </div>
-                <div>
-                  <div className="text-xs font-extrabold text-slate-900">Usman Tariq — Karachi</div>
-                  <div className="text-[10px] font-bold text-emerald-700">Bought Fresh SIM CDR &amp; ChatGPT</div>
-                </div>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </section>
     </div>

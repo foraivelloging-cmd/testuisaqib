@@ -3,40 +3,15 @@ import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
 
-export const DEFAULT_REVIEWS = [
-  {
-    id: 'rev-1',
-    name: 'Hamza Ali — Lahore',
-    service: 'Google Gemini 18M & CapCut Pro',
-    rating: 5,
-    comment: 'Maine Saqib bhai se Google Gemini 18-Month Pro aur CapCut Pro liya. Sirf 5 minute mein mere apne Gmail par 2TB storage ke sath activate ho gaya. 100% trusted!',
-    verified: true,
-  },
-  {
-    id: 'rev-2',
-    name: 'Zainab Khan — Islamabad',
-    service: 'TikTok UK & ElevenLabs 300k',
-    rating: 5,
-    comment: 'Bought TikTok UK Account + 10K Followers and ElevenLabs 300k Credits for my faceless automation channel. Best wholesale rates in Pakistan!',
-    verified: true,
-  },
-  {
-    id: 'rev-3',
-    name: 'Usman Tariq — Karachi',
-    service: 'Fresh SIM CDR & ChatGPT Plus',
-    rating: 5,
-    comment: 'Urgent Fresh 2026 SIM Owner & CDR report chahiye thi aur sath ChatGPT Plus. EasyPaisa bhejte hi 10 mins mein WhatsApp par PDF report mil gayi. Highly recommended!',
-    verified: true,
-  },
-  {
-    id: 'rev-4',
-    name: 'Bilal Ahmad — Rawalpindi',
-    service: 'Remini AI Pro & Lovable Pro',
-    rating: 5,
-    comment: 'Remini Pro 1-year activation and Lovable AI builder subscription instant receive hui. Full replacement warranty support best hai!',
-    verified: true,
-  }
-];
+export const DEFAULT_REVIEWS: Array<{
+  id: string;
+  name: string;
+  service: string;
+  rating: number;
+  comment: string;
+  verified: boolean;
+  created_at?: string;
+}> = [];
 
 export async function GET() {
   try {
@@ -45,14 +20,14 @@ export async function GET() {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data || data.length === 0) {
-      return NextResponse.json({ success: true, source: 'default', reviews: DEFAULT_REVIEWS });
+    if (error || !data) {
+      return NextResponse.json({ success: true, source: 'empty', reviews: [] });
     }
 
     return NextResponse.json({ success: true, source: 'supabase', reviews: data });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ success: true, source: 'fallback', reviews: DEFAULT_REVIEWS, warning: message });
+    return NextResponse.json({ success: true, source: 'fallback', reviews: [], warning: message });
   }
 }
 

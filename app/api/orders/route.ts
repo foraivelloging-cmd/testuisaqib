@@ -7,6 +7,7 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get('userId');
+    const orderId = searchParams.get('orderId');
 
     const auth = verifyAdminRequest(req);
 
@@ -15,8 +16,10 @@ export async function GET(req: Request) {
       .select('*')
       .order('created_at', { ascending: false });
 
-    // Non-admin can only see their own orders
-    if (!auth.authorized) {
+    if (orderId) {
+      const cleanId = sanitizeString(orderId).replace(/^#/, '').trim();
+      query = query.or(`id.eq.${cleanId},user_id.eq.${cleanId}`);
+    } else if (!auth.authorized) {
       if (!userId) {
         return NextResponse.json({ success: true, source: 'protected', orders: [] });
       }
@@ -31,10 +34,26 @@ export async function GET(req: Request) {
       return NextResponse.json({ success: true, source: 'fallback', orders: [] });
     }
 
+    const rawOrders = data || [];
+    // If not authenticated admin and querying via public orderId lookup, strip sensitive details
+    const orders = rawOrders.map((o) => {
+      if (auth.authorized) return o;
+      return {
+        id: o.id,
+        user_id: o.user_id ? `${o.user_id.slice(0, 3)}***` : 'Client',
+        service_id: o.service_id,
+        service_title: o.service_title,
+        package_tier: o.package_tier,
+        price: o.price,
+        status: o.status,
+        created_at: o.created_at,
+      };
+    });
+
     return NextResponse.json({
       success: true,
       source: 'supabase',
-      orders: data || [],
+      orders,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
