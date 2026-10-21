@@ -20,6 +20,7 @@ import {
 import { ShowcaseSections } from './components/ShowcaseSections';
 import { WhatsAppChatWidget } from './components/WhatsAppChatWidget';
 import { PromoAnnouncementModal } from './components/PromoAnnouncementModal';
+import { MobileStepByStepDrawer } from './components/MobileStepByStepDrawer';
 import { getActiveSocialPlatforms } from './types/siteConfig';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
@@ -2512,22 +2513,22 @@ export default function App({
               ></i>
             </button>
 
-            {/* Right-Side Mobile 3-Line Menu Pill Button (Thumb-Friendly) */}
+            {/* Right-Side Mobile 3-Line Menu Pill Button (Thumb-Friendly for Right Hand) */}
             <button
               type="button"
               onClick={() => {
                 playPopSound(640);
                 setMobileMenuOpen((prev) => !prev);
               }}
-              title="Open 3-Line Mobile Menu"
-              className={`hidden sm:flex md:hidden px-2.5 py-1.5 rounded-xl font-extrabold text-[10px] items-center gap-1 transition cursor-pointer border shadow-sm ${
+              title="Open Mobile Menu"
+              className={`flex md:hidden px-2.5 py-1.5 rounded-xl font-extrabold text-[10px] sm:text-xs items-center gap-1.5 transition cursor-pointer border shadow-xs ${
                 mobileMenuOpen
                   ? 'bg-slate-900 text-white border-pink-400'
-                  : 'bg-white/95 text-slate-900 border-pink-200'
+                  : 'bg-white/95 hover:bg-white text-slate-900 border-pink-200'
               }`}
             >
-              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark' : 'fa-bars'} text-xs text-pink-600`}></i>
-              <span>Menu</span>
+              <i className={`fa-solid ${mobileMenuOpen ? 'fa-xmark text-pink-400' : 'fa-bars-staggered text-pink-600'} text-xs`}></i>
+              <span className="font-extrabold">Menu</span>
             </button>
           </div>
         </nav>
@@ -2591,318 +2592,37 @@ export default function App({
           </div>
         )}
 
-        {/* ==================== 3-LINE MOBILE SLIDE-DOWN MENU DRAWER (MD:HIDDEN) ==================== */}
-        {mobileMenuOpen && (
-          <div className="md:hidden acrylic-frame rounded-[26px] p-2 shadow-2xl border-2 border-white animate-fadeIn">
-            <div className="plush-pillow plush-hero rounded-[20px] p-3.5 space-y-3.5 max-h-[78dvh] overflow-y-auto">
-              {/* Top Drawer Header */}
-              <div className="flex items-center justify-between border-b border-pink-200/80 pb-2.5">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-sm shadow">
-                    <i className="fa-solid fa-bars-staggered"></i>
-                  </div>
-                  <div>
-                    <div className="text-xs font-extrabold text-slate-900 leading-tight">
-                      Saqib Visuals Quick Menu
-                    </div>
-                    <div className="text-[10px] font-semibold text-pink-600">
-                      {visibleServicesCatalog.length} Pro Services • {visibleWebToolsCatalog.length} Live Web Tools
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-7 h-7 rounded-full bg-white text-slate-800 shadow flex items-center justify-center text-xs font-bold cursor-pointer"
-                >
-                  <i className="fa-solid fa-xmark"></i>
-                </button>
-              </div>
-
-              {/* Wallet Quick Strip inside Mobile Menu */}
-              {/* Mobile Drawer Language Switcher Bar */}
-              <div className="p-2.5 rounded-2xl bg-white/95 border border-pink-200/90 shadow-xs flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1.5">
-                  <i className="fa-solid fa-language text-pink-600 text-sm"></i>
-                  <span className="text-xs font-extrabold text-slate-800">{t.langToggleLabel}</span>
-                </div>
-                <div className="flex items-center gap-1 bg-slate-100 p-0.5 rounded-xl border border-slate-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPopSound(700);
-                      if (siteLang !== 'en') toggleLanguage();
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer flex items-center gap-1 ${
-                      siteLang === 'en'
-                        ? 'bg-white text-slate-900 shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    <span>🇬🇧</span> English
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPopSound(700);
-                      if (siteLang !== 'ur') toggleLanguage();
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition cursor-pointer flex items-center gap-1 ${
-                      siteLang === 'ur'
-                        ? 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-xs'
-                        : 'text-slate-500 hover:text-slate-800'
-                    }`}
-                  >
-                    <span>🇵🇰</span> اردو
-                  </button>
-                </div>
-              </div>
-
-              <div className="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 text-white p-3 flex items-center justify-between gap-2 shadow-md">
-                <div>
-                  <div className="text-[9px] font-extrabold uppercase tracking-wider text-emerald-300">
-                    ● LIVE WALLET BALANCE
-                  </div>
-                  <div className="text-base font-display font-extrabold text-white" suppressHydrationWarning>
-                    Rs. {walletBalance.toLocaleString()}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      playPopSound(680);
-                      setAddFundsModalOpen(true);
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-[11px] shadow cursor-pointer"
-                  >
-                    + Add Balance
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setCartModalOpen(true);
-                    }}
-                    className="px-2.5 py-1.5 rounded-xl bg-white/15 text-white font-extrabold text-[11px] border border-white/20 cursor-pointer"
-                  >
-                    Bag ({shoppingCart.length})
-                  </button>
-                </div>
-              </div>
-
-              {/* Main Navigation Pages Grid */}
-              <div>
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Main Website Pages
-                </div>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {[
-                    {
-                      id: 'store' as TabId,
-                      label: `All Services (${visibleServicesCatalog.length})`,
-                      icon: 'fa-solid fa-fire-flame-curved',
-                      color: 'text-pink-600',
-                      show: true
-                    },
-                    {
-                      id: 'siminfo' as TabId,
-                      label: `Web Tools (${visibleWebToolsCatalog.length})`,
-                      icon: 'fa-solid fa-screwdriver-wrench',
-                      color: 'text-emerald-600',
-                      show: siteVisibility.showToolsTab
-                    },
-                    {
-                      id: 'about' as TabId,
-                      label: siteLang === 'ur' ? 'ثاقب کے بارے میں' : 'About Saqib',
-                      icon: 'fa-solid fa-user-astronaut',
-                      color: 'text-purple-600',
-                      show: siteVisibility.showAboutTab
-                    },
-                    {
-                      id: 'faqs' as TabId,
-                      label: siteLang === 'ur' ? 'سوالات و جوابات' : 'FAQs & Help',
-                      icon: 'fa-solid fa-circle-question',
-                      color: 'text-amber-600',
-                      show: siteVisibility.showFaqsTab
-                    },
-                    {
-                      id: 'contact' as TabId,
-                      label: siteLang === 'ur' ? 'رابطہ سپورٹ' : 'Contact Support',
-                      icon: 'fa-solid fa-headset',
-                      color: 'text-blue-600',
-                      show: siteVisibility.showContactTab
-                    },
-                    {
-                      id: 'login' as TabId,
-                      label: vipUser ? (siteLang === 'ur' ? 'وی آئی پی والٹ' : 'VIP Wallet') : (siteLang === 'ur' ? 'وی آئی پی لاگ ان' : 'VIP Login'),
-                      icon: 'fa-solid fa-crown',
-                      color: 'text-rose-600',
-                      show: siteVisibility.showLoginTab
-                    }
-                  ]
-                    .filter((item) => item.show)
-                    .map((item) => {
-                      const isActive = activeTab === item.id;
-                      return (
-                        <button
-                          key={`drawer-nav-${item.id}`}
-                          type="button"
-                          onClick={() => switchTab(item.id)}
-                          className={`px-3 py-2.5 rounded-xl text-left text-xs font-extrabold flex items-center gap-2 transition cursor-pointer border ${
-                            isActive
-                              ? 'bg-gradient-to-r from-pink-500 to-rose-500 text-white border-pink-500 shadow-sm'
-                              : 'bg-white/90 text-slate-900 border-white hover:bg-white'
-                          }`}
-                        >
-                          <i className={`${item.icon} ${isActive ? 'text-white' : item.color}`}></i>
-                          <span className="truncate">{item.label}</span>
-                        </button>
-                      );
-                    })}
-                </div>
-              </div>
-
-              {/* Store Categories Quick Jump */}
-              <div>
-                <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Store Categories
-                </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {visibleStoreCategories.map((cat) => {
-                    const isActive = activeTab === 'store' && currentCategory === cat.id;
-                    return (
-                      <button
-                        key={`drawer-cat-${cat.id}`}
-                        type="button"
-                        onClick={() => filterStore(cat.id)}
-                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-extrabold flex items-center gap-1.5 transition cursor-pointer border ${
-                          isActive
-                            ? 'bg-slate-900 text-white border-slate-900 shadow-xs'
-                            : 'bg-white/90 text-slate-800 border-pink-200/80'
-                        }`}
-                      >
-                        {renderCategoryIcon(
-                          cat.id,
-                          `w-3.5 h-3.5 ${isActive ? 'text-pink-400' : cat.iconColor}`,
-                          cat
-                        )}
-                        <span>{cat.shortLabel}</span>
-                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-slate-200/80 text-slate-800">
-                          {getCategoryCount(cat.id)}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Store Themes Quick Switcher Strip in Mobile Drawer */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-600">
-                    🎨 Website Themes (6 Themes)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      setThemeModalOpen(true);
-                    }}
-                    className="text-[10px] font-bold text-pink-600 hover:underline cursor-pointer"
-                  >
-                    View All →
-                  </button>
-                </div>
-                <div className="grid grid-cols-3 gap-1.5">
-                  {STORE_THEMES_CATALOG.map((theme) => {
-                    const isAct = websiteUiMode === theme.id;
-                    return (
-                      <button
-                        key={`drawer-theme-${theme.id}`}
-                        type="button"
-                        onClick={() => {
-                          playPopSound(720);
-                          setWebsiteUiMode(theme.id);
-                          showToast(`🎨 Theme Applied: ${theme.shortLabel}!`);
-                        }}
-                        className={`p-2 rounded-xl text-center text-[10px] font-extrabold transition cursor-pointer border flex flex-col items-center justify-center gap-1 ${
-                          isAct
-                            ? 'bg-slate-900 text-white border-pink-400 shadow-sm scale-[1.02]'
-                            : 'bg-white/90 text-slate-800 border-white hover:bg-white'
-                        }`}
-                      >
-                        <i className={`${theme.icon} ${isAct ? 'text-pink-400' : 'text-slate-600'} text-xs`}></i>
-                        <span className="truncate w-full">{theme.shortLabel}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Mobile Layout & Sound Quick Bar */}
-              <div className="pt-2 border-t border-pink-200/80 flex items-center justify-between gap-2">
-                <div className="flex items-center gap-1 bg-white/90 p-1 rounded-xl border border-pink-200">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPopSound(600);
-                      setMobileGridCols(2);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer ${
-                      mobileGridCols === 2
-                        ? 'bg-pink-500 text-white'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <i className="fa-solid fa-border-all mr-1"></i>2-Grid
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      playPopSound(540);
-                      setMobileGridCols(1);
-                    }}
-                    className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold cursor-pointer ${
-                      mobileGridCols === 1
-                        ? 'bg-pink-500 text-white'
-                        : 'text-slate-700'
-                    }`}
-                  >
-                    <i className="fa-solid fa-list mr-1"></i>1-Grid
-                  </button>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={toggleSound}
-                  className="px-2.5 py-1.5 rounded-xl bg-white/90 border border-pink-200 text-[10px] font-extrabold text-slate-800 flex items-center gap-1 cursor-pointer"
-                >
-                  <i
-                    className={`fa-solid ${
-                      soundEnabled ? 'fa-volume-high text-emerald-600' : 'fa-volume-xmark text-slate-400'
-                    }`}
-                  ></i>
-                  <span>{soundEnabled ? 'Sound' : 'Muted'}</span>
-                </button>
-
-                <a
-                  href={`https://wa.me/${activeWaNumberClean}?text=${encodeURIComponent(
-                    siteConfig.contact.whatsappDefaultMessage
-                  )}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-[10px] font-extrabold flex items-center gap-1 shadow-sm"
-                >
-                  <i className="fa-brands fa-whatsapp"></i>
-                  <span>WA</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        )}
       </header>
+
+      {/* ==================== CLEAN STEP-BY-STEP MOBILE VERTICAL SLIDE-OVER DRAWER ==================== */}
+      <MobileStepByStepDrawer
+        isOpen={mobileMenuOpen}
+        onClose={() => setMobileMenuOpen(false)}
+        activeTab={activeTab}
+        onSwitchTab={switchTab}
+        servicesCount={visibleServicesCatalog.length}
+        toolsCount={visibleWebToolsCatalog.length}
+        walletBalance={walletBalance}
+        currencyPrefix={siteConfig.storeBars?.currencyPrefix || 'Rs.'}
+        onOpenAddFunds={() => setAddFundsModalOpen(true)}
+        onOpenCart={() => setCartModalOpen(true)}
+        cartCount={shoppingCart.length}
+        categories={visibleStoreCategories}
+        currentCategory={currentCategory}
+        onFilterCategory={filterStore}
+        siteLang={siteLang}
+        onToggleLang={toggleLanguage}
+        websiteUiMode={websiteUiMode}
+        onSelectTheme={(th) => {
+          setWebsiteUiMode(th);
+          showToast(`🎨 Theme Applied: ${th}!`);
+        }}
+        soundEnabled={soundEnabled}
+        onToggleSound={toggleSound}
+        vipUser={vipUser}
+        primaryWaNumber={activeWaNumberClean}
+        portraitUrl={siteConfig.banner.portraitUrl}
+      />
 
       <main className={`relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-2.5 sm:pt-5 ${activeTab === 'saqibadmb' ? 'pb-28 sm:pb-16' : 'pb-12'} flex-grow`}>
         {/* ==================== HERO SECTION (SHOWN ONLY ON MAIN SERVICES / STORE PAGE) ==================== */}

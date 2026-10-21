@@ -1,7 +1,7 @@
 # 🚀 MUHAMMAD SAQIB — SAQIB VISUALS HUB
 ## 👑 MASTER SYSTEM PROMPT & ARCHITECTURE SPECIFICATION (OFFICIAL VAULT)
 
-> **Last Updated:** October 20, 2026  
+> **Last Updated:** October 21, 2026  
 > **Official Live Domain:** [https://testuisaqib.vercel.app](https://testuisaqib.vercel.app)  
 > **Admin Portal:** [https://testuisaqib.vercel.app/saqibadmin](https://testuisaqib.vercel.app/saqibadmin)  
 > **GitHub Repository:** [https://github.com/foraivelloging-cmd/testuisaqib](https://github.com/foraivelloging-cmd/testuisaqib)  
@@ -89,7 +89,35 @@ All production database queries, schema definitions, RLS policies, and triggers 
 
 ---
 
-## 💻 7. COMMANDS CHEAT SHEET
+## 📱 7. MOBILE UX & ULTRA-SMOOTH 60-120 FPS PERFORMANCE ENGINE
+
+### A. Full-Screen Step-by-Step Vertical Navigation Drawer
+- **Component**: `src/components/MobileStepByStepDrawer.tsx`
+- **Features**:
+  - Full-screen slide-over drawer with backdrop blur overlay and body scroll-lock.
+  - Step-by-step numbered vertical progression (Steps 01 to 06):
+    - **Step 01**: Storefront Services Catalog (Interactive Category Filter Grid)
+    - **Step 02**: Live Web Tools Hub (SIM, NADRA, Tracker)
+    - **Step 03**: Digital Wallet Balance & 1-Click "Add Funds" Modal Trigger
+    - **Step 04**: About Muhammad Saqib & Verified Credentials
+    - **Step 05**: FAQs & Quick Help Desk
+    - **Step 06**: 24/7 Direct WhatsApp VIP Support
+  - Quick action bar: 6 Dynamic UI Theme Presets, Sound Toggle (Chimes/Muted), and Dual Language Switcher (🇬🇧 English / 🇵🇰 Urdu).
+  - Thumb-friendly triggers: Left header hamburger and right-side mobile `Menu` pill.
+
+### B. Mobile 60-120 FPS Performance Optimizations
+- **File**: `src/index.css` (`@media (max-width: 768px)`)
+- **Key Enhancements**:
+  - **No Backdrop Blur Stalls**: Eliminated 30+ nested `backdrop-filter: blur(...)` calls across mobile cards that previously choked mobile GPUs.
+  - **Lightweight Single-Layer Shadows**: Replaced 4-tier heavy shadow stacks with sleek `0 4px 12px rgba(0,0,0,0.07)`.
+  - **No Continuous Animations on Mobile**: Suppressed infinite CSS angle rotations (`rgbAngleRotate`) and float loops to avoid continuous document repaints.
+  - **Mobile DOM Virtualization**: Added `content-visibility: auto; contain-intrinsic-size: 0 320px;` so offscreen service cards do not consume mobile RAM/GPU.
+  - **Zero Tap Delay**: Enforced `touch-action: manipulation;` and disabled `-webkit-tap-highlight-color`.
+  - **Native Momentum Scrolling**: Enforced `-webkit-overflow-scrolling: touch;`.
+
+---
+
+## 💻 8. COMMANDS CHEAT SHEET
 ```bash
 # Run local development server
 npm run dev

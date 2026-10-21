@@ -539,28 +539,67 @@ header nav.acrylic-frame {
   transform: translateZ(0);
 }
 
-/* On mobile phones (<768px), replace 40+ heavy backdrop-filter blurs with fast GPU-composited high-gloss acrylic so 2-column grid scrolls at 60-120 FPS */
+/* ==================== ULTRA-SMOOTH 60-120FPS MOBILE ENGINE ==================== */
 @media (max-width: 768px) {
-  .acrylic-frame:not(nav) {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.92) 0%, rgba(255, 242, 249, 0.85) 100%);
-    border-width: 2px;
-    box-shadow:
-      0 6px 16px -4px rgba(45, 55, 95, 0.12),
-      inset 0 2px 3px rgba(255, 255, 255, 0.96);
+  /* Eliminate tap delay and touch lag across all interactive elements */
+  *, *::before, *::after {
+    -webkit-tap-highlight-color: transparent !important;
   }
-  .acrylic-frame::before {
-    display: none;
+
+  button, a, input, select, textarea {
+    touch-action: manipulation;
   }
+
+  /* 1. Turn off expensive GPU-stalling backdrop-filter blurs across mobile elements */
+  .acrylic-frame,
+  .plush-pillow,
+  .glass-card,
+  .orbit-badge,
+  .sim-input-box,
+  .space-navy-box,
+  .mobile-bottom-dock {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  /* 2. Remove heavy pseudo shine and inner border layers on mobile */
+  .acrylic-frame::before,
+  .acrylic-frame::after {
+    display: none !important;
+  }
+
+  /* 3. Streamlined single-layer shadows instead of 4-layer box-shadow stacks */
+  .acrylic-frame,
+  .plush-pillow,
   .orbit-badge {
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07) !important;
   }
+
+  /* 4. Kill expensive continuous CSS animations that cause frame drops on mobile */
+  body.rgb-light-on .hero-rgb-card,
+  body.rgb-light-on .acrylic-frame:not(.portrait-lens) {
+    animation: none !important;
+  }
+
+  .float-slow,
+  .float-reverse {
+    animation: none !important;
+  }
+
+  /* 5. Mobile DOM Virtualization: only paint visible cards on screen */
+  .content-visibility-auto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 320px;
+  }
+
+  /* 6. Native momentum touch scrolling */
+  body, html {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+
   input, select, textarea {
     font-size: 16px;
-    touch-action: manipulation;
   }
 }
 
