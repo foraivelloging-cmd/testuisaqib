@@ -18,12 +18,20 @@ export async function GET() {
     }
   }
 
+  const isDefaultDemo = creds.isDefaultFallback || projectId === 'ratihfmqpiqervqpkaml';
+
   return NextResponse.json({
     status: rawUrl ? 'CONNECTED_OK' : 'MISSING_ENV_CONFIGURATION',
     database_url: rawUrl || 'NOT_CONFIGURED (Please add NEXT_PUBLIC_SUPABASE_URL in .env.local)',
     project_id: projectId,
+    source_file: creds.source,
+    detected_env_files: creds.detectedFiles,
     has_anon_key: Boolean(creds.anonKey),
     has_service_role_key: Boolean(creds.serviceRoleKey),
-    hint: 'If you just changed your .env.local, make sure to restart your dev server (Ctrl+C then npm run dev).'
+    is_default_demo_database: isDefaultDemo,
+    notice: isDefaultDemo
+      ? '⚠️ You are currently connected to the default demo Supabase database (ratihfmqpiqervqpkaml). Put your new Supabase URL & keys in .env.local to connect to your own database!'
+      : `✅ Successfully connected to custom database: ${projectId}.supabase.co (loaded from ${creds.source})`,
+    hint: 'If you just updated your .env.local, restart your dev server with: Ctrl+C then npm run dev.'
   });
 }
