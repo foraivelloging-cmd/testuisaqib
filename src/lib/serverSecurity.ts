@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { supabaseAdmin } from './supabaseAdmin';
 
-const JWT_SECRET = process.env.ADMIN_JWT_SECRET || 'saqib_jwt_vault_super_secret_2026_xyz!#';
+const JWT_SECRET = process.env.ADMIN_JWT_SECRET || '';
 const FALLBACK_USERNAME = (process.env.ADMIN_USERNAME || 'saqib').toLowerCase();
 const FALLBACK_SALT =
   process.env.ADMIN_PBKDF2_SALT || 'b9ab35f668716cb292036849d0d0b7a705e456f4d58a65c80f5c3f6459fc4ba2';
@@ -106,6 +106,9 @@ export function signAdminJwt(payload: {
   permissions?: AdminPermissions;
   token_version?: number;
 }): string {
+  if (!JWT_SECRET) {
+    throw new Error('ADMIN_JWT_SECRET must be configured in the server environment.');
+  }
   const header = { alg: 'HS256', typ: 'JWT' };
   const nowSec = Math.floor(Date.now() / 1000);
   const cleanUser = payload.username.toLowerCase();
@@ -146,6 +149,9 @@ export function verifyAdminJwt(token: string): {
   reason?: string;
 } {
   try {
+    if (!JWT_SECRET) {
+      return { authorized: false, reason: 'Admin JWT secret is not configured' };
+    }
     if (!token || typeof token !== 'string') {
       return { authorized: false, reason: 'Missing JWT token' };
     }
