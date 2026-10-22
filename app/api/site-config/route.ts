@@ -65,13 +65,14 @@ export async function POST(req: Request) {
         updated_at: new Date().toISOString(),
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (error) {
+      console.error('[API site-config] Supabase upsert error:', error);
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ success: true, config: data.config });
+    return NextResponse.json({ success: true, config: data?.config || config });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     return NextResponse.json({ success: false, error: message }, { status: 500 });

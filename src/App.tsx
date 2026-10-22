@@ -266,6 +266,7 @@ export interface AppProps {
   initialConfig?: SiteSettingsConfig;
   initialReviews?: any[];
   initialTab?: TabId;
+  initialAdminToken?: string | null;
 }
 
 export default function App({
@@ -274,9 +275,18 @@ export default function App({
   initialConfig,
   initialReviews,
   initialTab,
+  initialAdminToken,
 }: AppProps = {}) {
   // Admin Cryptographic Session Token (Server Verified)
-  const [adminToken, setAdminToken] = useState<string | null>(null);
+  const [adminToken, setAdminToken] = useState<string | null>(() => {
+    if (initialAdminToken) return initialAdminToken;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('saqib_admin_token');
+    }
+    return null;
+  });
+  const siteConfigSaveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isSavingSiteConfig, setIsSavingSiteConfig] = useState<boolean>(false);
   const isClientStorageReadyRef = useRef<boolean>(false);
 
   // Dynamic Reviews State (Real Database Connected)
@@ -295,8 +305,11 @@ export default function App({
 
   const getAdminHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    if (adminToken) {
-      headers['Authorization'] = `Bearer ${adminToken}`;
+    const token =
+      adminToken ||
+      (typeof window !== 'undefined' ? localStorage.getItem('saqib_admin_token') : null);
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
     return headers;
   };
@@ -1527,7 +1540,7 @@ export default function App({
         const authRes = await fetch('/api/admin/auth', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password: pass }),
+          body: JSON.stringify({ username: 'saqib', password: pass }),
         });
         const authData = await authRes.json();
         if (authData.success && authData.token) {
@@ -1613,31 +1626,74 @@ export default function App({
     document.body.removeChild(link);
   };
 
+  const saveSiteConfigToCloud = async (
+    configToSave?: SiteSettingsConfig,
+    showFeedbackToast = false
+  ): Promise<boolean> => {
+    const target = configToSave || siteConfig;
+    setIsSavingSiteConfig(true);
+    try {
+      // 1. Cache in browser localStorage
+      try {
+        localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(target));
+      } catch {}
+
+      // 2. Transmit to backend Supabase database
+      const headers = getAdminHeaders();
+      const res = await fetch('/api/site-config', {
+        method: 'POST',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify({ config: target }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+      setIsSavingSiteConfig(false);
+
+      if (res.ok && data.success) {
+        if (showFeedbackToast) {
+          showToast('☁️ Saved to Supabase Database successfully!');
+        }
+        return true;
+      } else {
+        const err = data.error || `HTTP ${res.status}`;
+        console.error('[Cloud Save Error]', err, data);
+        if (showFeedbackToast) {
+          showToast(`❌ Database Save Failed: ${err}`);
+        }
+        return false;
+      }
+    } catch (err: any) {
+      console.error('[Cloud Save Network Error]', err);
+      setIsSavingSiteConfig(false);
+      if (showFeedbackToast) {
+        showToast(`❌ Cloud Connection Error: ${err.message}`);
+      }
+      return false;
+    }
+  };
+
   const handleUpdateSiteConfig = (
     nextConfig: SiteSettingsConfig | ((prev: SiteSettingsConfig) => SiteSettingsConfig)
   ) => {
     setSiteConfig((prev) => {
       const resolved = typeof nextConfig === 'function' ? nextConfig(prev) : nextConfig;
-      fetch('/api/site-config', {
-        method: 'POST',
-        headers: getAdminHeaders(),
-        credentials: 'include',
-        body: JSON.stringify({ config: resolved }),
-      }).catch((err) => console.error('Cloud siteConfig save failed:', err));
+      // Debounce autosave to avoid flooding Supabase on rapid keystrokes
+      if (siteConfigSaveTimeoutRef.current) {
+        clearTimeout(siteConfigSaveTimeoutRef.current);
+      }
+      siteConfigSaveTimeoutRef.current = setTimeout(() => {
+        saveSiteConfigToCloud(resolved, false);
+      }, 700);
       return resolved;
     });
   };
 
-  const resetSiteConfigToDefault = () => {
+  const resetSiteConfigToDefault = async () => {
     playPopSound(780);
     setSiteConfig(DEFAULT_SITE_CONFIG);
-    fetch('/api/site-config', {
-      method: 'POST',
-      headers: getAdminHeaders(),
-      credentials: 'include',
-      body: JSON.stringify({ config: DEFAULT_SITE_CONFIG }),
-    }).catch((err) => console.error('Cloud siteConfig reset failed:', err));
-    showToast('Restored all Banner, WhatsApp, Payment & Footer settings to default!');
+    await saveSiteConfigToCloud(DEFAULT_SITE_CONFIG, true);
+    showToast('Restored all Banner, WhatsApp, Payment & Footer settings to default in Supabase!');
   };
 
   // Admin Service Manager CRUD Handlers
@@ -4983,6 +5039,8 @@ export default function App({
             <AdminStepByStepSettingsHub
             siteConfig={siteConfig}
             onUpdateSiteConfig={handleUpdateSiteConfig}
+            onSaveSiteConfigToCloud={saveSiteConfigToCloud}
+            isSavingSiteConfig={isSavingSiteConfig}
             onResetSiteConfig={resetSiteConfigToDefault}
             onReassignDeletedCategory={(deletedCatId, fallbackCatId) => {
               setServicesCatalog((prev) =>

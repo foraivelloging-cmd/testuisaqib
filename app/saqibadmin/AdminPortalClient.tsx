@@ -179,12 +179,14 @@ export default function AdminPortalClient({
 
   // If already authenticated, mount the full admin command center
   if (isAuthenticated) {
+    const currentToken = typeof window !== 'undefined' ? localStorage.getItem('saqib_admin_token') : null;
     return (
       <AuthenticatedAdminApp
         initialServices={initialServices}
         initialTools={initialTools}
         initialConfig={initialConfig}
         initialTab="saqibadmb"
+        initialAdminToken={currentToken}
       />
     );
   }

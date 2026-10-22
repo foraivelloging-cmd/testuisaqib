@@ -305,6 +305,8 @@ function formatPlanRowsToTiersText(rows: PlanRowItem[]): string {
 interface AdminStepByStepSettingsHubProps {
   siteConfig: SiteSettingsConfig;
   onUpdateSiteConfig: React.Dispatch<React.SetStateAction<SiteSettingsConfig>>;
+  onSaveSiteConfigToCloud?: (configToSave?: SiteSettingsConfig, showFeedbackToast?: boolean) => Promise<boolean>;
+  isSavingSiteConfig?: boolean;
   onResetSiteConfig: () => void;
   onReassignDeletedCategory?: (
     deletedCatId: CategoryId,
@@ -404,6 +406,8 @@ interface AdminStepByStepSettingsHubProps {
 export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProps> = ({
   siteConfig,
   onUpdateSiteConfig,
+  onSaveSiteConfigToCloud,
+  isSavingSiteConfig = false,
   onResetSiteConfig,
   onReassignDeletedCategory,
   servicesCatalog,
@@ -1589,6 +1593,30 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
               >
                 <FaCopy className="w-3 h-3 text-sky-300" />
                 <span>Backup JSON</span>
+              </button>
+              <button
+                type="button"
+                onClick={async () => {
+                  playPopSound(840);
+                  if (onSaveSiteConfigToCloud) {
+                    await onSaveSiteConfigToCloud(siteConfig, true);
+                  }
+                }}
+                disabled={isSavingSiteConfig}
+                title="Save all configuration to Supabase Cloud Database"
+                className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-xs font-extrabold shadow-md hover:scale-105 transition cursor-pointer flex items-center justify-center gap-1.5 w-full sm:w-auto border border-blue-400/40"
+              >
+                {isSavingSiteConfig ? (
+                  <>
+                    <i className="fa-solid fa-spinner animate-spin"></i>
+                    <span>Saving to DB...</span>
+                  </>
+                ) : (
+                  <>
+                    <i className="fa-solid fa-cloud-arrow-up text-amber-300"></i>
+                    <span>Save to Cloud DB</span>
+                  </>
+                )}
               </button>
               <button
                 type="button"
@@ -5689,14 +5717,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       playPopSound(840);
-                      showToast('✅ Hero Banner & Visuals Settings Saved & Live!');
+                      if (onSaveSiteConfigToCloud) {
+                        await onSaveSiteConfigToCloud(siteConfig, true);
+                      }
                       setActiveScreen('home');
                     }}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer"
+                    disabled={isSavingSiteConfig}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer flex items-center gap-2"
                   >
-                    ✓ Save &amp; Return to Settings Menu
+                    {isSavingSiteConfig ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin"></i>
+                        <span>Saving to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                        <span>✓ Save to Database &amp; Return</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -6516,14 +6557,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                           </button>
                           <button
                             type="button"
-                            onClick={() => {
+                            onClick={async () => {
                               playPopSound(840);
-                              showToast('✅ Promo Banner Saved & Active on Storefront!');
+                              if (onSaveSiteConfigToCloud) {
+                                await onSaveSiteConfigToCloud(siteConfig, true);
+                              }
                               setEditingPromoBannerId(null);
                             }}
-                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-lg hover:scale-105 transition cursor-pointer"
+                            disabled={isSavingSiteConfig}
+                            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-lg hover:scale-105 transition cursor-pointer flex items-center gap-2"
                           >
-                            ✓ Save &amp; Finish Editing
+                            {isSavingSiteConfig ? (
+                              <>
+                                <i className="fa-solid fa-spinner animate-spin"></i>
+                                <span>Saving...</span>
+                              </>
+                            ) : (
+                              <>
+                                <i className="fa-solid fa-cloud-arrow-up"></i>
+                                <span>✓ Save to Database &amp; Finish</span>
+                              </>
+                            )}
                           </button>
                         </div>
                       </div>
@@ -7486,14 +7540,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       playPopSound(840);
-                      showToast('✅ Storefront Bars Settings Saved & Live!');
+                      if (onSaveSiteConfigToCloud) {
+                        await onSaveSiteConfigToCloud(siteConfig, true);
+                      }
                       setActiveScreen('home');
                     }}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer"
+                    disabled={isSavingSiteConfig}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg hover:scale-105 transition cursor-pointer flex items-center gap-2"
                   >
-                    ✓ Save &amp; Return to Settings Menu
+                    {isSavingSiteConfig ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin"></i>
+                        <span>Saving to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                        <span>✓ Save to Database &amp; Return</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -8560,14 +8627,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
 
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       playPopSound(880);
-                      showToast('✅ All Payment Methods, Upper Bar & Store Bars Settings Saved!');
+                      if (onSaveSiteConfigToCloud) {
+                        await onSaveSiteConfigToCloud(siteConfig, true);
+                      }
                       setActiveScreen('home');
                     }}
-                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-xs shadow-lg cursor-pointer hover:scale-105 transition"
+                    disabled={isSavingSiteConfig}
+                    className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-green-600 text-white font-extrabold text-xs shadow-lg cursor-pointer hover:scale-105 transition flex items-center gap-2"
                   >
-                    ✓ Save &amp; Return to Settings Menu
+                    {isSavingSiteConfig ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin"></i>
+                        <span>Saving to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                        <span>✓ Save to Database &amp; Return</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -9283,14 +9363,27 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
+                    onClick={async () => {
                       playPopSound(840);
-                      showToast('✅ WhatsApp, Socials & Footer Links Saved!');
+                      if (onSaveSiteConfigToCloud) {
+                        await onSaveSiteConfigToCloud(siteConfig, true);
+                      }
                       setActiveScreen('home');
                     }}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg cursor-pointer"
+                    disabled={isSavingSiteConfig}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs sm:text-sm shadow-lg cursor-pointer flex items-center gap-2"
                   >
-                    ✓ Save &amp; Return to Settings Menu
+                    {isSavingSiteConfig ? (
+                      <>
+                        <i className="fa-solid fa-spinner animate-spin"></i>
+                        <span>Saving to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <i className="fa-solid fa-cloud-arrow-up"></i>
+                        <span>✓ Save to Database &amp; Return</span>
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
