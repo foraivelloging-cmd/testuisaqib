@@ -474,7 +474,7 @@ export const DEFAULT_SITE_CONFIG: SiteSettingsConfig = {
     rgbBorderEnabled: true,
     topStripTitle: 'MUHAMMAD SAQIB • VISUALS HUB',
     showPortraitPhoto: true,
-    portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png',
+    portraitUrl: 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png?tr=w-720,f-auto,q-80',
     showPortraitOrbitBadges: true,
     orbitBadge1Enabled: true,
     orbitBadge1Title: 'CapCut & Lovable',

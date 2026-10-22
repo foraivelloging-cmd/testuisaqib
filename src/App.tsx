@@ -17,10 +17,6 @@ import {
   DEFAULT_WEB_TOOLS,
   DEFAULT_FAQS
 } from './data/defaultCatalog';
-import { ShowcaseSections } from './components/ShowcaseSections';
-import { WhatsAppChatWidget } from './components/WhatsAppChatWidget';
-import { PromoAnnouncementModal } from './components/PromoAnnouncementModal';
-import { MobileStepByStepDrawer } from './components/MobileStepByStepDrawer';
 import { getActiveSocialPlatforms } from './types/siteConfig';
 import { MarqueeAndPulseBanner, PanelToolsSection } from './components/PanelToolsSection';
 import {
@@ -31,9 +27,24 @@ import {
 } from './lib/translations';
 import {
   PaymentProofRequest,
-  DEFAULT_PAYMENT_PROOFS,
-  UserAddFundsExperience
+  DEFAULT_PAYMENT_PROOFS
 } from './components/WalletAndAdminPayments';
+
+const ShowcaseSections = React.lazy(() =>
+  import('./components/ShowcaseSections').then((m) => ({ default: m.ShowcaseSections }))
+);
+const WhatsAppChatWidget = React.lazy(() =>
+  import('./components/WhatsAppChatWidget').then((m) => ({ default: m.WhatsAppChatWidget }))
+);
+const PromoAnnouncementModal = React.lazy(() =>
+  import('./components/PromoAnnouncementModal').then((m) => ({ default: m.PromoAnnouncementModal }))
+);
+const MobileStepByStepDrawer = React.lazy(() =>
+  import('./components/MobileStepByStepDrawer').then((m) => ({ default: m.MobileStepByStepDrawer }))
+);
+const UserAddFundsExperience = React.lazy(() =>
+  import('./components/WalletAndAdminPayments').then((m) => ({ default: m.UserAddFundsExperience }))
+);
 import {
   WebsiteUiThemeMode,
   WebsiteFontMode,
@@ -2799,6 +2810,7 @@ export default function App({
       </header>
 
       {/* ==================== CLEAN STEP-BY-STEP MOBILE VERTICAL SLIDE-OVER DRAWER ==================== */}
+      <React.Suspense fallback={null}>
       <MobileStepByStepDrawer
         isOpen={mobileMenuOpen}
         onClose={() => setMobileMenuOpen(false)}
@@ -2829,6 +2841,7 @@ export default function App({
         brandAccentName={brandAccentName}
         portraitUrl={siteConfig.banner.portraitUrl}
       />
+      </React.Suspense>
 
       <main className={`relative z-10 w-full max-w-6xl mx-auto px-2.5 sm:px-6 pt-2.5 sm:pt-5 ${activeTab === 'saqibadmb' ? 'pb-28 sm:pb-16' : 'pb-12'} flex-grow`}>
         {/* ==================== HERO SECTION (SHOWN ONLY ON MAIN SERVICES / STORE PAGE) ==================== */}
@@ -3625,6 +3638,7 @@ export default function App({
 
             {/* Flagship AI Pro Accounts Spotlight + 1-2-3 Steps + 100% Trusted Reviews Sections */}
             {siteVisibility.showReviewsSection && (
+              <React.Suspense fallback={null}>
               <ShowcaseSections
                 siteConfig={siteConfig}
                 servicesCatalog={visibleServicesCatalog}
@@ -3646,6 +3660,7 @@ export default function App({
                   }
                 }}
               />
+              </React.Suspense>
             )}
 
             {/* ==================== 2 NO PROMO & DEAL BANNERS (BELOW SERVICES) ==================== */}
@@ -5059,7 +5074,7 @@ export default function App({
                     </button>
                   </div>
 
-                  <UserAddFundsExperience
+                  <React.Suspense fallback={null}><UserAddFundsExperience
                     walletBalance={walletBalance}
                     paymentProofs={paymentProofs}
                     onSubmitProof={handleSubmitPaymentProof}
@@ -5067,7 +5082,7 @@ export default function App({
                     onPlayPop={playPopSound}
                     onPreviewScreenshot={(proof) => setPreviewScreenshotProof(proof)}
                     depositMethods={siteConfig.paymentMethods}
-                  />
+                  /></React.Suspense>
                 </div>
               </div>
             )}
@@ -5298,6 +5313,7 @@ export default function App({
 
       {/* ==================== FLOATING INTERACTIVE WHATSAPP CHAT POPUP WIDGET ==================== */}
       {siteVisibility.showFloatingWhatsApp && activeTab !== 'saqibadmb' && (
+        <React.Suspense fallback={null}>
         <WhatsAppChatWidget
           siteConfig={siteConfig}
           siteLang={siteLang}
@@ -5306,6 +5322,7 @@ export default function App({
           onClose={() => setWhatsAppWidgetOpen(false)}
           onPlayPop={playPopSound}
         />
+        </React.Suspense>
       )}
 
       {/* ==================== FIXED 3D GLASS MOBILE BOTTOM APP DOCK (MD:HIDDEN) ==================== */}
@@ -5681,7 +5698,7 @@ export default function App({
                 </button>
               </div>
 
-              <UserAddFundsExperience
+              <React.Suspense fallback={null}><UserAddFundsExperience
                 walletBalance={walletBalance}
                 paymentProofs={paymentProofs}
                 onSubmitProof={handleSubmitPaymentProof}
@@ -5691,7 +5708,7 @@ export default function App({
                 depositMethods={siteConfig.paymentMethods}
                 currencyPrefix={siteConfig.storeBars?.currencyPrefix || 'Rs.'}
                 minDepositAmount={siteConfig.storeBars?.minDepositAmount ?? 50}
-              />
+              /></React.Suspense>
             </div>
           </div>
         </div>
@@ -6234,6 +6251,7 @@ export default function App({
       )}
 
             {/* Storefront Promotional & Welcome Announcement Popup Modal */}
+      <React.Suspense fallback={null}>
       <PromoAnnouncementModal
         config={siteConfig.promoPopup}
         contactConfig={siteConfig.contact}
@@ -6241,6 +6259,7 @@ export default function App({
         showToast={showToast}
         playPopSound={playPopSound}
       />
+      </React.Suspense>
 
       {/* Toast Notification Pill */}
       <div

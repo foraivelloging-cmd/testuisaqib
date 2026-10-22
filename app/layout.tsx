@@ -91,13 +91,13 @@ export default function RootLayout({
         <link
           rel="preload"
           as="image"
-          href="https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png"
+          href="https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png?tr=w-720,f-auto,q-80"
           fetchPriority="high"
         />
 
-        {/* 1. Core Default Fonts (Optimized & Non-blocking with display=swap) */}
+        {/* 1. Core Default Fonts (Optimized weights & Non-blocking with display=swap) */}
         <link
-          href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap"
+          href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=JetBrains+Mono:wght@500;700&family=Plus+Jakarta+Sans:wght@500;700;800&family=Space+Grotesk:wght@600;700&display=swap"
           rel="stylesheet"
         />
 
