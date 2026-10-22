@@ -359,6 +359,7 @@ CREATE POLICY "Users Insert Own Profile" ON public.profiles FOR INSERT TO anon, 
 -- 6.4 Admin Security Vault — ZERO Public / Client Access
 CREATE POLICY "No Direct Public Access to Admin Vault" ON public.admin_vault FOR ALL TO anon, authenticated USING (false);
 ALTER TABLE public.security_lockouts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "No Public Access to Lockouts" ON public.security_lockouts;
 CREATE POLICY "No Public Access to Lockouts" ON public.security_lockouts FOR ALL TO anon, authenticated USING (false);
 ALTER TABLE public.visitor_fingerprints ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Allow Public Insert Visitor Telemetry" ON public.visitor_fingerprints;
