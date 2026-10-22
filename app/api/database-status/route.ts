@@ -9,7 +9,7 @@ export async function GET() {
   const rawUrl = creds.url;
   let projectId = 'none';
 
-  if (rawUrl) {
+  if (rawUrl && creds.isConfigured) {
     try {
       const parsed = new URL(rawUrl);
       projectId = parsed.hostname.replace('.supabase.co', '');
@@ -18,20 +18,18 @@ export async function GET() {
     }
   }
 
-  const isDefaultDemo = creds.isDefaultFallback || projectId === 'ratihfmqpiqervqpkaml';
-
   return NextResponse.json({
-    status: rawUrl ? 'CONNECTED_OK' : 'MISSING_ENV_CONFIGURATION',
-    database_url: rawUrl || 'NOT_CONFIGURED (Please add NEXT_PUBLIC_SUPABASE_URL in .env.local)',
+    status: creds.isConfigured ? 'CONNECTED_OK' : 'NOT_CONFIGURED',
+    is_configured: creds.isConfigured,
     project_id: projectId,
+    database_url: creds.isConfigured ? rawUrl : 'NOT_CONFIGURED (Please add NEXT_PUBLIC_SUPABASE_URL in .env.local)',
     source_file: creds.source,
     detected_env_files: creds.detectedFiles,
-    has_anon_key: Boolean(creds.anonKey),
-    has_service_role_key: Boolean(creds.serviceRoleKey),
-    is_default_demo_database: isDefaultDemo,
-    notice: isDefaultDemo
-      ? '⚠️ You are currently connected to the default demo Supabase database (ratihfmqpiqervqpkaml). Put your new Supabase URL & keys in .env.local to connect to your own database!'
-      : `✅ Successfully connected to custom database: ${projectId}.supabase.co (loaded from ${creds.source})`,
+    has_anon_key: Boolean(creds.anonKey && !creds.anonKey.includes('unconfigured')),
+    has_service_role_key: Boolean(creds.serviceRoleKey && !creds.serviceRoleKey.includes('unconfigured')),
+    message: creds.isConfigured
+      ? `✅ Successfully connected to Supabase project: ${projectId}.supabase.co (loaded from ${creds.source})`
+      : '⚠️ Supabase database is not configured! Please create a .env.local file with your Supabase URL & Service Role key.',
     hint: 'If you just updated your .env.local, restart your dev server with: Ctrl+C then npm run dev.'
   });
 }

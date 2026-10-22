@@ -98,13 +98,13 @@ export function getSupabaseCredentials() {
   return { url, anonKey };
 }
 
-const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
-const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+const PLACEHOLDER_URL = 'https://unconfigured-project.supabase.co';
+const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.unconfigured';
 
 export function getSupabase(): SupabaseClient {
   const { url, anonKey } = getSupabaseCredentials();
-  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
-  const effectiveKey = anonKey || DEFAULT_ANON_KEY;
+  const effectiveUrl = url || PLACEHOLDER_URL;
+  const effectiveKey = anonKey || PLACEHOLDER_KEY;
   const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {

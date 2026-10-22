@@ -86,10 +86,8 @@ export function readEnvFromDisk(): DiskEnvInfo {
   return { env: result, sourceFile, detectedFiles };
 }
 
-const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
-const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
-const DEFAULT_SERVICE_ROLE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhdGloZm1xcGlxZXJ2cXBrYW1sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM5OTI5NywiZXhwIjoyMTA3OTc1Mjk3fQ.XoGA9RKbxvNMkOoysds6d7gz9SDR7cz5m920mdqOrVk';
+const PLACEHOLDER_URL = 'https://unconfigured-project.supabase.co';
+const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.unconfigured';
 
 export function getSupabaseAdminCredentials() {
   const diskInfo = readEnvFromDisk();
@@ -128,9 +126,8 @@ export function getSupabaseAdminCredentials() {
   if (!url) {
     const dbUrl = getVal('DATABASE_URL', 'SUPABASE_DB_URL');
     if (dbUrl) {
-      const match = dbUrl.match(/postgres(?:ql)?:\/\/[^:]+:[^@]+@([a-z0-9_-]+)\.supabase\.co/i) ||
-                    dbUrl.match(/@aws-[0-9]-[a-z0-9-]+\.pooler\.supabase\.co.*\/postgres/i);
-      const projMatch = dbUrl.match(/postgres\.([a-z0-9_-]{15,30}):/i);
+      const projMatch = dbUrl.match(/postgres(?:ql)?:\/\/[^:]+:[^@]+@([a-z0-9_-]+)\.supabase\.co/i) ||
+                        dbUrl.match(/postgres\.([a-z0-9_-]{15,30}):/i);
       if (projMatch && projMatch[1]) {
         url = `https://${projMatch[1]}.supabase.co`;
       }
@@ -157,30 +154,30 @@ export function getSupabaseAdminCredentials() {
     serviceRoleKey = anonKey;
   }
 
-  const isDefaultFallback = !url;
+  const isConfigured = Boolean(url && (serviceRoleKey || anonKey));
 
   return {
-    url: url || DEFAULT_SUPABASE_URL,
-    anonKey: anonKey || DEFAULT_ANON_KEY,
-    serviceRoleKey: serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY,
-    source: isDefaultFallback ? 'default_fallback' : activeSource,
-    isDefaultFallback,
+    url: url || PLACEHOLDER_URL,
+    anonKey: anonKey || PLACEHOLDER_KEY,
+    serviceRoleKey: serviceRoleKey || anonKey || PLACEHOLDER_KEY,
+    source: isConfigured ? activeSource : 'unconfigured',
+    isConfigured,
     detectedFiles: diskInfo.detectedFiles,
   };
 }
 
 export function getSupabaseAdmin(): SupabaseClient {
-  const { url, serviceRoleKey } = getSupabaseAdminCredentials();
-  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
-  const effectiveKey = serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY;
+  const creds = getSupabaseAdminCredentials();
+  const effectiveUrl = creds.url;
+  const effectiveKey = creds.serviceRoleKey;
   const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {
-    if (!url) {
-      console.warn('[SupabaseAdmin] ⚠️ No Supabase URL configured in .env.local! Using mock client.');
+    if (!creds.isConfigured) {
+      console.warn('[SupabaseAdmin] ⚠️ No Supabase credentials found in .env.local! Please add NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY to connect to your database.');
     } else {
-      const masked = url.replace(/^https?:\/\//, '');
-      console.log(`[SupabaseAdmin] 🔌 Connected to database: ${masked}`);
+      const masked = effectiveUrl.replace(/^https?:\/\//, '');
+      console.log(`[SupabaseAdmin] 🔌 Connected to database: ${masked} (source: ${creds.source})`);
     }
 
     cachedClient = createClient(effectiveUrl, effectiveKey, {
