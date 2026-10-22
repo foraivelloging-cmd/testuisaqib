@@ -86,10 +86,8 @@ export function readEnvFromDisk(): DiskEnvInfo {
   return { env: result, sourceFile, detectedFiles };
 }
 
-const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
-const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
-const DEFAULT_SERVICE_ROLE_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhdGloZm1xcGlxZXJ2cXBrYW1sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM5OTI5NywiZXhwIjoyMTA3OTc1Mjk3fQ.XoGA9RKbxvNMkOoysds6d7gz9SDR7cz5m920mdqOrVk';
+// All project credentials must come from deployment environment variables.
+
 
 export function getSupabaseAdminCredentials() {
   const diskInfo = readEnvFromDisk();
@@ -153,17 +151,13 @@ export function getSupabaseAdminCredentials() {
     'SUPABASE_SECRET_KEY'
   );
 
-  if (!serviceRoleKey && anonKey) {
-    serviceRoleKey = anonKey;
-  }
-
-  const isDefaultFallback = !url;
+  const isDefaultFallback = !url || !serviceRoleKey;
 
   return {
-    url: url || DEFAULT_SUPABASE_URL,
-    anonKey: anonKey || DEFAULT_ANON_KEY,
-    serviceRoleKey: serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY,
-    source: isDefaultFallback ? 'default_fallback' : activeSource,
+    url,
+    anonKey,
+    serviceRoleKey,
+    source: isDefaultFallback ? 'missing_environment' : activeSource,
     isDefaultFallback,
     detectedFiles: diskInfo.detectedFiles,
   };
@@ -171,19 +165,18 @@ export function getSupabaseAdminCredentials() {
 
 export function getSupabaseAdmin(): SupabaseClient {
   const { url, serviceRoleKey } = getSupabaseAdminCredentials();
-  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
-  const effectiveKey = serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY;
-  const cacheKey = `${effectiveUrl}::${effectiveKey}`;
+  if (!url || !serviceRoleKey) {
+    throw new Error(
+      'Supabase admin configuration missing. Set SUPABASE_URL (or NEXT_PUBLIC_SUPABASE_URL) and SUPABASE_SERVICE_ROLE_KEY in the server environment.'
+    );
+  }
+  const cacheKey = `${url}::${serviceRoleKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {
-    if (!url) {
-      console.warn('[SupabaseAdmin] ⚠️ No Supabase URL configured in .env.local! Using mock client.');
-    } else {
-      const masked = url.replace(/^https?:\/\//, '');
-      console.log(`[SupabaseAdmin] 🔌 Connected to database: ${masked}`);
-    }
+    const masked = url.replace(/^https?:\/\//, '');
+    console.log(`[SupabaseAdmin] 🔌 Connected to database: ${masked}`);
 
-    cachedClient = createClient(effectiveUrl, effectiveKey, {
+    cachedClient = createClient(url, serviceRoleKey, {
       auth: {
         persistSession: false,
         autoRefreshToken: false,
