@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { DEFAULT_WEB_TOOLS, WebToolItem } from '@/src/data/defaultCatalog';
 import { verifyAdminRequestAsync } from '@/src/lib/serverSecurity';
+import { invalidateServerStoreCache } from '@/src/lib/serverDataLoader';
 
 export async function GET() {
   try {
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    invalidateServerStoreCache();
     return NextResponse.json({ success: true, tool: data });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
@@ -126,6 +128,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    invalidateServerStoreCache();
     return NextResponse.json({ success: true, deletedId: id });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';

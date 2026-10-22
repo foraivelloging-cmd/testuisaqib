@@ -294,6 +294,7 @@ export default function App({
   const [reviews, setReviews] = useState<any[]>(() => initialReviews || []);
 
   useEffect(() => {
+    if (initialReviews && initialReviews.length > 0) return;
     fetch('/api/reviews')
       .then((res) => res.json())
       .then((data) => {
@@ -642,8 +643,9 @@ export default function App({
 
   // Real-time Cloud Synchronization with Supabase
   useEffect(() => {
-    // 1. Fetch Cloud Services
-    fetch('/api/services')
+    // 1. Fetch Cloud Services (Skip if already provided by SSR)
+    if (!initialServices || initialServices.length === 0) {
+      fetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.services) && data.services.length > 0) {
@@ -656,6 +658,7 @@ export default function App({
         }
       })
       .catch(() => {});
+    }
 
     // 2. Fetch Cloud Site Config
     fetch('/api/site-config')
@@ -707,8 +710,9 @@ export default function App({
       .catch(() => {});
     }
 
-    // 5. Fetch Cloud Web Tools
-    fetch('/api/tools')
+    // 5. Fetch Cloud Web Tools (Skip if already provided by SSR)
+    if (!initialTools || initialTools.length === 0) {
+      fetch('/api/tools')
       .then((res) => res.json())
       .then((data) => {
         if (data.success && Array.isArray(data.tools) && data.tools.length > 0) {
@@ -716,7 +720,8 @@ export default function App({
         }
       })
       .catch(() => {});
-  }, [vipUser?.identifier]);
+    }
+  }, [vipUser?.identifier, initialServices, initialTools]);
 
   // Admin Command Center Mode ('ui' | 'payments' | 'tools' | 'services')
   const [adminStudioMode, setAdminStudioMode] = useState<'ui' | 'payments' | 'tools' | 'services'>('ui');

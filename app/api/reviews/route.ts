@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
+import { invalidateServerStoreCache } from '@/src/lib/serverDataLoader';
 
 export const DEFAULT_REVIEWS: Array<{
   id: string;
@@ -92,6 +93,7 @@ export async function POST(req: Request) {
       comment: cleanReviewEncoding(data.comment || ''),
     };
 
+    invalidateServerStoreCache();
     return NextResponse.json({ success: true, review: sanitized });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
@@ -142,6 +144,7 @@ export async function PATCH(req: Request) {
       comment: cleanReviewEncoding(data.comment || ''),
     };
 
+    invalidateServerStoreCache();
     return NextResponse.json({ success: true, review: sanitized });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
@@ -173,6 +176,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
+    invalidateServerStoreCache();
     return NextResponse.json({ success: true, deletedId: id });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';

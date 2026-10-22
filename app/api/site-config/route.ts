@@ -5,6 +5,7 @@ import path from 'path';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { DEFAULT_SITE_CONFIG, SiteSettingsConfig, deepMergeSiteConfig } from '@/src/types/siteConfig';
 import { verifyAdminRequestAsync } from '@/src/lib/serverSecurity';
+import { invalidateServerStoreCache } from '@/src/lib/serverDataLoader';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -197,6 +198,7 @@ export async function POST(req: Request) {
 
     // 3. Invalidate SSR cache on Next.js so refreshing the page immediately shows the new config
     try {
+      invalidateServerStoreCache();
       revalidatePath('/');
       revalidatePath('/saqibadmin');
     } catch {}
