@@ -2,35 +2,73 @@
 
 import React, { useEffect, useState } from 'react';
 
-export function GamingHudLoader() {
-  const [percent, setPercent] = useState(12);
+export interface GamingHudLoaderProps {
+  brandOwnerName?: string;
+  brandAccentName?: string;
+  portraitUrl?: string;
+  tagline?: string;
+}
+
+export function GamingHudLoader({
+  brandOwnerName = 'Muhammad Saqib',
+  brandAccentName = 'Saqib Visuals',
+  portraitUrl = 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png?tr=w-720,f-auto,q-80',
+  tagline = 'SMM STORE • CAPCUT • AI TOOLS',
+}: GamingHudLoaderProps) {
+  const [percent, setPercent] = useState(18);
   const [statusText, setStatusText] = useState('BOOTING QUANTUM ENGINE...');
+  const [isFadingOut, setIsFadingOut] = useState(false);
+  const [isGone, setIsGone] = useState(false);
 
   useEffect(() => {
     const timer1 = setTimeout(() => {
-      setPercent(48);
-      setStatusText('OPTIMIZING 120 FPS ASSETS...');
+      setPercent(52);
+      setStatusText('OPTIMIZING HIGH-SPEED ASSETS...');
     }, 180);
 
     const timer2 = setTimeout(() => {
-      setPercent(86);
+      setPercent(88);
       setStatusText('CONNECTING SECURE DATABASE...');
     }, 380);
 
     const timer3 = setTimeout(() => {
       setPercent(100);
       setStatusText('SYSTEM ONLINE // READY!');
-    }, 600);
+    }, 580);
+
+    // Auto fade-out after smooth loading animation
+    const timerFade = setTimeout(() => {
+      setIsFadingOut(true);
+    }, 850);
+
+    // Completely unmount from DOM to free memory
+    const timerGone = setTimeout(() => {
+      setIsGone(true);
+    }, 1250);
 
     return () => {
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+      clearTimeout(timerFade);
+      clearTimeout(timerGone);
     };
   }, []);
 
+  const handleDismiss = () => {
+    setIsFadingOut(true);
+    setTimeout(() => setIsGone(true), 350);
+  };
+
+  if (isGone) return null;
+
   return (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-[#05070e] text-white overflow-hidden select-none font-sans">
+    <div
+      onClick={handleDismiss}
+      className={`fixed inset-0 z-[99999] flex items-center justify-center bg-[#05070e] text-white overflow-hidden select-none font-sans transition-all duration-400 ease-out cursor-pointer ${
+        isFadingOut ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+      }`}
+    >
       {/* Background Cyber Grid & Ambient Neon Orbs */}
       <div className="absolute inset-0 pointer-events-none opacity-25">
         <div
@@ -38,7 +76,7 @@ export function GamingHudLoader() {
           style={{
             backgroundImage:
               'linear-gradient(rgba(0, 240, 255, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 240, 255, 0.08) 1px, transparent 1px)',
-            backgroundSize: '36px 36px'
+            backgroundSize: '36px 36px',
           }}
         />
       </div>
@@ -70,13 +108,16 @@ export function GamingHudLoader() {
 
       <div className="absolute bottom-4 right-4 sm:bottom-8 sm:right-8 flex flex-col items-end gap-1 pointer-events-none">
         <span className="text-[9px] font-mono tracking-widest text-emerald-400/70 uppercase">
-          STATUS // ARMED
+          STATUS // READY
         </span>
         <div className="w-8 h-8 sm:w-12 sm:h-12 border-b-2 border-r-2 border-pink-500/80 rounded-br-lg" />
       </div>
 
       {/* Center Gaming HUD Core Card */}
-      <div className="relative z-10 w-full max-w-[360px] sm:max-w-[440px] mx-4 p-6 sm:p-8 rounded-[28px] bg-slate-950/80 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_0_50px_rgba(0,240,255,0.18)] flex flex-col items-center text-center">
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="relative z-10 w-full max-w-[360px] sm:max-w-[440px] mx-4 p-6 sm:p-8 rounded-[28px] bg-slate-950/85 backdrop-blur-2xl border border-cyan-500/30 shadow-[0_0_50px_rgba(0,240,255,0.18)] flex flex-col items-center text-center transition-transform duration-300"
+      >
         {/* Holographic Glowing Ring with Avatar */}
         <div className="relative mb-5 flex items-center justify-center">
           {/* Outer Rotating Cyber Dashes */}
@@ -93,16 +134,16 @@ export function GamingHudLoader() {
           {/* Central Portrait / Core Orb */}
           <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-white/90 shadow-[0_0_24px_rgba(236,72,153,0.65)] bg-slate-900 flex items-center justify-center">
             <img
-              src="https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png"
-              alt="Muhammad Saqib"
+              src={portraitUrl || 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png?tr=w-720,f-auto,q-80'}
+              alt={brandOwnerName}
               className="w-full h-full object-cover object-top"
               onError={(e) => {
                 (e.currentTarget as HTMLImageElement).style.display = 'none';
               }}
             />
-            {/* Fallback Icon */}
+            {/* Fallback Initials */}
             <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-900 to-pink-900 text-cyan-300 -z-10 text-2xl font-black">
-              MS
+              {brandOwnerName.slice(0, 2).toUpperCase()}
             </div>
           </div>
 
@@ -115,13 +156,13 @@ export function GamingHudLoader() {
         <div className="space-y-1 mb-5">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-cyan-950/70 border border-cyan-400/40 text-[9.5px] font-mono tracking-widest text-cyan-300 uppercase shadow-xs">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-            SAQIB VISUALS GAMING ENGINE
+            {brandAccentName.toUpperCase()} ENGINE
           </div>
           <h1 className="text-xl sm:text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-cyan-200 to-pink-300 drop-shadow-[0_2px_8px_rgba(255,255,255,0.4)]">
-            MUHAMMAD SAQIB
+            {brandOwnerName.toUpperCase()}
           </h1>
           <p className="text-[11px] font-mono tracking-wider text-slate-400 uppercase">
-            SMM STORE • CAPCUT • AI TOOLS
+            {tagline}
           </p>
         </div>
 
@@ -149,19 +190,23 @@ export function GamingHudLoader() {
               <div
                 className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/80 to-transparent"
                 style={{
-                  animation: 'laserSweep 1s linear infinite'
+                  animation: 'laserSweep 1s linear infinite',
                 }}
               />
             </div>
           </div>
         </div>
 
-        {/* Bottom Hardware Spec Pills */}
-        <div className="mt-5 pt-4 border-t border-white/10 w-full flex items-center justify-between text-[9px] font-mono text-slate-400">
+        {/* Bottom Hardware Spec Pills & Click to Enter */}
+        <div className="mt-5 pt-3.5 border-t border-white/10 w-full flex items-center justify-between text-[9px] font-mono text-slate-400">
           <span className="text-cyan-400">● TURBOPACK 16</span>
-          <span className="text-slate-500">|</span>
-          <span className="text-pink-400">● 60-120FPS GPU</span>
-          <span className="text-slate-500">|</span>
+          <button
+            type="button"
+            onClick={handleDismiss}
+            className="text-pink-300 hover:text-white font-bold tracking-wider hover:underline transition cursor-pointer flex items-center gap-1"
+          >
+            ENTER NOW ➔
+          </button>
           <span className="text-emerald-400">● 100% SECURE</span>
         </div>
       </div>
@@ -174,7 +219,7 @@ export function GamingHudLoader() {
               0% { transform: translateX(-100%); }
               100% { transform: translateX(200%); }
             }
-          `
+          `,
         }}
       />
     </div>

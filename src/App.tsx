@@ -52,6 +52,7 @@ import {
   STORE_THEMES_CATALOG
 } from './components/AstroNeumorphicDeck';
 import { deepMergeSiteConfig } from './types/siteConfig';
+import { GamingHudLoader } from './components/GamingHudLoader';
 import {
   SiteSettingsConfig,
   DEFAULT_SITE_CONFIG,
@@ -2324,6 +2325,14 @@ export default function App({
           : 'selection:bg-pink-300 selection:text-slate-900'
       }`}
     >
+      {/* ==================== CYBER FUTURISTIC WELCOME INTRO LOADER ==================== */}
+      <GamingHudLoader
+        brandOwnerName={brandOwnerName}
+        brandAccentName={brandAccentName}
+        portraitUrl={siteConfig.banner.portraitUrl}
+        tagline={siteConfig.banner.badgeText || 'ALL DIGITAL, AI, SMM & NADRA SERVICES AVAILABLE'}
+      />
+
       {/* Top 60FPS Neon Scroll Progress Bar */}
       <div className="fixed top-0 left-0 right-0 h-1 z-50 bg-white/30 pointer-events-none overflow-hidden">
         <div
