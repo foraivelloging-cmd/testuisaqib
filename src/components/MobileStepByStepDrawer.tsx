@@ -50,6 +50,8 @@ interface MobileStepByStepDrawerProps {
   vipUser?: any;
   primaryWaNumber: string;
   portraitUrl?: string;
+  brandOwnerName?: string;
+  brandAccentName?: string;
 }
 
 export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
@@ -76,6 +78,8 @@ export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
   vipUser,
   primaryWaNumber,
   portraitUrl = 'https://ik.imagekit.io/mrsaqib/mrsaqib242-img25_7oG52NZUY.png',
+  brandOwnerName,
+  brandAccentName
 }) => {
   // Lock body scroll when mobile drawer is open to prevent page jumping
   useEffect(() => {
@@ -136,7 +140,7 @@ export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
     {
       step: '04',
       id: 'about' as DrawerTabId,
-      title: siteLang === 'ur' ? 'محمد ثاقب کے بارے میں' : 'About Muhammad Saqib',
+      title: siteLang === 'ur' ? `${brandOwnerName || 'محمد ثاقب'} کے بارے میں` : `About ${brandOwnerName || 'Muhammad Saqib'}`,
       sub: siteLang === 'ur' ? 'سرٹیفائیڈ ڈیجیٹل ایجنسی اور کریڈینشلز' : 'Certified Digital Agency, Founder & Verification',
       icon: FaUserAstronaut,
       color: 'from-indigo-500 to-purple-600',
@@ -157,7 +161,7 @@ export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
       step: '06',
       id: 'contact' as DrawerTabId,
       title: siteLang === 'ur' ? '24/7 واٹس ایپ سپورٹ' : '24/7 WhatsApp Customer Support',
-      sub: siteLang === 'ur' ? 'ثاقب بھائی سے براہِ راست رابطہ کریں' : 'Live WhatsApp chat with Saqib for fast orders',
+      sub: siteLang === 'ur' ? `${brandOwnerName || 'ثاقب بھائی'} سے براہِ راست رابطہ کریں` : `Live WhatsApp chat with ${brandOwnerName || 'Saqib'} for fast orders`,
       icon: SiWhatsapp,
       color: 'from-green-500 to-emerald-600',
       badge: 'Replies in ~2m',
@@ -196,12 +200,12 @@ export const MobileStepByStepDrawer: React.FC<MobileStepByStepDrawerProps> = ({
               </div>
               <div className="leading-tight">
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-extrabold text-white">Muhammad Saqib</h3>
+                  <h3 className="text-sm font-extrabold text-white truncate max-w-[130px]">{brandOwnerName || 'Muhammad Saqib'}</h3>
                   <span className="px-1.5 py-0.2 rounded-full bg-emerald-500/25 border border-emerald-400 text-emerald-300 text-[8.5px] font-bold">
                     ONLINE
                   </span>
                 </div>
-                <p className="text-[10px] text-pink-300 font-medium">Saqib Visuals Hub Official</p>
+                <p className="text-[10px] text-pink-300 font-medium truncate max-w-[150px]">{brandAccentName ? `${brandAccentName} Hub Official` : 'Saqib Visuals Hub Official'}</p>
               </div>
             </div>
 

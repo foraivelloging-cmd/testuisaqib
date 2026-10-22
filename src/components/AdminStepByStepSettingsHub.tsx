@@ -4954,9 +4954,30 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 {/* Top Strip Text Input */}
                 {siteConfig.banner.showTopStrip && (
                   <div className="p-3.5 rounded-2xl bg-white/85 border border-pink-200 space-y-2">
-                    <label className="block text-xs font-extrabold text-slate-900">
-                      Top Strip Heading Text
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Top Strip Heading Text
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const main = siteConfig.banner.mainTitle?.trim() || 'Muhammad Saqib';
+                          const accent = siteConfig.banner.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Visuals Hub';
+                          onUpdateSiteConfig((prev) => ({
+                            ...prev,
+                            banner: {
+                              ...prev.banner,
+                              topStripTitle: `${main.toUpperCase()} • ${accent.toUpperCase()}`
+                            }
+                          }));
+                          showToast('✨ Top Strip auto-synced from Hero Name!');
+                        }}
+                        className="text-[10px] text-pink-600 hover:text-pink-800 font-bold cursor-pointer hover:underline flex items-center gap-1"
+                      >
+                        <i className="fa-solid fa-wand-magic-sparkles"></i>
+                        <span>Auto-Fill from Hero Title</span>
+                      </button>
+                    </div>
                     <input
                       type="text"
                       value={siteConfig.banner.topStripTitle}
@@ -5062,12 +5083,26 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             <input
                               type="text"
                               value={siteConfig.banner.mainTitle}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const newMain = e.target.value;
+                                const accent = siteConfig.banner.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Visuals Hub';
                                 onUpdateSiteConfig((prev) => ({
                                   ...prev,
-                                  banner: { ...prev.banner, mainTitle: e.target.value }
-                                }))
-                              }
+                                  banner: { 
+                                    ...prev.banner, 
+                                    mainTitle: newMain,
+                                    topStripTitle: accent ? `${newMain.trim().toUpperCase()} • ${accent.toUpperCase()}` : newMain.trim().toUpperCase()
+                                  },
+                                  contact: {
+                                    ...prev.contact,
+                                    whatsappWidgetName: newMain.trim()
+                                  },
+                                  footer: {
+                                    ...prev.footer,
+                                    brandName: `🚀 ${newMain.trim()}`
+                                  }
+                                }));
+                              }}
                               className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
                               placeholder="e.g. Muhammad Saqib"
                             />
@@ -5079,12 +5114,19 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                             <input
                               type="text"
                               value={siteConfig.banner.highlightTitle}
-                              onChange={(e) =>
+                              onChange={(e) => {
+                                const newAccent = e.target.value;
+                                const cleanAccent = newAccent.trim().replace(/^[—\-\s]+/, '');
+                                const main = siteConfig.banner.mainTitle?.trim() || 'Muhammad Saqib';
                                 onUpdateSiteConfig((prev) => ({
                                   ...prev,
-                                  banner: { ...prev.banner, highlightTitle: e.target.value }
-                                }))
-                              }
+                                  banner: { 
+                                    ...prev.banner, 
+                                    highlightTitle: newAccent,
+                                    topStripTitle: cleanAccent ? `${main.toUpperCase()} • ${cleanAccent.toUpperCase()}` : main.toUpperCase()
+                                  }
+                                }));
+                              }}
                               className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
                               placeholder="e.g. — Saqib Visuals"
                             />

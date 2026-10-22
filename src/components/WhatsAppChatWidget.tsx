@@ -57,7 +57,8 @@ export function WhatsAppChatWidget({
 
   const defaultGreeting = rawGreeting
     .replace(/Saqib Visuals Hub/gi, fullBrand)
-    .replace(/ثاقب ویژولز ہب/g, fullBrand);
+    .replace(/ثاقب ویژولز ہب/g, fullBrand)
+    .replace(/Muhammad Saqib/gi, brandOwner);
 
   useEffect(() => {
     try {
@@ -90,8 +91,8 @@ export function WhatsAppChatWidget({
   };
 
   const quickPrompts = [
-    { label: '⚡ CapCut Pro', text: 'Assalam-o-Alaikum Saqib Bhai! Mujhe CapCut Pro subscription chahiye, kya price hai?' },
-    { label: '🤖 AI Tools', text: 'Assalam-o-Alaikum Saqib Bhai! Mujhe ChatGPT / Claude / Gemini AI suite lena hai.' },
+    { label: '⚡ CapCut Pro', text: `Assalam-o-Alaikum ${brandOwner}! Mujhe CapCut Pro subscription chahiye, kya price hai?` },
+    { label: '🤖 AI Tools', text: `Assalam-o-Alaikum ${brandOwner}! Mujhe ChatGPT / Claude / Gemini AI suite lena hai.` },
     { label: '📱 TikTok Ads', text: 'Assalam-o-Alaikum! Mujhe TikTok UK Agency Account & Verification chahiye.' },
     { label: '🪪 NADRA & SIM', text: 'Assalam-o-Alaikum! Mujhe SIM owner / CDR / NADRA record check karwana hai.' },
     { label: '💳 Add Balance', text: 'Assalam-o-Alaikum! Mujhe apne VIP wallet mein balance top-up karwana hai.' }

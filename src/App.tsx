@@ -351,6 +351,34 @@ export default function App({
   const brandAccentName = siteConfig.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Saqib Visuals';
   const fullBrandTitle = `${brandOwnerName} ${siteConfig.banner?.highlightTitle?.trim() || ''}`.trim();
 
+  // Check if owner name or accent was customized from default "Muhammad Saqib"
+  const isCustomOwner = React.useMemo(() => {
+    return Boolean(brandOwnerName && !/^(Muhammad\s+Saqib|Saqib)$/i.test(brandOwnerName));
+  }, [brandOwnerName]);
+
+  const isCustomAccent = React.useMemo(() => {
+    return Boolean(brandAccentName && !/^(Saqib\s+Visuals|Visuals\s+Hub|Visuals)$/i.test(brandAccentName));
+  }, [brandAccentName]);
+
+  // Dynamic Top Strip Title: automatically mirrors the owner name & brand accent unless custom-overridden
+  const effectiveTopStripTitle = React.useMemo(() => {
+    const raw = (siteConfig.banner?.topStripTitle || '').trim();
+    const isDefaultSaqib = !raw || /MUHAMMAD\s+SAQIB|VISUALS\s+HUB/i.test(raw);
+
+    if ((isCustomOwner || isCustomAccent) && isDefaultSaqib) {
+      if (brandOwnerName && brandAccentName) {
+        return `${brandOwnerName.toUpperCase()} • ${brandAccentName.toUpperCase()}`;
+      }
+      return brandOwnerName.toUpperCase();
+    }
+
+    if (!raw) {
+      return `${brandOwnerName.toUpperCase()} • ${brandAccentName.toUpperCase()}`;
+    }
+
+    return raw;
+  }, [siteConfig.banner?.topStripTitle, brandOwnerName, brandAccentName, isCustomOwner, isCustomAccent]);
+
   const siteVisibility = {
     ...DEFAULT_SITE_VISIBILITY,
     ...(siteConfig.visibility || {})
@@ -2693,6 +2721,8 @@ export default function App({
         onToggleSound={toggleSound}
         vipUser={vipUser}
         primaryWaNumber={activeWaNumberClean}
+        brandOwnerName={brandOwnerName}
+        brandAccentName={brandAccentName}
         portraitUrl={siteConfig.banner.portraitUrl}
       />
 
@@ -2712,7 +2742,7 @@ export default function App({
                     ✨
                   </span>
                   <h1 className="title-3d-blue text-xs sm:text-3xl font-bold tracking-wider uppercase truncate">
-                    {siteLang === 'ur' ? 'محمد ثاقب • ثاقب ویژولز ہب' : siteConfig.banner.topStripTitle}
+                    {siteLang === 'ur' && !isCustomOwner ? 'محمد ثاقب • ثاقب ویژولز ہب' : effectiveTopStripTitle}
                   </h1>
                 </div>
                 {siteConfig.banner.showTopStripWhatsapp !== false && (
@@ -4434,7 +4464,7 @@ export default function App({
                                 playPopSound(740);
                                 setAuthIdentifier('03478936242');
                                 setAuthPassword('vip2026');
-                                if (authMode === 'signup') setAuthName('Muhammad Saqib VIP');
+                                if (authMode === 'signup') setAuthName(`${brandOwnerName} VIP`);
                                 showToast('✨ Auto-filled Demo Credentials! Click Sign In below.');
                               }}
                               className="px-2.5 py-1 rounded-full bg-white/85 hover:bg-white text-purple-700 border border-purple-200 text-[10px] font-extrabold shadow-2xs transition hover:scale-105 cursor-pointer"
@@ -5455,7 +5485,7 @@ export default function App({
                             : `\n💰 *Total Paid:* Rs. ${effectivePrice.toLocaleString()}`;
 
                           openExternalWhatsApp(
-                            `Assalam-o-Alaikum Saqib Bhai! 💳 *PAID VIA WALLET BALANCE*\n\n📦 *Service:* ${activeOrderService.title}\n💎 *Package:* ${modalTierValue}\n🎯 *Target:* ${
+                            `Assalam-o-Alaikum ${brandOwnerName}! 💳 *PAID VIA WALLET BALANCE*\n\n📦 *Service:* ${activeOrderService.title}\n💎 *Package:* ${modalTierValue}\n🎯 *Target:* ${
                               modalTargetInput.trim() || 'Provided on chat'
                             }${couponMsgPart}\n✅ *Deducted from Approved Wallet Balance:* Rs. ${effectivePrice.toLocaleString()}`
                           );
