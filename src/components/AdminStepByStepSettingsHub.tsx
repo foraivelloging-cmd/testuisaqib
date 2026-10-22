@@ -5131,7 +5131,12 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                                   }
                                 }));
                               }}
-                              className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                              onBlur={() => {
+                                  if (onSaveSiteConfigToCloud) {
+                                    onSaveSiteConfigToCloud(siteConfig, false);
+                                  }
+                                }}
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
                               placeholder="e.g. Muhammad Saqib"
                             />
                           </div>
@@ -5155,13 +5160,36 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                                   }
                                 }));
                               }}
-                              className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
+                              onBlur={() => {
+                                  if (onSaveSiteConfigToCloud) {
+                                    onSaveSiteConfigToCloud(siteConfig, false);
+                                  }
+                                }}
+                                className="w-full px-3.5 py-2 rounded-xl bg-white border-2 border-pink-300 font-bold text-xs sm:text-sm text-slate-900 shadow-inner"
                               placeholder="e.g. — Saqib Visuals"
                             />
                           </div>
                         </div>
 
                         {/* White-Label Dynamic Sync Notice & 1-Click Sync Button */}
+                        
+                          <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-2.5 bg-pink-50/70 border border-pink-200/80 rounded-xl">
+                            <button
+                              type="button"
+                              onClick={async () => {
+                                if (onSaveSiteConfigToCloud) {
+                                  await onSaveSiteConfigToCloud(siteConfig, true);
+                                }
+                              }}
+                              disabled={isSavingSiteConfig}
+                              className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-xs shadow-md hover:scale-105 active:scale-95 transition flex items-center gap-1.5 cursor-pointer"
+                            >
+                              <i className="fa-solid fa-cloud-arrow-up"></i>
+                              <span>{isSavingSiteConfig ? 'Saving...' : '💾 Save Name Changes to Database'}</span>
+                            </button>
+                            <span className="text-[11px] text-slate-500 font-medium">Autosaves on click / enter</span>
+                          </div>
+
                         <div className="mt-2.5 p-3 rounded-2xl bg-gradient-to-r from-pink-50 via-purple-50 to-indigo-50 border border-pink-200/80 text-[11px] text-slate-700 space-y-2 shadow-xs">
                           <div className="flex items-start gap-2.5">
                             <div className="w-6 h-6 rounded-xl bg-pink-500 text-white flex items-center justify-center flex-shrink-0 text-xs shadow-xs mt-0.5">

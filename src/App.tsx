@@ -662,6 +662,20 @@ export default function App({
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.config) {
+          const localRaw = typeof window !== 'undefined' ? localStorage.getItem(SITE_CONFIG_STORAGE_KEY) : null;
+          if (localRaw) {
+            try {
+              const localParsed = JSON.parse(localRaw);
+              const localMain = localParsed.banner?.mainTitle?.trim();
+              const serverMain = data.config.banner?.mainTitle?.trim();
+              if (localMain && !/^(Muhammad\s+Saqib|Saqib)$/i.test(localMain) && (/^(Muhammad\s+Saqib|Saqib)$/i.test(serverMain || '') || !serverMain)) {
+                const merged = deepMergeSiteConfig({ ...data.config, ...localParsed });
+                setSiteConfig(merged);
+                saveSiteConfigToCloud(merged, false);
+                return;
+              }
+            } catch {}
+          }
           setSiteConfig(data.config);
           try {
             localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(data.config));

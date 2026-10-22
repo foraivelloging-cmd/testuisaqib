@@ -104,42 +104,40 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    // 1. Check if authorized via Admin Token
-    let isAuthorized = false;
+    // 1. Check if authorized via Origin (localhost, same host, verified deployment domains)
+    const host = req.headers.get('host') || '';
+    const origin = req.headers.get('origin') || '';
+    const referer = req.headers.get('referer') || '';
+    const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
+
+    const isAuthorizedOrigin =
+      host.includes('localhost') ||
+      host.includes('127.0.0.1') ||
+      host.endsWith('.vercel.app') ||
+      origin.includes('localhost') ||
+      origin.includes('127.0.0.1') ||
+      origin.endsWith('.vercel.app') ||
+      referer.includes('localhost') ||
+      referer.includes('127.0.0.1') ||
+      referer.includes('.vercel.app') ||
+      clientIp.includes('127.0.0.1') ||
+      clientIp.includes('::1') ||
+      clientIp.startsWith('192.168.') ||
+      clientIp.startsWith('10.') ||
+      process.env.NODE_ENV !== 'production';
+
+    let isAuthorized = isAuthorizedOrigin;
     let authError = 'Unauthorized: "manage_site_config" permission required.';
     let isRevoked = false;
 
-    const auth = await verifyAdminRequestAsync(req, 'manage_site_config');
-    if (auth.authorized) {
-      isAuthorized = true;
-    } else if (auth.revoked) {
-      isRevoked = true;
-      authError = auth.reason || 'Admin session revoked.';
-    } else {
-      // Allow local development, same-origin localhost requests, and verified Vercel deployment domains
-      const host = req.headers.get('host') || '';
-      const origin = req.headers.get('origin') || '';
-      const referer = req.headers.get('referer') || '';
-      const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
-
-      const isAuthorizedOrigin =
-        host.includes('localhost') ||
-        host.includes('127.0.0.1') ||
-        host.endsWith('.vercel.app') ||
-        origin.includes('localhost') ||
-        origin.includes('127.0.0.1') ||
-        origin.endsWith('.vercel.app') ||
-        referer.includes('localhost') ||
-        referer.includes('127.0.0.1') ||
-        referer.includes('.vercel.app') ||
-        clientIp.includes('127.0.0.1') ||
-        clientIp.includes('::1') ||
-        clientIp.startsWith('192.168.') ||
-        clientIp.startsWith('10.') ||
-        process.env.NODE_ENV !== 'production';
-
-      if (isAuthorizedOrigin) {
+    // If not implicitly authorized by origin, verify via Admin JWT Token
+    if (!isAuthorized) {
+      const auth = await verifyAdminRequestAsync(req, 'manage_site_config');
+      if (auth.authorized) {
         isAuthorized = true;
+      } else if (auth.revoked) {
+        isRevoked = true;
+        authError = auth.reason || 'Admin session revoked.';
       }
     }
 
