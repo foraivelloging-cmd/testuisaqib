@@ -10,10 +10,21 @@ function cleanEnv(val?: string | null): string {
   return val.trim().replace(/^['"]|['"]$/g, '');
 }
 
+interface DiskEnvInfo {
+  env: Record<string, string>;
+  sourceFile: string;
+  detectedFiles: string[];
+}
+
 // Server-side direct disk reader so even if Next.js dev server hasn't restarted or env wasn't loaded, it finds the keys
-function readEnvFromDisk(): Record<string, string> {
+export function readEnvFromDisk(): DiskEnvInfo {
   const result: Record<string, string> = {};
-  if (typeof window !== 'undefined') return result;
+  const detectedFiles: string[] = [];
+  let sourceFile = 'none';
+
+  if (typeof window !== 'undefined') {
+    return { env: result, sourceFile: 'browser', detectedFiles: [] };
+  }
 
   try {
     const cwd = process.cwd();
@@ -28,30 +39,51 @@ function readEnvFromDisk(): Record<string, string> {
       '.env.production',
     ];
 
+    // Collect all existing candidate files and sort by most recently modified first
+    const existingCandidates: { name: string; fullPath: string; mtime: number }[] = [];
     for (const fileName of candidateFiles) {
       const fullPath = path.join(/*turbopackIgnore: true*/ cwd, fileName);
       if (fs.existsSync(fullPath)) {
-        const content = fs.readFileSync(fullPath, 'utf8');
-        const lines = content.split('\n');
-        for (const line of lines) {
-          const trimmed = line.trim();
-          if (!trimmed || trimmed.startsWith('#')) continue;
-          const eqIdx = trimmed.indexOf('=');
-          if (eqIdx > 0) {
-            const key = trimmed.slice(0, eqIdx).trim();
-            let val = trimmed.slice(eqIdx + 1).trim();
-            val = val.replace(/^['"]|['"]$/g, '');
-            if (!result[key] && val) {
-              result[key] = val;
-            }
+        try {
+          const stats = fs.statSync(fullPath);
+          existingCandidates.push({ name: fileName, fullPath, mtime: stats.mtimeMs });
+          detectedFiles.push(fileName);
+        } catch {}
+      }
+    }
+
+    // Sort: most recently modified file takes top priority
+    existingCandidates.sort((a, b) => b.mtime - a.mtime);
+
+    for (const cand of existingCandidates) {
+      const content = fs.readFileSync(cand.fullPath, 'utf8');
+      const lines = content.split('\n');
+      let fileProvidedKeys = false;
+
+      for (const line of lines) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx > 0) {
+          const key = trimmed.slice(0, eqIdx).trim();
+          let val = trimmed.slice(eqIdx + 1).trim();
+          val = val.replace(/^['"]|['"]$/g, '');
+          if (!result[key] && val) {
+            result[key] = val;
+            fileProvidedKeys = true;
           }
         }
+      }
+
+      if (fileProvidedKeys && sourceFile === 'none') {
+        sourceFile = cand.name;
       }
     }
   } catch {
     // Ignore error
   }
-  return result;
+
+  return { env: result, sourceFile, detectedFiles };
 }
 
 const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
@@ -60,25 +92,50 @@ const DEFAULT_SERVICE_ROLE_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhdGloZm1xcGlxZXJ2cXBrYW1sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM5OTI5NywiZXhwIjoyMTA3OTc1Mjk3fQ.XoGA9RKbxvNMkOoysds6d7gz9SDR7cz5m920mdqOrVk';
 
 export function getSupabaseAdminCredentials() {
-  const diskEnv = readEnvFromDisk();
+  const diskInfo = readEnvFromDisk();
+  const diskEnv = diskInfo.env;
+  let activeSource = diskInfo.sourceFile !== 'none' ? diskInfo.sourceFile : 'process.env';
 
+  // In development, prefer fresh disk file edits over stale process.env in-memory cache
   const getVal = (...keys: string[]): string => {
     for (const k of keys) {
-      const pVal = cleanEnv(process.env[k]);
-      if (pVal) return pVal;
       const dVal = cleanEnv(diskEnv[k]);
       if (dVal) return dVal;
+      const pVal = cleanEnv(process.env[k]);
+      if (pVal) return pVal;
     }
     return '';
   };
 
-  const url = getVal(
+  let url = getVal(
     'NEXT_PUBLIC_SUPABASE_URL',
     'SUPABASE_URL',
     'NEXT_PUBLIC_SUPABASE_PROJECT_URL',
     'SUPABASE_PROJECT_URL',
     'SUPABASE_ENDPOINT'
   );
+
+  // Auto-detect if user pasted a Supabase project ID instead of full URL
+  if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+    if (url.includes('.supabase.co')) {
+      url = `https://${url}`;
+    } else if (/^[a-z0-9_-]{15,30}$/i.test(url)) {
+      url = `https://${url}.supabase.co`;
+    }
+  }
+
+  // Auto-detect if user provided DATABASE_URL postgres connection string
+  if (!url) {
+    const dbUrl = getVal('DATABASE_URL', 'SUPABASE_DB_URL');
+    if (dbUrl) {
+      const match = dbUrl.match(/postgres(?:ql)?:\/\/[^:]+:[^@]+@([a-z0-9_-]+)\.supabase\.co/i) ||
+                    dbUrl.match(/@aws-[0-9]-[a-z0-9-]+\.pooler\.supabase\.co.*\/postgres/i);
+      const projMatch = dbUrl.match(/postgres\.([a-z0-9_-]{15,30}):/i);
+      if (projMatch && projMatch[1]) {
+        url = `https://${projMatch[1]}.supabase.co`;
+      }
+    }
+  }
 
   const anonKey = getVal(
     'NEXT_PUBLIC_SUPABASE_ANON_KEY',
@@ -100,7 +157,16 @@ export function getSupabaseAdminCredentials() {
     serviceRoleKey = anonKey;
   }
 
-  return { url, anonKey, serviceRoleKey };
+  const isDefaultFallback = !url;
+
+  return {
+    url: url || DEFAULT_SUPABASE_URL,
+    anonKey: anonKey || DEFAULT_ANON_KEY,
+    serviceRoleKey: serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY,
+    source: isDefaultFallback ? 'default_fallback' : activeSource,
+    isDefaultFallback,
+    detectedFiles: diskInfo.detectedFiles,
+  };
 }
 
 export function getSupabaseAdmin(): SupabaseClient {
