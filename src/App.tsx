@@ -40,6 +40,7 @@ import {
   STORE_FONT_PACKS,
   STORE_THEMES_CATALOG
 } from './components/AstroNeumorphicDeck';
+import { deepMergeSiteConfig } from './types/siteConfig';
 import {
   SiteSettingsConfig,
   DEFAULT_SITE_CONFIG,
@@ -359,6 +360,19 @@ export default function App({
     return DEFAULT_SITE_CONFIG;
   });
 
+  // Hydrate from browser localStorage if a customized config was saved locally
+  useEffect(() => {
+    try {
+      const cached = localStorage.getItem(SITE_CONFIG_STORAGE_KEY);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          setSiteConfig((prev) => deepMergeSiteConfig({ ...prev, ...parsed }));
+        }
+      }
+    } catch {}
+  }, []);
+
   // Dynamic White-Label Brand & Owner Names (Synced automatically from Hero Title)
   const brandOwnerName = siteConfig.banner?.mainTitle?.trim() || 'Muhammad Saqib';
   const brandAccentName = siteConfig.banner?.highlightTitle?.trim().replace(/^[—\-\s]+/, '') || 'Saqib Visuals';
@@ -649,6 +663,9 @@ export default function App({
       .then((data) => {
         if (data.success && data.config) {
           setSiteConfig(data.config);
+          try {
+            localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(data.config));
+          } catch {}
         }
       })
       .catch(() => {});
@@ -1651,6 +1668,11 @@ export default function App({
       setIsSavingSiteConfig(false);
 
       if (res.ok && data.success) {
+        if (data.config) {
+          try {
+            localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(data.config));
+          } catch {}
+        }
         if (showFeedbackToast) {
           if (data.savedToSupabase) {
             showToast('☁️ Saved to Supabase Database successfully!');
@@ -1662,9 +1684,7 @@ export default function App({
       } else {
         const err = data.error || `HTTP ${res.status}`;
         console.error('[Cloud Save Error]', err, data);
-        if (showFeedbackToast) {
-          showToast(`❌ Database Save Failed: ${err}`);
-        }
+        showToast(`❌ Database Save Failed: ${err}`);
         return false;
       }
     } catch (err: any) {
@@ -1682,13 +1702,18 @@ export default function App({
   ) => {
     setSiteConfig((prev) => {
       const resolved = typeof nextConfig === 'function' ? nextConfig(prev) : nextConfig;
+      // Instant local persistence so page refresh immediately retains customized names
+      try {
+        localStorage.setItem(SITE_CONFIG_STORAGE_KEY, JSON.stringify(resolved));
+      } catch {}
+
       // Debounce autosave to avoid flooding Supabase on rapid keystrokes
       if (siteConfigSaveTimeoutRef.current) {
         clearTimeout(siteConfigSaveTimeoutRef.current);
       }
       siteConfigSaveTimeoutRef.current = setTimeout(() => {
         saveSiteConfigToCloud(resolved, false);
-      }, 700);
+      }, 500);
       return resolved;
     });
   };
