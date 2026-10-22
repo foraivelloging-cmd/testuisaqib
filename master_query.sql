@@ -1,5 +1,5 @@
 -- =====================================================================
--- 🚀 MUHAMMAD SAQIB — SAQIB VISUALS HUB
+-- 🚀 MUHAMMAD SAQIB — SAQIB VISUALS HUB--
 -- 👑 MASTER DATABASE SETUP & MIGRATION SCRIPT (100% PRODUCTION READY)
 -- =====================================================================
 -- Description: Complete schema, storage buckets, RLS security policies, 
