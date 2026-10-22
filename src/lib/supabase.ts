@@ -76,10 +76,13 @@ export function getSupabaseCredentials() {
   return { url, anonKey };
 }
 
+const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
+const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+
 export function getSupabase(): SupabaseClient {
   const { url, anonKey } = getSupabaseCredentials();
-  const effectiveUrl = url || 'https://placeholder.supabase.co';
-  const effectiveKey = anonKey || 'placeholder-key';
+  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
+  const effectiveKey = anonKey || DEFAULT_ANON_KEY;
   const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {

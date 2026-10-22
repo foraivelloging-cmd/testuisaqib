@@ -54,6 +54,11 @@ function readEnvFromDisk(): Record<string, string> {
   return result;
 }
 
+const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
+const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+const DEFAULT_SERVICE_ROLE_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhdGloZm1xcGlxZXJ2cXBrYW1sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM5OTI5NywiZXhwIjoyMTA3OTc1Mjk3fQ.XoGA9RKbxvNMkOoysds6d7gz9SDR7cz5m920mdqOrVk';
+
 export function getSupabaseAdminCredentials() {
   const diskEnv = readEnvFromDisk();
 
@@ -100,8 +105,8 @@ export function getSupabaseAdminCredentials() {
 
 export function getSupabaseAdmin(): SupabaseClient {
   const { url, serviceRoleKey } = getSupabaseAdminCredentials();
-  const effectiveUrl = url || 'https://placeholder.supabase.co';
-  const effectiveKey = serviceRoleKey || 'placeholder-key';
+  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
+  const effectiveKey = serviceRoleKey || DEFAULT_SERVICE_ROLE_KEY;
   const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {

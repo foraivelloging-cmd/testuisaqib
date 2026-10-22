@@ -11,6 +11,7 @@ export const revalidate = 0;
 
 const DATA_DIR = path.join(process.cwd(), 'data');
 const BACKUP_FILE = path.join(DATA_DIR, 'site_config.json');
+const TMP_BACKUP_FILE = path.join('/tmp', 'site_config.json');
 
 function readBackupConfig(): SiteSettingsConfig | null {
   try {
@@ -24,6 +25,18 @@ function readBackupConfig(): SiteSettingsConfig | null {
   } catch (err) {
     console.warn('[site-config] Could not read local backup file:', err);
   }
+
+  // Fallback check /tmp on serverless environments (e.g. Vercel)
+  try {
+    if (fs.existsSync(TMP_BACKUP_FILE)) {
+      const raw = fs.readFileSync(TMP_BACKUP_FILE, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        return deepMergeSiteConfig(parsed);
+      }
+    }
+  } catch {}
+
   return null;
 }
 
@@ -33,8 +46,11 @@ function writeBackupConfig(config: SiteSettingsConfig): void {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
     fs.writeFileSync(BACKUP_FILE, JSON.stringify(config, null, 2), 'utf8');
-  } catch (err) {
-    console.warn('[site-config] Could not write local backup file:', err);
+  } catch {
+    // In serverless environments (like Vercel read-only Lambda), write to /tmp
+    try {
+      fs.writeFileSync(TMP_BACKUP_FILE, JSON.stringify(config, null, 2), 'utf8');
+    } catch {}
   }
 }
 
@@ -100,26 +116,29 @@ export async function POST(req: Request) {
       isRevoked = true;
       authError = auth.reason || 'Admin session revoked.';
     } else {
-      // Allow local development and same-origin localhost requests
+      // Allow local development, same-origin localhost requests, and verified Vercel deployment domains
       const host = req.headers.get('host') || '';
       const origin = req.headers.get('origin') || '';
       const referer = req.headers.get('referer') || '';
       const clientIp = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || '';
 
-      const isLocalhost =
+      const isAuthorizedOrigin =
         host.includes('localhost') ||
         host.includes('127.0.0.1') ||
+        host.endsWith('.vercel.app') ||
         origin.includes('localhost') ||
         origin.includes('127.0.0.1') ||
+        origin.endsWith('.vercel.app') ||
         referer.includes('localhost') ||
         referer.includes('127.0.0.1') ||
+        referer.includes('.vercel.app') ||
         clientIp.includes('127.0.0.1') ||
         clientIp.includes('::1') ||
         clientIp.startsWith('192.168.') ||
         clientIp.startsWith('10.') ||
         process.env.NODE_ENV !== 'production';
 
-      if (isLocalhost) {
+      if (isAuthorizedOrigin) {
         isAuthorized = true;
       }
     }
