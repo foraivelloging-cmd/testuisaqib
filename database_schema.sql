@@ -248,12 +248,48 @@ CREATE INDEX IF NOT EXISTS idx_coupons_code ON public.coupons (code);
 CREATE INDEX IF NOT EXISTS idx_coupons_active ON public.coupons (is_active);
 
 -- ---------------------------------------------------------------------
--- 4. AUTO-UPDATE TIMESTAMPS TRIGGER
+-- 4. AUTO-UPDATE TIMESTAMPS TRIGGER & TABLE SCHEMA UPGRADES
 -- ---------------------------------------------------------------------
+-- Ensure updated_at and legacy columns exist on all existing databases:
+ALTER TABLE IF EXISTS public.site_config ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.profiles ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.orders ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.payment_proofs ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.contact_inquiries ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.reviews ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.admin_vault ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+ALTER TABLE IF EXISTS public.coupons ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+
+-- Ensure other commonly missing columns from older schema versions exist:
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS custom_icon_url TEXT;
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS direct_tool_url TEXT;
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS input_label TEXT NOT NULL DEFAULT 'Your Requirement';
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS placeholder TEXT NOT NULL DEFAULT 'Enter details...';
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS tiers JSONB NOT NULL DEFAULT '[]'::jsonb;
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS public.services ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS button_label TEXT NOT NULL DEFAULT 'Open Live Tool';
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS open_mode TEXT NOT NULL DEFAULT 'new_tab';
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS hidden BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE IF EXISTS public.web_tools ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc'::text, now());
+
 CREATE OR REPLACE FUNCTION public.handle_updated_at()
 RETURNS TRIGGER AS $$
 BEGIN
-  NEW.updated_at = timezone('utc'::text, now());
+  BEGIN
+    NEW.updated_at = timezone('utc'::text, now());
+  EXCEPTION
+    WHEN undefined_column THEN
+      -- If the table lacks updated_at, safely continue without crashing
+      NULL;
+    WHEN OTHERS THEN
+      NULL;
+  END;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
