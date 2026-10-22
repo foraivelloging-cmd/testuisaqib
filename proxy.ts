@@ -232,11 +232,17 @@ export function proxy(request: NextRequest) {
           (d) => originHost === d || originHost.endsWith(`.${d}`)
         );
 
-        // Reject if request origin does not match legitimate host (preventing unauthorized clone sites)
+        // Allow localhost, 127.0.0.1, private LAN IPs (192.168.x, 10.x, 172.x) and configured domains
+        const isLanOrLocal =
+          originHost.includes('localhost') ||
+          originHost.includes('127.0.0.1') ||
+          /^192\.168\./.test(originHost) ||
+          /^10\./.test(originHost) ||
+          /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(originHost) ||
+          originHost === cleanHost;
+
         if (
-          originHost !== cleanHost &&
-          !originHost.includes('localhost') &&
-          !originHost.includes('127.0.0.1') &&
+          !isLanOrLocal &&
           !originHost.endsWith('vercel.app') &&
           !isEnvAuthorized
         ) {

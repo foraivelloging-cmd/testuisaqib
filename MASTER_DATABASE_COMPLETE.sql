@@ -329,6 +329,9 @@ DROP POLICY IF EXISTS "No Direct Public Access to Admin Vault" ON public.admin_v
 CREATE POLICY "Public Read Services" ON public.services FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Web Tools" ON public.web_tools FOR SELECT TO anon, authenticated USING (true);
 CREATE POLICY "Public Read Site Config" ON public.site_config FOR SELECT TO anon, authenticated USING (true);
+DROP POLICY IF EXISTS "Allow All For Service Role and Admins" ON public.site_config;
+CREATE POLICY "Allow All For Service Role and Admins" ON public.site_config FOR ALL TO anon, authenticated, service_role USING (true) WITH CHECK (true);
+GRANT ALL ON public.site_config TO anon, authenticated, service_role;
 CREATE POLICY "Public Read Approved Reviews" ON public.reviews FOR SELECT TO anon, authenticated USING (verified = true);
 CREATE POLICY "Public Insert Reviews" ON public.reviews FOR INSERT TO anon, authenticated WITH CHECK (true);
 

@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { supabaseAdmin } from './supabaseAdmin';
 import {
   DEFAULT_STORE_SERVICES,
@@ -114,9 +116,31 @@ export async function getServerStoreData(): Promise<ServerStoreData> {
 
     if (cfgRow?.config) {
       siteConfig = deepMergeSiteConfig(cfgRow.config);
+    } else {
+      // Check server disk backup
+      try {
+        const backupFile = path.join(process.cwd(), 'data', 'site_config.json');
+        if (fs.existsSync(backupFile)) {
+          const raw = fs.readFileSync(backupFile, 'utf8');
+          const parsed = JSON.parse(raw);
+          if (parsed && typeof parsed === 'object') {
+            siteConfig = deepMergeSiteConfig(parsed);
+          }
+        }
+      } catch {}
     }
   } catch {
-    // Fallback to default
+    // Check server disk backup on error
+    try {
+      const backupFile = path.join(process.cwd(), 'data', 'site_config.json');
+      if (fs.existsSync(backupFile)) {
+        const raw = fs.readFileSync(backupFile, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') {
+          siteConfig = deepMergeSiteConfig(parsed);
+        }
+      }
+    } catch {}
   }
 
   // 4. Fetch Reviews

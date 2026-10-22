@@ -1652,7 +1652,11 @@ export default function App({
 
       if (res.ok && data.success) {
         if (showFeedbackToast) {
-          showToast('☁️ Saved to Supabase Database successfully!');
+          if (data.savedToSupabase) {
+            showToast('☁️ Saved to Supabase Database successfully!');
+          } else {
+            showToast('💾 Saved to Server Storage! (Supabase sync in background)');
+          }
         }
         return true;
       } else {
