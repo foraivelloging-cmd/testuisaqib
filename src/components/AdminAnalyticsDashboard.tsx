@@ -5,6 +5,7 @@ import { StoreService, WebToolItem, CategoryId, CATEGORY_META } from '../data/de
 import { SiteSettingsConfig, AdminSettingsScreenId } from './AdminStepByStepSettingsHub';
 import { PaymentProofRequest } from './WalletAndAdminPayments';
 import { AdminVisitorTelemetryView } from './AdminVisitorTelemetryView';
+import { AdminVisitorAnalyticsChartsStudio } from './AdminVisitorAnalyticsChartsStudio';
 import { AdminUserManagementView } from './AdminUserManagementView';
 import { AdminSubAdminManagerView } from './AdminSubAdminManagerView';
 import { AdminCouponManagerView } from './AdminCouponManagerView';
@@ -845,7 +846,7 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
             ? [{ id: 'users' as const, label: '👥 User Accounts & Wallets', badge: 'Users & Bans' }]
             : []),
           ...(isSuperadmin || adminPermissions.view_telemetry
-            ? [{ id: 'visitors' as const, label: '🕵️ Live Visitors & Devices', badge: 'Live Telemetry' }]
+            ? [{ id: 'visitors' as const, label: '📊 Visitors & Tools Analytics Charts', badge: 'Live Radar' }]
             : []),
           ...(isSuperadmin || adminPermissions.manage_site_config
             ? [{ id: 'matrix' as const, label: `⚡ Live Feature Matrix (${totalFeaturesCount})`, badge: `${activeFeaturesCount} ON` }]
@@ -922,9 +923,9 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
         />
       )}
 
-      {/* ==================== TAB 0: LIVE VISITORS & DEVICE TELEMETRY ==================== */}
+      {/* ==================== TAB 0: LIVE VISITORS, CHARTS & DEVICE TELEMETRY ==================== */}
       {activeTab === 'visitors' && (
-        <AdminVisitorTelemetryView
+        <AdminVisitorAnalyticsChartsStudio
           showToast={showToast}
           copyText={copyText}
           playPopSound={playPopSound}

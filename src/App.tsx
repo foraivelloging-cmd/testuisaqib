@@ -2050,6 +2050,20 @@ export default function App({
 
   const launchWebTool = (tool: WebToolItem) => {
     playPopSound(720);
+
+    // Non-blocking real-time click & launch telemetry
+    try {
+      fetch('/api/analytics/tool-click', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          toolId: tool.id,
+          toolTitle: tool.title,
+        }),
+        keepalive: true,
+      }).catch(() => {});
+    } catch {}
+
     if (tool.openMode === 'sim_tab' || tool.toolUrl === '#siminfo') {
       switchTab('siminfo');
       return;
