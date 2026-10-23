@@ -3,16 +3,8 @@ import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
 import { invalidateServerStoreCache } from '@/src/lib/serverDataLoader';
-
-export const DEFAULT_REVIEWS: Array<{
-  id: string;
-  name: string;
-  service: string;
-  rating: number;
-  comment: string;
-  verified: boolean;
-  created_at?: string;
-}> = [];
+import { DEFAULT_REVIEWS, ReviewItem } from '@/src/data/defaultReviews';
+import { createAdminNotification } from '@/src/lib/adminNotifications';
 
 function cleanReviewEncoding(text: string): string {
   if (!text) return '';
@@ -24,28 +16,52 @@ function cleanReviewEncoding(text: string): string {
     .replace(/â€/g, '"');
 }
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const { data, error } = await supabaseAdmin
+    const { searchParams } = new URL(req.url);
+    const fetchAll = searchParams.get('all') === 'true';
+    const auth = verifyAdminRequest(req);
+
+    let query = supabaseAdmin
       .from('reviews')
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data) {
-      return NextResponse.json({ success: true, source: 'empty', reviews: [] });
+    // If not admin and not requesting all reviews, only return approved/live reviews
+    if (!auth.authorized && !fetchAll) {
+      query = query.or('status.eq.approved,status.is.null');
     }
 
-    const sanitizedReviews = data.map((r) => ({
+    const { data, error } = await query;
+
+    if (error || !data || data.length === 0) {
+      return NextResponse.json({
+        success: true,
+        source: 'fallback',
+        reviews: DEFAULT_REVIEWS,
+      });
+    }
+
+    const sanitizedReviews: ReviewItem[] = data.map((r) => ({
       ...r,
       name: cleanReviewEncoding(r.name || ''),
       service: cleanReviewEncoding(r.service || ''),
       comment: cleanReviewEncoding(r.comment || ''),
+      status: (r.status as 'pending' | 'approved' | 'rejected') || 'approved',
+      verified: r.verified ?? true,
     }));
 
-    return NextResponse.json({ success: true, source: 'supabase', reviews: sanitizedReviews });
+    return NextResponse.json({
+      success: true,
+      source: 'supabase',
+      reviews: sanitizedReviews,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    return NextResponse.json({ success: true, source: 'fallback', reviews: [], warning: message });
+    return NextResponse.json(
+      { success: true, source: 'fallback', reviews: DEFAULT_REVIEWS, warning: message },
+      { status: 200 }
+    );
   }
 }
 
@@ -64,19 +80,27 @@ export async function POST(req: Request) {
       );
     }
 
-    // Default to verified: true unless explicitly set to false
     const auth = verifyAdminRequest(req);
-    const verified = body.verified !== undefined ? Boolean(body.verified) : true;
+    // Public reviews strictly default to 'pending' and verified: false until approved by Admin
+    const status: 'pending' | 'approved' | 'rejected' = auth.authorized
+      ? body.status || 'approved'
+      : 'pending';
+    const verified = auth.authorized
+      ? Boolean(body.verified ?? true)
+      : false;
+
+    const reviewId = `rev-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`;
 
     const { data, error } = await supabaseAdmin
       .from('reviews')
       .insert({
-        id: `rev-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+        id: reviewId,
         name,
         service,
         rating,
         comment,
         verified,
+        status,
         created_at: new Date().toISOString(),
       })
       .select()
@@ -86,15 +110,33 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const sanitized = {
+    const sanitized: ReviewItem = {
       ...data,
       name: cleanReviewEncoding(data.name || ''),
       service: cleanReviewEncoding(data.service || ''),
       comment: cleanReviewEncoding(data.comment || ''),
+      status,
+      verified,
     };
 
+    // Trigger Admin Notification for review submission
+    try {
+      await createAdminNotification({
+        type: 'new_review',
+        title: 'New Customer Review Submitted',
+        message: `${name} rated 5★ on "${service}" (${status.toUpperCase()})`,
+        reference_id: reviewId,
+        data: { id: reviewId, name, service, rating, status },
+      });
+    } catch {}
+
     invalidateServerStoreCache();
-    return NextResponse.json({ success: true, review: sanitized });
+
+    return NextResponse.json({
+      success: true,
+      review: sanitized,
+      pendingApproval: status === 'pending',
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Internal Server Error';
     return NextResponse.json({ success: false, error: message }, { status: 500 });
@@ -120,6 +162,15 @@ export async function PATCH(req: Request) {
     }
 
     const updates: Record<string, any> = {};
+    if (body.status !== undefined) {
+      const cleanStatus = sanitizeString(body.status).toLowerCase();
+      if (['pending', 'approved', 'rejected'].includes(cleanStatus)) {
+        updates.status = cleanStatus;
+        if (cleanStatus === 'approved' && body.verified === undefined) {
+          updates.verified = true;
+        }
+      }
+    }
     if (body.verified !== undefined) updates.verified = Boolean(body.verified);
     if (body.name) updates.name = sanitizeString(body.name).slice(0, 80);
     if (body.service) updates.service = sanitizeString(body.service).slice(0, 100);
@@ -137,11 +188,13 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 
-    const sanitized = {
+    const sanitized: ReviewItem = {
       ...data,
       name: cleanReviewEncoding(data.name || ''),
       service: cleanReviewEncoding(data.service || ''),
       comment: cleanReviewEncoding(data.comment || ''),
+      status: data.status || 'approved',
+      verified: data.verified ?? true,
     };
 
     invalidateServerStoreCache();

@@ -9,13 +9,13 @@ import {
   WebToolItem
 } from '../data/defaultCatalog';
 import { DEFAULT_SITE_CONFIG, SiteSettingsConfig, deepMergeSiteConfig } from '../types/siteConfig';
-import { DEFAULT_REVIEWS } from '@/app/api/reviews/route';
+import { DEFAULT_REVIEWS, ReviewItem } from '../data/defaultReviews';
 
 export interface ServerStoreData {
   services: StoreService[];
   webTools: WebToolItem[];
   siteConfig: SiteSettingsConfig;
-  reviews: typeof DEFAULT_REVIEWS;
+  reviews: ReviewItem[];
 }
 
 // In-Memory Stale-While-Revalidate Server Cache (60 seconds TTL)
@@ -105,6 +105,7 @@ export const getServerStoreData = cache(async (): Promise<ServerStoreData> => {
     supabaseAdmin
       .from('reviews')
       .select('*')
+      .or('status.eq.approved,status.is.null')
       .order('created_at', { ascending: false }),
   ]);
 

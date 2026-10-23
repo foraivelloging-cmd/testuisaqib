@@ -5,6 +5,7 @@ import {
   PaymentProofRequest
 } from '@/src/types/paymentProof';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
+import { createAdminNotification } from '@/src/lib/adminNotifications';
 
 export async function GET(req: Request) {
   try {
@@ -131,6 +132,16 @@ export async function POST(req: Request) {
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
+
+    try {
+      await createAdminNotification({
+        type: 'payment_proof',
+        title: 'New Payment Deposit Proof',
+        message: `${proof.method} deposit of Rs. ${cleanAmount.toLocaleString()} by ${proof.senderAccountName || 'Client'}`,
+        reference_id: proof.id,
+        data: { id: proof.id, amount: cleanAmount, method: proof.method, userId },
+      });
+    } catch {}
 
     return NextResponse.json({ success: true, proof: data });
   } catch (err: unknown) {

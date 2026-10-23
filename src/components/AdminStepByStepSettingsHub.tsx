@@ -76,6 +76,9 @@ import { AdminSeoStudio } from './AdminSeoStudio';
 import { AdminSecurityCredentialsStudio } from './AdminSecurityCredentialsStudio';
 import { AdminAnalyticsDashboard } from './AdminAnalyticsDashboard';
 import { AdminPromoPopupStudio } from './AdminPromoPopupStudio';
+import { AdminNotificationBell } from './AdminNotificationBell';
+import { AdminReviewModerationStudio } from './AdminReviewModerationStudio';
+import { AdminSalesProfitStudio } from './AdminSalesProfitStudio';
 
 export {
   type SiteBannerConfig,
@@ -248,7 +251,9 @@ export type AdminSettingsScreenId =
   | 'ui'
   | 'seo'
   | 'security'
-  | 'promo_popup';
+  | 'promo_popup'
+  | 'reviews'
+  | 'sales_profit';
 
 interface PlushOption {
   value: string;
@@ -1594,6 +1599,14 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 <FaCopy className="w-3 h-3 text-sky-300" />
                 <span>Backup JSON</span>
               </button>
+              {/* Real-Time Notification Bell & Counter */}
+              <AdminNotificationBell
+                onNavigate={(screenId) => {
+                  playPopSound(720);
+                  setActiveScreen(screenId as AdminSettingsScreenId);
+                }}
+              />
+
               <button
                 type="button"
                 onClick={async () => {
@@ -1703,6 +1716,16 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
                 id: 'security' as const,
                 label: '🔐 Security & Sub-Admins',
                 badge: 'RBAC Team'
+              },
+              {
+                id: 'reviews' as const,
+                label: '⭐ Reviews Moderation',
+                badge: 'Workflow'
+              },
+              {
+                id: 'sales_profit' as const,
+                label: '💰 Sales & P&L Engine',
+                badge: 'Net Profit'
               }
             ].map((item) => {
               const isAct = activeScreen === item.id;
@@ -10072,6 +10095,23 @@ export const AdminStepByStepSettingsHub: React.FC<AdminStepByStepSettingsHubProp
           onReturnHome={() => openSettingsScreen('home')}
           onNavigateToScreen={(scr) => openSettingsScreen(scr)}
           initialTab={securityStep === 2 ? 'subadmins' : 'credentials'}
+        />
+      )}
+
+      {/* ==================== SCREEN 12: CUSTOMER REVIEWS MODERATION STUDIO ==================== */}
+      {activeScreen === 'reviews' && (
+        <AdminReviewModerationStudio
+          showToast={showToast}
+          playPopSound={playPopSound}
+        />
+      )}
+
+      {/* ==================== SCREEN 13: SALES & NET PROFIT ENGINE (P&L DASHBOARD) ==================== */}
+      {activeScreen === 'sales_profit' && (
+        <AdminSalesProfitStudio
+          showToast={showToast}
+          playPopSound={playPopSound}
+          copyText={copyText}
         />
       )}
     </div>

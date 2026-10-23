@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
+import { createAdminNotification } from '@/src/lib/adminNotifications';
 
 export async function GET(req: Request) {
   try {
@@ -99,6 +100,16 @@ export async function POST(req: Request) {
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
+
+    try {
+      await createAdminNotification({
+        type: 'new_order',
+        title: 'New Service Order Received',
+        message: `${orderId}: ${serviceTitle} (${packageTier}) — Rs. ${price}`,
+        reference_id: orderId,
+        data: { orderId, serviceId, serviceTitle, packageTier, price, userId },
+      });
+    } catch {}
 
     return NextResponse.json({ success: true, order: data });
   } catch (err: unknown) {

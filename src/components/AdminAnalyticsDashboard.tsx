@@ -8,6 +8,7 @@ import { AdminVisitorTelemetryView } from './AdminVisitorTelemetryView';
 import { AdminUserManagementView } from './AdminUserManagementView';
 import { AdminSubAdminManagerView } from './AdminSubAdminManagerView';
 import { AdminCouponManagerView } from './AdminCouponManagerView';
+import { AdminSalesProfitStudio } from './AdminSalesProfitStudio';
 import { AdminPermissions } from '@/src/lib/serverSecurity';
 import {
   FaChartPie,
@@ -86,7 +87,7 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
   copyText,
   exitSecretAdminPortal,
 }) => {
-  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users' | 'admins' | 'coupons'>('users');
+  const [activeTab, setActiveTab] = useState<'matrix' | 'products' | 'tools' | 'financials' | 'tech' | 'visitors' | 'users' | 'admins' | 'coupons' | 'sales_profit'>('users');
   const [featureFilter, setFeatureFilter] = useState<FeatureCategory>('all');
   const [featureSearch, setFeatureSearch] = useState<string>('');
 
@@ -858,6 +859,9 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
           ...(isSuperadmin || adminPermissions.manage_orders
             ? [{ id: 'financials' as const, label: `💳 Financials & Proofs (${totalProofs})`, badge: `${pendingProofs} New` }]
             : []),
+          ...(isSuperadmin || adminPermissions.manage_orders
+            ? [{ id: 'sales_profit' as const, label: '💰 Sales & P&L Engine', badge: 'Net Profit' }]
+            : []),
           ...(isSuperadmin || adminPermissions.manage_orders || adminPermissions.manage_site_config
             ? [{ id: 'coupons' as const, label: '🏷️ Coupons & Discounts', badge: 'Active Deals' }]
             : []),
@@ -1333,6 +1337,15 @@ export const AdminAnalyticsDashboard: React.FC<AdminAnalyticsDashboardProps> = (
             </div>
           </div>
         </div>
+      )}
+
+      {/* ==================== TAB: SALES, REVENUE & NET PROFIT ENGINE (P&L DASHBOARD) ==================== */}
+      {activeTab === 'sales_profit' && (
+        <AdminSalesProfitStudio
+          showToast={showToast}
+          playPopSound={playPopSound}
+          copyText={copyText}
+        />
       )}
 
       {/* ==================== TAB 5: TECH STACK & SYSTEM SPECS ==================== */}
