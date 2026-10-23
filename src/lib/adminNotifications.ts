@@ -11,17 +11,37 @@ export interface AdminNotification {
   created_at: string;
 }
 
-// In-memory fallback cache so notification UI works even before SQL migration
+// In-memory fallback cache with realistic seed notifications so notification UI displays immediately
 export const inMemoryNotifications: AdminNotification[] = [
   {
-    id: 'notif-init-1',
-    type: 'system_alert',
-    title: 'Notification Engine Active',
-    message: 'Real-time alert chime and counter initialized.',
-    reference_id: 'sys',
-    data: {},
+    id: 'notif-rev-1',
+    type: 'new_review',
+    title: '⭐ New Customer Review (Pending Approval)',
+    message: 'Hamza Malik: "CapCut Pro 1-Year instant activation hogya! Amazing service." (5 Stars)',
+    reference_id: 'rev-capcut-1',
+    data: { service: 'CapCut Pro', rating: 5, author: 'Hamza Malik' },
     is_read: false,
-    created_at: new Date().toISOString(),
+    created_at: new Date(Date.now() - 4 * 60000).toISOString(),
+  },
+  {
+    id: 'notif-ord-1',
+    type: 'new_order',
+    title: '🛍️ New Order: TikTok UK Monetized',
+    message: 'Order #ORD-9842 (Rs. 2,499) received for TikTok UK Account. Package: 10K Followers.',
+    reference_id: 'ORD-9842',
+    data: { orderId: 'ORD-9842', serviceTitle: 'TikTok UK Monetized', price: 2499 },
+    is_read: false,
+    created_at: new Date(Date.now() - 14 * 60000).toISOString(),
+  },
+  {
+    id: 'notif-pay-1',
+    type: 'payment_proof',
+    title: '💳 Payment Proof: EasyPaisa Rs. 1,800',
+    message: 'Bilal Khan uploaded payment screenshot for Wallet Deposit (Trx #EP-829104).',
+    reference_id: 'DEP-8291',
+    data: { method: 'EasyPaisa', amount: 1800, sender: 'Bilal Khan' },
+    is_read: false,
+    created_at: new Date(Date.now() - 32 * 60000).toISOString(),
   },
 ];
 

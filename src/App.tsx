@@ -69,6 +69,7 @@ const AdminStepByStepSettingsHub = React.lazy(() =>
     default: m.AdminStepByStepSettingsHub
   }))
 );
+import { AdminNotificationBell } from './components/AdminNotificationBell';
 import {
   BRAND_ICON_OPTIONS as ICON_OPTIONS,
   renderServiceIcon,
@@ -2669,6 +2670,15 @@ export default function App({
                 <span>{shoppingCart.length}</span>
               </button>
             )}
+
+            {/* REAL-TIME NOTIFICATION BELL & CHIME (LIVE STORE & ADMIN) */}
+            <AdminNotificationBell
+              adminToken={adminToken}
+              onNavigate={(screenId) => {
+                playPopSound(720);
+                setActiveTab('saqibadmb');
+              }}
+            />
 
             {/* PROMINENT LANGUAGE SWITCHER PILL (URDU 🇵🇰 / ENGLISH 🇬🇧) */}
             <button

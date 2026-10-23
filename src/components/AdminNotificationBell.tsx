@@ -205,7 +205,7 @@ export function AdminNotificationBell({
           }
         }}
         title="Admin Notifications Center"
-        className="relative px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 text-xs font-extrabold cursor-pointer transition flex items-center justify-center gap-1.5 shadow-sm"
+        className="relative px-2.5 sm:px-3 py-1.5 rounded-xl sm:rounded-full bg-slate-900/80 hover:bg-slate-900 text-white border border-white/20 text-[10px] sm:text-xs font-extrabold cursor-pointer transition-all hover:scale-105 flex items-center justify-center gap-1.5 shadow-sm"
       >
         <i className={`fa-solid fa-bell text-sm ${unreadCount > 0 ? 'text-amber-300 animate-wiggle' : 'text-slate-300'}`}></i>
         <span className="hidden sm:inline">Alerts</span>
