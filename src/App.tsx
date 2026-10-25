@@ -621,7 +621,7 @@ export default function App({
   const [authName, setAuthName] = useState<string>('');
   const [authIdentifier, setAuthIdentifier] = useState<string>('');
   const [authPassword, setAuthPassword] = useState<string>('');
-  const [authRole, setAuthRole] = useState<string>('SMM & AI Reseller Panel (20% Off)');
+  const [authRole] = useState<string>('VIP Member');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [vipUser, setVipUser] = useState<{ name: string; identifier: string } | null>(null);
   const [vipDashSubTab, setVipDashSubTab] = useState<'overview' | 'admin'>('admin');
@@ -4787,23 +4787,6 @@ export default function App({
                               </button>
                             </div>
                           </div>
-
-                          {authMode === 'signup' && (
-                            <div className="auth-field-stagger-3">
-                              <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                                Select Membership Tier
-                              </label>
-                              <select
-                                value={authRole}
-                                onChange={(e) => setAuthRole(e.target.value)}
-                                className="w-full px-3.5 py-2.5 rounded-2xl bg-white/95 border-2 border-pink-300 font-bold text-xs text-slate-900 focus:outline-none focus:border-pink-500 transition"
-                              >
-                                <option value="SMM & AI Reseller Panel (20% Off)">🚀 SMM &amp; AI Reseller Panel (20% Off)</option>
-                                <option value="Franchise SIM & NADRA VIP Agent">🪪 Franchise SIM &amp; NADRA VIP Agent</option>
-                                <option value="Regular Customer (Free)">✨ Regular Customer (Free)</option>
-                              </select>
-                            </div>
-                          )}
 
                           <div className="pt-1 auth-field-stagger-3">
                             <button
