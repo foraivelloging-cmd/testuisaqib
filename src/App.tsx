@@ -621,7 +621,6 @@ export default function App({
   const [authName, setAuthName] = useState<string>('');
   const [authIdentifier, setAuthIdentifier] = useState<string>('');
   const [authPassword, setAuthPassword] = useState<string>('');
-  const [authRole] = useState<string>('VIP Member');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [vipUser, setVipUser] = useState<{ name: string; identifier: string } | null>(null);
   const [vipDashSubTab, setVipDashSubTab] = useState<'overview' | 'admin'>('admin');
@@ -1626,7 +1625,7 @@ export default function App({
           identifier: id,
           password: authPassword,
           fullName: authName,
-          role: authRole
+          role: 'Regular Customer (Free)'
         })
       });
       const data = await res.json();
@@ -4742,22 +4741,9 @@ export default function App({
                           </div>
 
                           <div className="auth-field-stagger-2">
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="text-[11px] font-extrabold text-slate-800">Password / Security PIN *</label>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  playPopSound(600);
-                                  const id = authIdentifier.trim() || 'My VIP Account';
-                                  openExternalWhatsApp(
-                                    `🔑 *VIP Password Reset — ${fullBrandTitle}*\nHello ${brandOwnerName}, please reset the VIP Portal PIN/Password for: *${id}*`
-                                  );
-                                }}
-                                className="text-[11px] font-extrabold text-pink-600 hover:underline cursor-pointer"
-                              >
-                                Forgot Password?
-                              </button>
-                            </div>
+                            <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                              Password / Security PIN *
+                            </label>
                             <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
                               <i className="fa-solid fa-lock auth-input-icon text-pink-500 text-sm mr-2.5"></i>
                               <input
