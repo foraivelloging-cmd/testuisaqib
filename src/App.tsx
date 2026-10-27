@@ -29,6 +29,7 @@ import {
   PaymentProofRequest,
   DEFAULT_PAYMENT_PROOFS
 } from './components/WalletAndAdminPayments';
+import { supabase } from './lib/supabase';
 
 const ShowcaseSections = React.lazy(() =>
   import('./components/ShowcaseSections').then((m) => ({ default: m.ShowcaseSections }))
@@ -622,6 +623,7 @@ export default function App({
   const [authIdentifier, setAuthIdentifier] = useState<string>('');
   const [authPassword, setAuthPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isGoogleAuthLoading, setIsGoogleAuthLoading] = useState<boolean>(false);
   const [vipUser, setVipUser] = useState<{ name: string; identifier: string } | null>(null);
   const [vipDashSubTab, setVipDashSubTab] = useState<'overview' | 'admin'>('admin');
   const [loginPortalSection, setLoginPortalSection] = useState<'auth' | 'wallet'>('auth');
@@ -652,6 +654,77 @@ export default function App({
       // Ignore quota errors
     }
   }, [paymentProofs]);
+
+  // Google OAuth Auth State Listener & Auto-sync with Profiles
+  useEffect(() => {
+    let isMounted = true;
+
+    const syncGoogleProfile = async (sessionUser: any) => {
+      if (!sessionUser?.email) return;
+      const email = sessionUser.email;
+      const metaName =
+        sessionUser.user_metadata?.full_name ||
+        sessionUser.user_metadata?.name ||
+        sessionUser.user_metadata?.user_name ||
+        email.split('@')[0];
+
+      try {
+        const res = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'google_sync',
+            identifier: email,
+            fullName: metaName,
+            role: 'Regular Customer (Free)',
+          }),
+        });
+        const data = await res.json();
+        if (data.success && data.profile && isMounted) {
+          setVipUser({
+            name: data.profile.name || metaName,
+            identifier: data.profile.id || email,
+          });
+          if (typeof data.profile.balance === 'number') {
+            setWalletBalance(data.profile.balance);
+          }
+          setVipDashSubTab('overview');
+          showToast(`Welcome ${data.profile.name || metaName}! Google Account linked.`);
+        }
+      } catch {
+        if (isMounted) {
+          setVipUser({ name: metaName, identifier: email });
+          showToast(`Welcome, ${metaName}! Signed in with Google.`);
+        }
+      }
+
+      // Clean up URL hash if returned from OAuth redirect
+      if (typeof window !== 'undefined' && window.location.hash.includes('access_token')) {
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    // Check existing Supabase session on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user && isMounted) {
+        syncGoogleProfile(session.user);
+      }
+    }).catch(() => {});
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user && isMounted) {
+          syncGoogleProfile(session.user);
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
+  }, []);
 
   // Real-time Cloud Synchronization with Supabase
   useEffect(() => {
@@ -1662,8 +1735,33 @@ export default function App({
     showToast('Logged into VIP Member Wallet!');
   };
 
-  const logoutVipUser = () => {
+  const handleGoogleSignIn = async () => {
+    try {
+      setIsGoogleAuthLoading(true);
+      playPopSound(720);
+      const redirectUrl = typeof window !== 'undefined' ? `${window.location.origin}` : undefined;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+        },
+      });
+      if (error) {
+        showToast(`Google Login: ${error.message}`);
+        setIsGoogleAuthLoading(false);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to launch Google Sign In';
+      showToast(msg);
+      setIsGoogleAuthLoading(false);
+    }
+  };
+
+  const logoutVipUser = async () => {
     playPopSound(480);
+    try {
+      await supabase.auth.signOut();
+    } catch {}
     setVipUser(null);
     showToast('Logged out of VIP Portal');
   };
@@ -4677,6 +4775,36 @@ export default function App({
                                 ? `Join ${fullBrandTitle} for 20% reseller SMM rates, AI tools & priority service delivery.`
                                 : 'Sign in right here at the top to access your VIP Wallet & instant AI renewals.'}
                             </p>
+                          </div>
+                        </div>
+
+                        {/* 1-Click Continue with Google */}
+                        <div className="pt-1">
+                          <button
+                            type="button"
+                            onClick={handleGoogleSignIn}
+                            disabled={isGoogleAuthLoading}
+                            className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200/90 hover:border-pink-300 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.99] disabled:opacity-60"
+                          >
+                            {isGoogleAuthLoading ? (
+                              <i className="fa-solid fa-spinner fa-spin text-pink-600 text-base"></i>
+                            ) : (
+                              <svg className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" viewBox="0 0 24 24">
+                                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z" />
+                                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.26 21.36 7.33 24 12 24z" />
+                                <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.25C.45 8.15 0 9.99 0 12s.45 3.85 1.25 5.43l4.03-3.14z" />
+                                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.57l4.03 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
+                              </svg>
+                            )}
+                            <span>Continue with Google</span>
+                          </button>
+
+                          <div className="relative flex items-center justify-center my-3.5">
+                            <div className="border-t border-slate-200/90 w-full"></div>
+                            <span className="bg-white/95 px-3 text-[10px] font-extrabold text-slate-400 tracking-wider uppercase">
+                              or with {authMode === 'signup' ? 'registration' : 'password / PIN'}
+                            </span>
+                            <div className="border-t border-slate-200/90 w-full"></div>
                           </div>
                         </div>
 

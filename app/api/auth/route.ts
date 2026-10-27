@@ -16,6 +16,90 @@ export async function POST(req: Request) {
       );
     }
 
+    if (action === 'google_sync') {
+      const email = cleanId.toLowerCase();
+      // Check if profile exists
+      let { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('*')
+        .eq('id', email)
+        .maybeSingle();
+
+      const nowIso = new Date().toISOString();
+
+      if (!profile) {
+        let insertResult = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: email,
+            full_name: fullName?.trim() || email.split('@')[0],
+            phone: null,
+            email: email,
+            role: role || 'Regular Customer (Free)',
+            balance: 0,
+            status: 'active',
+            ban_reason: '',
+            last_login_at: nowIso,
+            created_at: nowIso,
+            updated_at: nowIso,
+          })
+          .select()
+          .maybeSingle();
+
+        if (
+          insertResult.error &&
+          (insertResult.error.message?.includes('column') || insertResult.error.message?.includes('schema cache'))
+        ) {
+          insertResult = await supabaseAdmin
+            .from('profiles')
+            .insert({
+              id: email,
+              full_name: fullName?.trim() || email.split('@')[0],
+              email: email,
+              role: role || 'Regular Customer (Free)',
+              balance: 0,
+              created_at: nowIso,
+              updated_at: nowIso,
+            })
+            .select()
+            .maybeSingle();
+        }
+
+        profile = insertResult?.data;
+      } else {
+        // Update last login
+        await supabaseAdmin
+          .from('profiles')
+          .update({ last_login_at: nowIso })
+          .eq('id', email);
+      }
+
+      if (profile && profile.status === 'banned') {
+        const reason = profile.ban_reason || 'Violation of website terms or fraudulent behavior.';
+        return NextResponse.json(
+          {
+            success: false,
+            banned: true,
+            error: `Account Suspended: Your account has been banned by the Administrator (${reason}). Please contact support on WhatsApp.`,
+          },
+          { status: 403 }
+        );
+      }
+
+      return NextResponse.json({
+        success: true,
+        message: 'Google profile synced successfully',
+        profile: {
+          id: profile?.id || email,
+          name: profile?.full_name || fullName || email.split('@')[0],
+          role: profile?.role || 'member',
+          balance: Number(profile?.balance || 0),
+          status: profile?.status || 'active',
+          lastLoginAt: nowIso,
+        },
+      });
+    }
+
     if (action === 'signup') {
       if (!cleanPass) {
         return NextResponse.json(

@@ -33,7 +33,7 @@ export function getSupabaseCredentials() {
 
       const existingCandidates: { name: string; fullPath: string; mtime: number }[] = [];
       for (const fileName of candidateFiles) {
-        const fullPath = path.join(cwd, fileName);
+        const fullPath = path.join(/*turbopackIgnore: true*/ cwd, fileName);
         if (fs.existsSync(fullPath)) {
           try {
             const stats = fs.statSync(fullPath);
@@ -112,6 +112,7 @@ export function getSupabase(): SupabaseClient {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: true,
       },
     });
     cachedKey = cacheKey;
