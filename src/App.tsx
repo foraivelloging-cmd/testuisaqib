@@ -624,6 +624,29 @@ export default function App({
   const [authPassword, setAuthPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isGoogleAuthLoading, setIsGoogleAuthLoading] = useState<boolean>(false);
+
+  // VIP Email OTP Security & Password Reset States
+  const [authView, setAuthView] = useState<'form' | 'otp_verify_signup' | 'forgot_request' | 'forgot_verify'>('form');
+  const [otpEmail, setOtpEmail] = useState<string>('');
+  const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
+  const [otpVerificationToken, setOtpVerificationToken] = useState<string>('');
+  const [otpExpiresAt, setOtpExpiresAt] = useState<number>(0);
+  const [otpCountdown, setOtpCountdown] = useState<number>(60);
+  const [isOtpSending, setIsOtpSending] = useState<boolean>(false);
+  const [isOtpVerifying, setIsOtpVerifying] = useState<boolean>(false);
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
+  const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+
+  // OTP Resend Countdown Timer
+  useEffect(() => {
+    if ((authView === 'otp_verify_signup' || authView === 'forgot_verify') && otpCountdown > 0) {
+      const timer = setInterval(() => {
+        setOtpCountdown((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [authView, otpCountdown]);
   const [vipUser, setVipUser] = useState<{
     name: string;
     identifier: string;
@@ -1677,6 +1700,218 @@ export default function App({
     openExternalWhatsApp(waText);
   };
 
+  // OTP Input & Navigation Handlers
+  const handleOtpDigitChange = (index: number, value: string) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    const newDigits = [...otpDigits];
+    newDigits[index] = digit;
+    setOtpDigits(newDigits);
+
+    if (digit && index < 5) {
+      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      nextInput?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        const prevInput = document.getElementById(`otp-input-${index - 1}`);
+        prevInput?.focus();
+      }
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < 6; i++) {
+      newDigits[i] = pasted[i] || '';
+    }
+    setOtpDigits(newDigits);
+    const targetIdx = Math.min(pasted.length, 5);
+    const el = document.getElementById(`otp-input-${targetIdx}`);
+    el?.focus();
+  };
+
+  // Resend OTP Code for either Signup or Password Reset
+  const handleResendOtp = async () => {
+    if (otpCountdown > 0 || isOtpSending) return;
+    setIsOtpSending(true);
+    playPopSound(720);
+    try {
+      const purpose = authView === 'forgot_verify' ? 'forgot_password' : 'signup';
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'resend',
+          email: otpEmail,
+          purpose,
+          fullName: authName,
+        }),
+      });
+      const data = await res.json();
+      setIsOtpSending(false);
+      if (data.success) {
+        setOtpVerificationToken(data.verificationToken);
+        setOtpExpiresAt(data.expiresAt);
+        setOtpCountdown(60);
+        playPopSound(860);
+        showToast(`📨 New 6-digit OTP code sent to ${otpEmail}!`);
+      } else {
+        showToast(data.error || 'Failed to resend code.');
+      }
+    } catch {
+      setIsOtpSending(false);
+      showToast('Network error while resending OTP.');
+    }
+  };
+
+  // Verify Signup OTP and finalize account registration
+  const handleVerifySignupOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otpDigits.join('').trim();
+    if (code.length !== 6) {
+      showToast('Please enter all 6 digits of the OTP code.');
+      return;
+    }
+    setIsOtpVerifying(true);
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify',
+          email: otpEmail,
+          otp: code,
+          verificationToken: otpVerificationToken,
+          purpose: 'signup',
+          password: authPassword,
+          fullName: authName,
+        }),
+      });
+      const data = await res.json();
+      setIsOtpVerifying(false);
+      if (!data.success) {
+        playPopSound(420);
+        showToast(data.error || 'Invalid OTP code.');
+        return;
+      }
+      setVipUser({
+        name: data.profile.name || otpEmail.split('@')[0],
+        identifier: data.profile.id,
+      });
+      if (typeof data.profile.balance === 'number') {
+        setWalletBalance(data.profile.balance);
+      }
+      setAuthView('form');
+      setVipDashSubTab('overview');
+      playPopSound(920);
+      showToast(`🎉 VIP Account Verified & Created! Welcome ${data.profile.name}!`);
+    } catch {
+      setIsOtpVerifying(false);
+      showToast('Error verifying OTP code.');
+    }
+  };
+
+  // Request Password Reset OTP
+  const handleRequestForgotOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const email = otpEmail.trim();
+    if (!email || !email.includes('@')) {
+      showToast('Please enter a valid registered email address.');
+      return;
+    }
+    setIsOtpSending(true);
+    playPopSound(720);
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send',
+          email: email,
+          purpose: 'forgot_password',
+        }),
+      });
+      const data = await res.json();
+      setIsOtpSending(false);
+      if (!data.success) {
+        showToast(data.error || 'Failed to send reset code.');
+        return;
+      }
+      setOtpVerificationToken(data.verificationToken);
+      setOtpExpiresAt(data.expiresAt);
+      setOtpCountdown(60);
+      setOtpDigits(['', '', '', '', '', '']);
+      setNewPassword('');
+      setConfirmNewPassword('');
+      setAuthView('forgot_verify');
+      playPopSound(860);
+      showToast(`✨ Password reset OTP sent to ${email}`);
+    } catch {
+      setIsOtpSending(false);
+      showToast('Network error while requesting reset code.');
+    }
+  };
+
+  // Verify Forgot Password OTP and update password
+  const handleVerifyForgotOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otpDigits.join('').trim();
+    if (code.length !== 6) {
+      showToast('Please enter all 6 digits of the OTP code.');
+      return;
+    }
+    if (!newPassword || newPassword.length < 6) {
+      showToast('New password must be at least 6 characters long.');
+      return;
+    }
+    if (newPassword !== confirmNewPassword) {
+      showToast('Passwords do not match. Please re-enter.');
+      return;
+    }
+    setIsOtpVerifying(true);
+    try {
+      const res = await fetch('/api/auth/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'verify',
+          email: otpEmail,
+          otp: code,
+          verificationToken: otpVerificationToken,
+          purpose: 'forgot_password',
+          password: newPassword,
+        }),
+      });
+      const data = await res.json();
+      setIsOtpVerifying(false);
+      if (!data.success) {
+        playPopSound(420);
+        showToast(data.error || 'Failed to reset password.');
+        return;
+      }
+      setVipUser({
+        name: data.profile.name || otpEmail.split('@')[0],
+        identifier: data.profile.id,
+      });
+      if (typeof data.profile.balance === 'number') {
+        setWalletBalance(data.profile.balance);
+      }
+      setAuthView('form');
+      setVipDashSubTab('overview');
+      playPopSound(920);
+      showToast('🎉 Password reset successfully! Welcome back to VIP Portal.');
+    } catch {
+      setIsOtpVerifying(false);
+      showToast('Error resetting password.');
+    }
+  };
+
   // Auth Handlers (Real Supabase Auth & Cloud Profiles)
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1710,6 +1945,52 @@ export default function App({
         return;
       }
     }
+
+    // Intercept Signup to require Email OTP Verification
+    if (authMode === 'signup') {
+      if (!id || !id.includes('@')) {
+        showToast('Please enter a valid email address to receive your 6-digit VIP OTP code.');
+        return;
+      }
+      if (!authPassword || authPassword.length < 6) {
+        showToast('Password must be at least 6 characters long.');
+        return;
+      }
+      setIsOtpSending(true);
+      playPopSound(720);
+      try {
+        const otpRes = await fetch('/api/auth/otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'send',
+            email: id,
+            purpose: 'signup',
+            fullName: authName,
+          }),
+        });
+        const otpData = await otpRes.json();
+        setIsOtpSending(false);
+        if (!otpData.success) {
+          showToast(otpData.error || 'Failed to send verification code');
+          return;
+        }
+        setOtpEmail(id);
+        setOtpVerificationToken(otpData.verificationToken);
+        setOtpExpiresAt(otpData.expiresAt);
+        setOtpCountdown(60);
+        setOtpDigits(['', '', '', '', '', '']);
+        setAuthView('otp_verify_signup');
+        playPopSound(860);
+        showToast(`✨ VIP Verification code sent to ${id}`);
+        return;
+      } catch {
+        setIsOtpSending(false);
+        showToast('Network error while sending OTP code.');
+        return;
+      }
+    }
+
     playPopSound(860);
 
     try {
@@ -4759,107 +5040,384 @@ export default function App({
                           </div>
                         </div>
 
-                        {/* Animated Mode Switcher: Sign In vs Create VIP Account */}
-                        <div className="flex items-center justify-between gap-2 bg-white/80 p-1.5 rounded-2xl border border-white shadow-inner">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              playPopSound(640);
-                              setAuthMode('signin');
-                            }}
-                            className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
-                              authMode === 'signin'
-                                ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
-                                : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
-                            }`}
-                          >
-                            <i className="fa-solid fa-right-to-bracket"></i>
-                            <span>Sign In to Account</span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              playPopSound(640);
-                              setAuthMode('signup');
-                            }}
-                            className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
-                              authMode === 'signup'
-                                ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
-                                : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
-                            }`}
-                          >
-                            <i className="fa-solid fa-user-plus"></i>
-                            <span>Create VIP Account</span>
-                          </button>
-                        </div>
+                        {/* ========================================================================= */}
+                        {/* VIEW 1: STANDARD SIGN IN & SIGN UP FORM                                   */}
+                        {/* ========================================================================= */}
+                        {authView === 'form' && (
+                          <div className="space-y-4 auth-portal-enter">
+                            {/* Animated Mode Switcher: Sign In vs Create VIP Account */}
+                            <div className="flex items-center justify-between gap-2 bg-white/80 p-1.5 rounded-2xl border border-white shadow-inner">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(640);
+                                  setAuthMode('signin');
+                                  setAuthView('form');
+                                }}
+                                className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
+                                  authMode === 'signin'
+                                    ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
+                                    : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                                }`}
+                              >
+                                <i className="fa-solid fa-right-to-bracket"></i>
+                                <span>Sign In to Account</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(640);
+                                  setAuthMode('signup');
+                                  setAuthView('form');
+                                }}
+                                className={`flex-1 py-2.5 rounded-xl text-xs transition-all duration-200 cursor-pointer flex items-center justify-center gap-1.5 ${
+                                  authMode === 'signup'
+                                    ? 'font-extrabold bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 text-white shadow-md scale-[1.01]'
+                                    : 'font-bold text-slate-700 hover:text-slate-900 hover:bg-white/60'
+                                }`}
+                              >
+                                <i className="fa-solid fa-user-plus"></i>
+                                <span>Create VIP Account</span>
+                              </button>
+                            </div>
 
-                        {/* Dynamic Header */}
-                        <div className="flex items-center gap-3">
-                          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md border-2 border-white flex-shrink-0">
-                            <i className={`fa-solid ${authMode === 'signup' ? 'fa-rocket' : 'fa-crown text-amber-200'}`}></i>
-                          </div>
-                          <div>
-                            <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
-                              {authMode === 'signup' ? 'Create Your VIP Account 🚀' : 'Welcome Back, Creator! 👋'}
-                            </h3>
-                            <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
-                              {authMode === 'signup'
-                                ? `Join ${fullBrandTitle} for 20% reseller SMM rates, AI tools & priority service delivery.`
-                                : 'Sign in right here at the top to access your VIP Wallet & instant AI renewals.'}
-                            </p>
-                          </div>
-                        </div>
+                            {/* Dynamic Header */}
+                            <div className="flex items-center gap-3">
+                              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-md border-2 border-white flex-shrink-0">
+                                <i className={`fa-solid ${authMode === 'signup' ? 'fa-rocket' : 'fa-crown text-amber-200'}`}></i>
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
+                                  {authMode === 'signup' ? 'Create Your VIP Account 🚀' : 'Welcome Back, Creator! 👋'}
+                                </h3>
+                                <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
+                                  {authMode === 'signup'
+                                    ? `Join ${fullBrandTitle} with instant Email OTP verification for 20% reseller rates & AI tools.`
+                                    : 'Sign in to access your VIP Wallet, active AI licenses & instant renewals.'}
+                                </p>
+                              </div>
+                            </div>
 
-                        {/* 1-Click Continue with Google */}
-                        <div className="pt-1">
-                          <button
-                            type="button"
-                            onClick={handleGoogleSignIn}
-                            disabled={isGoogleAuthLoading}
-                            className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200/90 hover:border-pink-300 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.99] disabled:opacity-60"
-                          >
-                            {isGoogleAuthLoading ? (
-                              <i className="fa-solid fa-spinner fa-spin text-pink-600 text-base"></i>
-                            ) : (
-                              <svg className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" viewBox="0 0 24 24">
-                                <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z" />
-                                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.26 21.36 7.33 24 12 24z" />
-                                <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.25C.45 8.15 0 9.99 0 12s.45 3.85 1.25 5.43l4.03-3.14z" />
-                                <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.57l4.03 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
-                              </svg>
-                            )}
-                            <span>Continue with Google</span>
-                          </button>
+                            {/* 1-Click Continue with Google */}
+                            <div className="pt-0.5">
+                              <button
+                                type="button"
+                                onClick={handleGoogleSignIn}
+                                disabled={isGoogleAuthLoading}
+                                className="w-full py-3 px-4 rounded-2xl bg-white hover:bg-slate-50 border-2 border-slate-200/90 hover:border-pink-300 text-slate-800 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-3 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-[0.99] disabled:opacity-60"
+                              >
+                                {isGoogleAuthLoading ? (
+                                  <i className="fa-solid fa-spinner fa-spin text-pink-600 text-base"></i>
+                                ) : (
+                                  <svg className="w-4 h-4 sm:w-5 sm:h-5 shrink-0" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z" />
+                                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.25v3.13C3.26 21.36 7.33 24 12 24z" />
+                                    <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.57H1.25C.45 8.15 0 9.99 0 12s.45 3.85 1.25 5.43l4.03-3.14z" />
+                                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.25 6.57l4.03 3.14c.95-2.83 3.6-4.96 6.72-4.96z" />
+                                  </svg>
+                                )}
+                                <span>Continue with Google</span>
+                              </button>
 
-                          <div className="relative flex items-center justify-center my-3.5">
-                            <div className="border-t border-slate-200/90 w-full"></div>
-                            <span className="bg-white/95 px-3 text-[10px] font-extrabold text-slate-400 tracking-wider uppercase">
-                              or with {authMode === 'signup' ? 'registration' : 'password / PIN'}
-                            </span>
-                            <div className="border-t border-slate-200/90 w-full"></div>
-                          </div>
-                        </div>
+                              <div className="relative flex items-center justify-center my-3">
+                                <div className="border-t border-slate-200/90 w-full"></div>
+                                <span className="bg-white/95 px-3 text-[10px] font-extrabold text-slate-400 tracking-wider uppercase">
+                                  or with {authMode === 'signup' ? 'email & OTP' : 'email / password'}
+                                </span>
+                                <div className="border-t border-slate-200/90 w-full"></div>
+                              </div>
+                            </div>
 
-                        {/* Interactive Animated Auth Form */}
-                        <form key={authMode} onSubmit={handleAuthSubmit} className="space-y-3">
-                          {authMode === 'signup' && (
-                            <div className="auth-field-stagger-1">
-                              <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                                Your Full Name *
-                              </label>
-                              <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
-                                <i className="fa-solid fa-user auth-input-icon text-pink-500 text-sm mr-2.5"></i>
-                                <input
-                                  type="text"
-                                  value={authName}
-                                  onChange={(e) => setAuthName(e.target.value)}
-                                  placeholder="e.g. Ali Raza"
-                                  className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                                />
-                                {authName && (
+                            {/* Interactive Animated Auth Form */}
+                            <form key={authMode} onSubmit={handleAuthSubmit} className="space-y-3">
+                              {authMode === 'signup' && (
+                                <div className="auth-field-stagger-1">
+                                  <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                    Your Full Name *
+                                  </label>
+                                  <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                    <i className="fa-solid fa-user auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                    <input
+                                      type="text"
+                                      value={authName}
+                                      onChange={(e) => setAuthName(e.target.value)}
+                                      placeholder="e.g. Ali Raza"
+                                      className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                    />
+                                    {authName && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setAuthName('')}
+                                        className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
+                                      >
+                                        <i className="fa-solid fa-circle-xmark"></i>
+                                      </button>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
+                              <div className="auth-field-stagger-1">
+                                <div className="flex items-center justify-between mb-1">
+                                  <label className="text-[11px] font-extrabold text-slate-800">
+                                    {authMode === 'signup' ? 'Your Email Address (For OTP Verification) *' : 'WhatsApp Number or Email Address *'}
+                                  </label>
+                                  <span className="text-[10px] font-bold text-emerald-700">
+                                    <i className="fa-solid fa-bolt mr-0.5"></i>Instant Verify
+                                  </span>
+                                </div>
+                                <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                  <i className="fa-solid fa-envelope auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                  <input
+                                    type={authMode === 'signup' ? 'email' : 'text'}
+                                    value={authIdentifier}
+                                    onChange={(e) => setAuthIdentifier(e.target.value)}
+                                    required
+                                    placeholder={authMode === 'signup' ? 'yourname@gmail.com' : '03001234567 or name@email.com'}
+                                    className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                  />
+                                  {authIdentifier && (
+                                    <button
+                                      type="button"
+                                      onClick={() => setAuthIdentifier('')}
+                                      className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
+                                    >
+                                      <i className="fa-solid fa-circle-xmark"></i>
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+
+                              <div className="auth-field-stagger-2">
+                                <div className="flex items-center justify-between mb-1">
+                                  <label className="text-[11px] font-extrabold text-slate-800">
+                                    Password / Security PIN *
+                                  </label>
+                                  {authMode === 'signin' && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        playPopSound(600);
+                                        if (authIdentifier.includes('@')) {
+                                          setOtpEmail(authIdentifier.trim());
+                                        }
+                                        setAuthView('forgot_request');
+                                      }}
+                                      className="text-[11px] font-extrabold text-pink-600 hover:text-pink-700 hover:underline cursor-pointer"
+                                    >
+                                      Forgot Password?
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                  <i className="fa-solid fa-lock auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                  <input
+                                    type={showPassword ? 'text' : 'password'}
+                                    value={authPassword}
+                                    onChange={(e) => setAuthPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                    placeholder="•••••••• (Min 6 characters)"
+                                    className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                  />
                                   <button
                                     type="button"
-                                    onClick={() => setAuthName('')}
+                                    onClick={() => {
+                                      playPopSound(520);
+                                      setShowPassword((prev) => !prev);
+                                    }}
+                                    className="text-slate-500 hover:text-pink-600 px-2 py-0.5 rounded-lg bg-slate-100/80 hover:bg-pink-50 text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer"
+                                  >
+                                    <i
+                                      className={
+                                        showPassword
+                                          ? 'fa-solid fa-eye-slash text-pink-600'
+                                          : 'fa-solid fa-eye'
+                                      }
+                                    ></i>
+                                    <span>{showPassword ? 'Hide' : 'Show'}</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div className="pt-1 auth-field-stagger-3">
+                                <button
+                                  type="submit"
+                                  disabled={isOtpSending}
+                                  className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-60"
+                                >
+                                  {authMode === 'signup' ? (
+                                    isOtpSending ? (
+                                      <>
+                                        <i className="fa-solid fa-spinner fa-spin text-amber-300"></i>
+                                        <span>SENDING VIP OTP CODE...</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <i className="fa-solid fa-shield-halved text-amber-300"></i>
+                                        <span>SEND VIP OTP &amp; VERIFY</span>
+                                        <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                                      </>
+                                    )
+                                  ) : (
+                                    <>
+                                      <i className="fa-solid fa-key text-amber-300"></i>
+                                      <span>SIGN IN TO VIP PORTAL</span>
+                                      <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                                    </>
+                                  )}
+                                </button>
+                              </div>
+                            </form>
+                          </div>
+                        )}
+
+                        {/* ========================================================================= */}
+                        {/* VIEW 2: SIGNUP EMAIL OTP VERIFICATION MODAL                               */}
+                        {/* ========================================================================= */}
+                        {authView === 'otp_verify_signup' && (
+                          <form onSubmit={handleVerifySignupOtp} className="space-y-4 auth-portal-enter">
+                            <div className="flex items-center gap-3 pb-1 border-b border-pink-200/70">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-lg border-2 border-white flex-shrink-0 animate-pulse">
+                                <i className="fa-solid fa-envelope-circle-check text-amber-200"></i>
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
+                                  Verify VIP Email ✉️
+                                </h3>
+                                <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
+                                  6-digit OTP code sent to <span className="font-extrabold text-pink-600">{otpEmail}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* 6 Individual Digit PIN Boxes */}
+                            <div className="space-y-2 py-1">
+                              <label className="block text-center text-[11px] font-extrabold text-slate-800">
+                                Enter 6-Digit Verification PIN Code:
+                              </label>
+                              <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+                                {otpDigits.map((digit, idx) => (
+                                  <input
+                                    key={idx}
+                                    id={`otp-input-${idx}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                    onPaste={idx === 0 ? handleOtpPaste : undefined}
+                                    className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black font-mono rounded-2xl border-2 transition-all duration-200 outline-none shadow-sm ${
+                                      digit
+                                        ? 'bg-white border-pink-500 text-pink-600 shadow-pink-100 ring-2 ring-pink-500/20'
+                                        : 'bg-white/80 border-slate-200 text-slate-800 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/20'
+                                    }`}
+                                    autoFocus={idx === 0}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Resend & Expiry Countdown Strip */}
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1 bg-white/70 p-2.5 rounded-2xl border border-white">
+                              <div className="flex items-center gap-1.5">
+                                <i className="fa-solid fa-clock-rotate-left text-pink-500"></i>
+                                <span>Code Expires:</span>
+                                <span className="font-mono font-extrabold text-slate-900 bg-pink-50 px-2 py-0.5 rounded-lg border border-pink-200">
+                                  00:{otpCountdown < 10 ? `0${otpCountdown}` : otpCountdown}
+                                </span>
+                              </div>
+
+                              {otpCountdown > 0 ? (
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  Resend in {otpCountdown}s
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={handleResendOtp}
+                                  disabled={isOtpSending}
+                                  className="text-[11px] font-extrabold text-pink-600 hover:text-pink-700 underline flex items-center gap-1 cursor-pointer transition hover:scale-105"
+                                >
+                                  <i className={`fa-solid fa-arrows-rotate ${isOtpSending ? 'fa-spin' : ''}`}></i>
+                                  <span>Resend Code</span>
+                                </button>
+                              )}
+                            </div>
+
+                            <div className="space-y-2 pt-1">
+                              <button
+                                type="submit"
+                                disabled={isOtpVerifying}
+                                className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-60"
+                              >
+                                {isOtpVerifying ? (
+                                  <>
+                                    <i className="fa-solid fa-spinner fa-spin text-amber-300"></i>
+                                    <span>VERIFYING OTP &amp; ACTIVATING...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fa-solid fa-rocket text-amber-300"></i>
+                                    <span>VERIFY &amp; CREATE VIP ACCOUNT</span>
+                                    <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(500);
+                                  setAuthView('form');
+                                }}
+                                className="w-full py-2 text-xs font-extrabold text-slate-600 hover:text-slate-900 text-center transition cursor-pointer"
+                              >
+                                <i className="fa-solid fa-arrow-left mr-1.5"></i> Change Email or Go Back
+                              </button>
+                            </div>
+                          </form>
+                        )}
+
+                        {/* ========================================================================= */}
+                        {/* VIEW 3: FORGOT PASSWORD REQUEST (ENTER REGISTERED EMAIL)                 */}
+                        {/* ========================================================================= */}
+                        {authView === 'forgot_request' && (
+                          <form onSubmit={handleRequestForgotOtp} className="space-y-4 auth-portal-enter">
+                            <div className="flex items-center gap-3 pb-1 border-b border-pink-200/70">
+                              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-lg border-2 border-white flex-shrink-0">
+                                <i className="fa-solid fa-key text-amber-200"></i>
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 leading-tight">
+                                  Reset VIP Password 🔐
+                                </h3>
+                                <p className="text-[11px] sm:text-xs font-semibold text-slate-600 mt-0.5">
+                                  Enter your registered email to receive a 6-digit verification code.
+                                </p>
+                              </div>
+                            </div>
+
+                            <div>
+                              <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                Registered Email Address *
+                              </label>
+                              <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                <i className="fa-solid fa-envelope auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                <input
+                                  type="email"
+                                  value={otpEmail}
+                                  onChange={(e) => setOtpEmail(e.target.value)}
+                                  required
+                                  placeholder="yourname@gmail.com"
+                                  className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                />
+                                {otpEmail && (
+                                  <button
+                                    type="button"
+                                    onClick={() => setOtpEmail('')}
                                     className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
                                   >
                                     <i className="fa-solid fa-circle-xmark"></i>
@@ -4867,86 +5425,196 @@ export default function App({
                                 )}
                               </div>
                             </div>
-                          )}
 
-                          <div className="auth-field-stagger-1">
-                            <div className="flex items-center justify-between mb-1">
-                              <label className="text-[11px] font-extrabold text-slate-800">
-                                WhatsApp Number or Email Address *
-                              </label>
-                              <span className="text-[10px] font-bold text-emerald-700">
-                                <i className="fa-solid fa-bolt mr-0.5"></i>Instant Verify
-                              </span>
-                            </div>
-                            <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
-                              <i className="fa-solid fa-envelope auth-input-icon text-pink-500 text-sm mr-2.5"></i>
-                              <input
-                                type="text"
-                                value={authIdentifier}
-                                onChange={(e) => setAuthIdentifier(e.target.value)}
-                                required
-                                placeholder="03001234567 or name@email.com"
-                                className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                              />
-                              {authIdentifier && (
-                                <button
-                                  type="button"
-                                  onClick={() => setAuthIdentifier('')}
-                                  className="text-slate-400 hover:text-rose-500 px-1.5 text-xs cursor-pointer"
-                                >
-                                  <i className="fa-solid fa-circle-xmark"></i>
-                                </button>
-                              )}
-                            </div>
-                          </div>
+                            <div className="space-y-2 pt-1">
+                              <button
+                                type="submit"
+                                disabled={isOtpSending}
+                                className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-60"
+                              >
+                                {isOtpSending ? (
+                                  <>
+                                    <i className="fa-solid fa-spinner fa-spin text-amber-300"></i>
+                                    <span>SENDING VIP RESET OTP...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fa-solid fa-paper-plane text-amber-300"></i>
+                                    <span>SEND RESET OTP CODE</span>
+                                    <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                                  </>
+                                )}
+                              </button>
 
-                          <div className="auth-field-stagger-2">
-                            <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
-                              Password / Security PIN *
-                            </label>
-                            <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
-                              <i className="fa-solid fa-lock auth-input-icon text-pink-500 text-sm mr-2.5"></i>
-                              <input
-                                type={showPassword ? 'text' : 'password'}
-                                value={authPassword}
-                                onChange={(e) => setAuthPassword(e.target.value)}
-                                required
-                                placeholder="••••••••"
-                                className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
-                              />
                               <button
                                 type="button"
                                 onClick={() => {
-                                  playPopSound(520);
-                                  setShowPassword((prev) => !prev);
+                                  playPopSound(500);
+                                  setAuthView('form');
                                 }}
-                                className="text-slate-500 hover:text-pink-600 px-2 py-0.5 rounded-lg bg-slate-100/80 hover:bg-pink-50 text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer"
+                                className="w-full py-2 text-xs font-extrabold text-slate-600 hover:text-slate-900 text-center transition cursor-pointer"
                               >
-                                <i
-                                  className={
-                                    showPassword
-                                      ? 'fa-solid fa-eye-slash text-pink-600'
-                                      : 'fa-solid fa-eye'
-                                  }
-                                ></i>
-                                <span>{showPassword ? 'Hide' : 'Show'}</span>
+                                <i className="fa-solid fa-arrow-left mr-1.5"></i> Back to Sign In
                               </button>
                             </div>
-                          </div>
+                          </form>
+                        )}
 
-                          <div className="pt-1 auth-field-stagger-3">
-                            <button
-                              type="submit"
-                              className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform"
-                            >
-                              <i className="fa-solid fa-key text-amber-300"></i>
-                              <span>
-                                {authMode === 'signup' ? 'CREATE VIP ACCOUNT NOW' : 'SIGN IN TO VIP PORTAL'}
-                              </span>
-                              <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
-                            </button>
-                          </div>
-                        </form>
+                        {/* ========================================================================= */}
+                        {/* VIEW 4: FORGOT PASSWORD VERIFICATION & NEW PASSWORD SETTING               */}
+                        {/* ========================================================================= */}
+                        {authView === 'forgot_verify' && (
+                          <form onSubmit={handleVerifyForgotOtp} className="space-y-3.5 auth-portal-enter">
+                            <div className="flex items-center gap-3 pb-1 border-b border-pink-200/70">
+                              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-emerald-500 via-teal-500 to-indigo-600 text-white flex items-center justify-center text-lg sm:text-xl shadow-lg border-2 border-white flex-shrink-0">
+                                <i className="fa-solid fa-shield-halved text-amber-200"></i>
+                              </div>
+                              <div>
+                                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-tight">
+                                  Enter OTP &amp; Set Password 🛡️
+                                </h3>
+                                <p className="text-[11px] font-semibold text-slate-600 mt-0.5">
+                                  Code sent to <span className="font-extrabold text-pink-600">{otpEmail}</span>
+                                </p>
+                              </div>
+                            </div>
+
+                            {/* 6 Individual Digit PIN Boxes */}
+                            <div className="space-y-1.5">
+                              <label className="block text-center text-[11px] font-extrabold text-slate-800">
+                                Enter 6-Digit VIP Code:
+                              </label>
+                              <div className="flex items-center justify-center gap-2 sm:gap-2.5">
+                                {otpDigits.map((digit, idx) => (
+                                  <input
+                                    key={idx}
+                                    id={`otp-input-${idx}`}
+                                    type="text"
+                                    inputMode="numeric"
+                                    pattern="[0-9]*"
+                                    maxLength={1}
+                                    value={digit}
+                                    onChange={(e) => handleOtpDigitChange(idx, e.target.value)}
+                                    onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                                    onPaste={idx === 0 ? handleOtpPaste : undefined}
+                                    className={`w-11 h-13 sm:w-12 sm:h-14 text-center text-xl sm:text-2xl font-black font-mono rounded-2xl border-2 transition-all duration-200 outline-none shadow-sm ${
+                                      digit
+                                        ? 'bg-white border-pink-500 text-pink-600 shadow-pink-100 ring-2 ring-pink-500/20'
+                                        : 'bg-white/80 border-slate-200 text-slate-800 focus:border-pink-500 focus:bg-white focus:ring-4 focus:ring-pink-500/20'
+                                    }`}
+                                    autoFocus={idx === 0}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Resend & Expiry Countdown Strip */}
+                            <div className="flex items-center justify-between text-xs font-bold text-slate-600 px-1 bg-white/70 p-2 rounded-2xl border border-white">
+                              <div className="flex items-center gap-1.5">
+                                <i className="fa-solid fa-clock-rotate-left text-pink-500"></i>
+                                <span>Expires in:</span>
+                                <span className="font-mono font-extrabold text-slate-900 bg-pink-50 px-2 py-0.5 rounded-lg border border-pink-200">
+                                  00:{otpCountdown < 10 ? `0${otpCountdown}` : otpCountdown}
+                                </span>
+                              </div>
+
+                              {otpCountdown > 0 ? (
+                                <span className="text-[11px] font-semibold text-slate-500">
+                                  Resend in {otpCountdown}s
+                                </span>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={handleResendOtp}
+                                  disabled={isOtpSending}
+                                  className="text-[11px] font-extrabold text-pink-600 hover:text-pink-700 underline flex items-center gap-1 cursor-pointer transition hover:scale-105"
+                                >
+                                  <i className={`fa-solid fa-arrows-rotate ${isOtpSending ? 'fa-spin' : ''}`}></i>
+                                  <span>Resend Code</span>
+                                </button>
+                              )}
+                            </div>
+
+                            {/* New Password & Confirm */}
+                            <div className="space-y-2.5 pt-1">
+                              <div>
+                                <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                  New VIP Password (Min 6 Characters) *
+                                </label>
+                                <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                  <i className="fa-solid fa-lock auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                  <input
+                                    type={showNewPassword ? 'text' : 'password'}
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                    placeholder="Enter new strong password"
+                                    className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowNewPassword((prev) => !prev)}
+                                    className="text-slate-500 hover:text-pink-600 px-2 py-0.5 rounded-lg bg-slate-100/80 hover:bg-pink-50 text-[10px] font-extrabold flex items-center gap-1 transition cursor-pointer"
+                                  >
+                                    <i className={showNewPassword ? 'fa-solid fa-eye-slash text-pink-600' : 'fa-solid fa-eye'}></i>
+                                    <span>{showNewPassword ? 'Hide' : 'Show'}</span>
+                                  </button>
+                                </div>
+                              </div>
+
+                              <div>
+                                <label className="block text-[11px] font-extrabold text-slate-800 mb-1">
+                                  Confirm New Password *
+                                </label>
+                                <div className="sim-input-box auth-input-interactive !py-2.5 !px-3.5 !rounded-2xl">
+                                  <i className="fa-solid fa-check-double auth-input-icon text-pink-500 text-sm mr-2.5"></i>
+                                  <input
+                                    type={showNewPassword ? 'text' : 'password'}
+                                    value={confirmNewPassword}
+                                    onChange={(e) => setConfirmNewPassword(e.target.value)}
+                                    required
+                                    minLength={6}
+                                    placeholder="Re-type new password"
+                                    className="w-full bg-transparent border-none outline-none text-xs sm:text-sm font-bold text-slate-900"
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="space-y-2 pt-1.5">
+                              <button
+                                type="submit"
+                                disabled={isOtpVerifying}
+                                className="sim-btn-glow w-full py-3.5 px-4 font-display font-bold text-sm sm:text-base tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg hover:scale-[1.01] active:scale-[0.99] transition-transform disabled:opacity-60"
+                              >
+                                {isOtpVerifying ? (
+                                  <>
+                                    <i className="fa-solid fa-spinner fa-spin text-amber-300"></i>
+                                    <span>UPDATING PASSWORD...</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <i className="fa-solid fa-lock-open text-amber-300"></i>
+                                    <span>VERIFY OTP &amp; UPDATE PASSWORD</span>
+                                    <i className="fa-solid fa-arrow-right text-xs ml-1"></i>
+                                  </>
+                                )}
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  playPopSound(500);
+                                  setAuthView('form');
+                                }}
+                                className="w-full py-2 text-xs font-extrabold text-slate-600 hover:text-slate-900 text-center transition cursor-pointer"
+                              >
+                                <i className="fa-solid fa-arrow-left mr-1.5"></i> Cancel &amp; Back to Sign In
+                              </button>
+                            </div>
+                          </form>
+                        )}
 
                         {/* Quick WhatsApp OTP & 1-Tap Wallet Actions */}
                         <div className="space-y-2.5 pt-1">

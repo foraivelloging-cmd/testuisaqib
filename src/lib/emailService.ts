@@ -13,6 +13,14 @@ export interface EmailContactParams {
   ticketId?: string;
 }
 
+export interface EmailOtpParams {
+  toEmail: string;
+  passcode: string;
+  time?: string;
+  purpose?: 'signup' | 'forgot_password';
+  name?: string;
+}
+
 export interface EmailOrderParams {
   orderId: string;
   userId: string;
@@ -99,6 +107,8 @@ async function sendEmailViaRest(templateParams: Record<string, any>): Promise<{ 
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Origin': 'https://saqibvisuals.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       },
       body: JSON.stringify(payload),
     });
@@ -177,6 +187,30 @@ export async function sendPaymentProofEmail(data: EmailPaymentParams) {
     trx_id: data.trxId,
     user_note: data.userNote || 'Wallet Top-Up',
     message: `Customer ${data.senderName} (${data.senderNumber}) submitted deposit proof of Rs. ${data.amount} via ${data.method}. Trx ID: ${data.trxId}`,
+    date: new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }),
+  });
+}
+
+/**
+ * Send 6-Digit VIP OTP Security Verification Code
+ */
+export async function sendOtpEmail(data: EmailOtpParams) {
+  const isForgot = data.purpose === 'forgot_password';
+  const subject = isForgot
+    ? `🔐 Reset Your VIP Password - Verification Code: ${data.passcode}`
+    : `🚀 Verify Your VIP Account - Code: ${data.passcode}`;
+
+  return sendEmailViaRest({
+    to_name: data.name || 'VIP Member',
+    to_email: data.toEmail,
+    email: data.toEmail,
+    from_name: 'Saqib Visuals Hub VIP Security',
+    passcode: data.passcode,
+    time: data.time || '15 minutes',
+    subject: subject,
+    message: isForgot
+      ? `Your VIP Password Reset code is ${data.passcode}. This code is valid for ${data.time || '15 minutes'}. If you did not request this, please disregard.`
+      : `Welcome to Saqib Visuals Hub! Your VIP account registration verification code is ${data.passcode}. Valid for ${data.time || '15 minutes'}.`,
     date: new Date().toLocaleString('en-PK', { timeZone: 'Asia/Karachi' }),
   });
 }
