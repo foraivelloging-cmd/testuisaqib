@@ -6,6 +6,7 @@ import {
 } from '@/src/types/paymentProof';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { createAdminNotification } from '@/src/lib/adminNotifications';
+import { sendPaymentProofEmail } from '@/src/lib/emailService';
 
 export async function GET(req: Request) {
   try {
@@ -142,6 +143,18 @@ export async function POST(req: Request) {
         data: { id: proof.id, amount: cleanAmount, method: proof.method, userId },
       });
     } catch {}
+
+    // Send instant email notification via EmailJS
+    sendPaymentProofEmail({
+      proofId: proof.id,
+      userId,
+      amount: cleanAmount,
+      method: proof.method,
+      senderName: proof.senderAccountName || 'Client',
+      senderNumber: proof.senderAccountNumber || '',
+      trxId: proof.trxId || '',
+      userNote: proof.userNote,
+    }).catch((e) => console.error('[PaymentEmail] Error:', e));
 
     return NextResponse.json({ success: true, proof: data });
   } catch (err: unknown) {

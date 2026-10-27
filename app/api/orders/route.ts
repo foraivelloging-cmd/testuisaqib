@@ -3,6 +3,7 @@ import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
 import { createAdminNotification } from '@/src/lib/adminNotifications';
+import { sendOrderNotificationEmail } from '@/src/lib/emailService';
 
 export async function GET(req: Request) {
   try {
@@ -110,6 +111,16 @@ export async function POST(req: Request) {
         data: { orderId, serviceId, serviceTitle, packageTier, price, userId },
       });
     } catch {}
+
+    // Send instant email notification via EmailJS
+    sendOrderNotificationEmail({
+      orderId,
+      userId,
+      serviceTitle,
+      packageTier,
+      price,
+      userInput,
+    }).catch((e) => console.error('[OrderEmail] Error:', e));
 
     return NextResponse.json({ success: true, order: data });
   } catch (err: unknown) {

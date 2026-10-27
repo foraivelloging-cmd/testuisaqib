@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 import { verifyAdminRequest } from '@/src/lib/serverSecurity';
 import { sanitizeString } from '@/src/lib/securitySanitizer';
+import { sendContactInquiryEmail } from '@/src/lib/emailService';
 
 export async function GET(req: Request) {
   try {
@@ -65,6 +66,15 @@ export async function POST(req: Request) {
     if (error) {
       return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
+
+    // Trigger instant Email alert via EmailJS
+    sendContactInquiryEmail({
+      ticketId,
+      name,
+      phone,
+      department,
+      message,
+    }).catch((e) => console.error('[ContactEmail] Error:', e));
 
     return NextResponse.json({ success: true, ticket: data });
   } catch (err: unknown) {
