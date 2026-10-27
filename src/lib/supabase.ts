@@ -3,6 +3,9 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 let cachedClient: SupabaseClient | null = null;
 let cachedKey = '';
 
+const DEFAULT_SUPABASE_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
+const DEFAULT_SUPABASE_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+
 function cleanEnv(val?: string | null): string {
   if (!val) return '';
   return val.trim().replace(/^['"]|['"]$/g, '');
@@ -95,16 +98,16 @@ export function getSupabaseCredentials() {
     cleanEnv(process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY) ||
     '';
 
-  return { url, anonKey };
+  return {
+    url: url || DEFAULT_SUPABASE_URL,
+    anonKey: anonKey || DEFAULT_SUPABASE_KEY,
+  };
 }
-
-const PLACEHOLDER_URL = 'https://unconfigured-project.supabase.co';
-const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.unconfigured';
 
 export function getSupabase(): SupabaseClient {
   const { url, anonKey } = getSupabaseCredentials();
-  const effectiveUrl = url || PLACEHOLDER_URL;
-  const effectiveKey = anonKey || PLACEHOLDER_KEY;
+  const effectiveUrl = url || DEFAULT_SUPABASE_URL;
+  const effectiveKey = anonKey || DEFAULT_SUPABASE_KEY;
   const cacheKey = `${effectiveUrl}::${effectiveKey}`;
 
   if (!cachedClient || cachedKey !== cacheKey) {

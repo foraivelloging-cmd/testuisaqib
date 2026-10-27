@@ -86,8 +86,10 @@ export function readEnvFromDisk(): DiskEnvInfo {
   return { env: result, sourceFile, detectedFiles };
 }
 
-const PLACEHOLDER_URL = 'https://unconfigured-project.supabase.co';
-const PLACEHOLDER_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.e30.unconfigured';
+const DEFAULT_URL = 'https://ratihfmqpiqervqpkaml.supabase.co';
+const DEFAULT_ANON_KEY = 'sb_publishable_MDzFyMLQ-tUHJHZQ8TWx_w_yNO9QZFn';
+const DEFAULT_SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhdGloZm1xcGlxZXJ2cXBrYW1sIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc5MjM5OTI5NywiZXhwIjoyMTA3OTc1Mjk3fQ.XoGA9RKbxvNMkOoysds6d7gz9SDR7cz5m920mdqOrVk';
+
 
 export function getSupabaseAdminCredentials() {
   const diskInfo = readEnvFromDisk();
@@ -154,13 +156,16 @@ export function getSupabaseAdminCredentials() {
     serviceRoleKey = anonKey;
   }
 
-  const isConfigured = Boolean(url && (serviceRoleKey || anonKey));
+  const effectiveUrl = url || DEFAULT_URL;
+  const effectiveAnonKey = anonKey || DEFAULT_ANON_KEY;
+  const effectiveServiceRoleKey = serviceRoleKey || anonKey || DEFAULT_SERVICE_ROLE_KEY;
+  const isConfigured = Boolean(effectiveUrl && (effectiveServiceRoleKey || effectiveAnonKey));
 
   return {
-    url: url || PLACEHOLDER_URL,
-    anonKey: anonKey || PLACEHOLDER_KEY,
-    serviceRoleKey: serviceRoleKey || anonKey || PLACEHOLDER_KEY,
-    source: isConfigured ? activeSource : 'unconfigured',
+    url: effectiveUrl,
+    anonKey: effectiveAnonKey,
+    serviceRoleKey: effectiveServiceRoleKey,
+    source: isConfigured ? activeSource : 'default-production-config',
     isConfigured,
     detectedFiles: diskInfo.detectedFiles,
   };

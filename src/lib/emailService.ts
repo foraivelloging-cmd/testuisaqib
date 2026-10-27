@@ -46,24 +46,24 @@ function getEmailCredentials() {
   const serviceId =
     process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID ||
     process.env.EMAILJS_SERVICE_ID ||
-    '';
+    'service_ibfhu5p';
   const templateId =
     process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID ||
     process.env.EMAILJS_TEMPLATE_ID ||
-    '';
+    'template_j8ptyhc';
   const publicKey =
     process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY ||
     process.env.EMAILJS_PUBLIC_KEY ||
     process.env.EMAILJS_USER_ID ||
-    '';
+    'JOmnn_zKJE0hryeum';
   const privateKey =
     process.env.EMAILJS_PRIVATE_KEY ||
     process.env.EMAILJS_ACCESS_TOKEN ||
-    '';
+    'Y2_ssXOkOUStyrAm9AVBE';
   const adminEmail =
     process.env.NEXT_PUBLIC_ADMIN_EMAIL ||
     process.env.ADMIN_EMAIL ||
-    'saqib242saqib@gmail.com';
+    'foraivelloging@gmail.com';
 
   return { serviceId, templateId, publicKey, privateKey, adminEmail };
 }
