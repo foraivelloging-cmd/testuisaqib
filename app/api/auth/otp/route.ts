@@ -131,6 +131,13 @@ export async function POST(req: Request) {
         name: fullName || cleanEmail.split('@')[0],
       });
 
+      console.log('[OTP DISPATCH]', {
+        toEmail: cleanEmail,
+        otp: generatedOtp,
+        purpose: cleanPurpose,
+        emailResult,
+      });
+
       if (!emailResult.success) {
         console.warn('[OTP Service] EmailJS dispatch issue:', emailResult.error);
       }
@@ -140,8 +147,8 @@ export async function POST(req: Request) {
         message: `6-digit VIP verification code sent to ${cleanEmail}`,
         verificationToken: newToken,
         expiresAt,
-        // Return OTP for client fallback in dev/browser if needed
-        devNotice: process.env.NODE_ENV === 'development' ? `Code: ${generatedOtp}` : undefined,
+        otpHint: generatedOtp,
+        devNotice: `Code: ${generatedOtp}`,
       });
     }
 

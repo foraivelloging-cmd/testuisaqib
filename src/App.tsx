@@ -637,6 +637,7 @@ export default function App({
   const [newPassword, setNewPassword] = useState<string>('');
   const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
   const [showNewPassword, setShowNewPassword] = useState<boolean>(false);
+  const [devOtpCode, setDevOtpCode] = useState<string>('');
 
   // OTP Resend Countdown Timer
   useEffect(() => {
@@ -1736,6 +1737,42 @@ export default function App({
     el?.focus();
   };
 
+  // Dual Dispatch: Client Browser EmailJS SDK backup
+  const dispatchBrowserEmailJs = async (email: string, otp: string, purpose: 'signup' | 'forgot_password') => {
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_ibfhu5p';
+    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_j8ptyhc';
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'JOmnn_zKJE0hryeum';
+    if (!serviceId || !templateId || !publicKey) return;
+
+    try {
+      const emailjs = (await import('@emailjs/browser')).default;
+      const isForgot = purpose === 'forgot_password';
+      await emailjs.send(
+        serviceId,
+        templateId,
+        {
+          to_email: email,
+          email: email,
+          user_email: email,
+          to_name: email.split('@')[0],
+          from_name: 'Saqib Visuals Hub VIP Security',
+          from_email: 'foraivelloging@gmail.com',
+          reply_to: 'foraivelloging@gmail.com',
+          passcode: otp,
+          time: '15 minutes',
+          subject: isForgot
+            ? `🔐 Reset Your VIP Password - Verification Code: ${otp}`
+            : `🚀 Verify Your VIP Account - Code: ${otp}`,
+          message: `Your VIP Verification Code is ${otp}. Valid for 15 minutes.`,
+        },
+        publicKey
+      );
+      console.log('[EmailJS Client] Browser dispatch succeeded to:', email);
+    } catch (err) {
+      console.warn('[EmailJS Client] Browser dispatch notice:', err);
+    }
+  };
+
   // Resend OTP Code for either Signup or Password Reset
   const handleResendOtp = async () => {
     if (otpCountdown > 0 || isOtpSending) return;
@@ -1759,6 +1796,11 @@ export default function App({
         setOtpVerificationToken(data.verificationToken);
         setOtpExpiresAt(data.expiresAt);
         setOtpCountdown(60);
+        const code = data.otpHint || (data.devNotice ? data.devNotice.replace('Code: ', '') : '');
+        if (code) {
+          setDevOtpCode(code);
+          dispatchBrowserEmailJs(otpEmail, code, purpose);
+        }
         playPopSound(860);
         showToast(`📨 New 6-digit OTP code sent to ${otpEmail}!`);
       } else {
@@ -1850,6 +1892,11 @@ export default function App({
       setNewPassword('');
       setConfirmNewPassword('');
       setAuthView('forgot_verify');
+      const code = data.otpHint || (data.devNotice ? data.devNotice.replace('Code: ', '') : '');
+      if (code) {
+        setDevOtpCode(code);
+        dispatchBrowserEmailJs(email, code, 'forgot_password');
+      }
       playPopSound(860);
       showToast(`✨ Password reset OTP sent to ${email}`);
     } catch {
@@ -1981,6 +2028,11 @@ export default function App({
         setOtpCountdown(60);
         setOtpDigits(['', '', '', '', '', '']);
         setAuthView('otp_verify_signup');
+        const code = otpData.otpHint || (otpData.devNotice ? otpData.devNotice.replace('Code: ', '') : '');
+        if (code) {
+          setDevOtpCode(code);
+          dispatchBrowserEmailJs(id, code, 'signup');
+        }
         playPopSound(860);
         showToast(`✨ VIP Verification code sent to ${id}`);
         return;
@@ -5347,6 +5399,70 @@ export default function App({
                               )}
                             </div>
 
+                            {/* Instant Preview & 1-Tap Auto-fill */}
+                            {devOtpCode && (
+                              <div className="bg-gradient-to-r from-amber-50 to-pink-50 p-2.5 rounded-2xl border border-pink-200/90 flex items-center justify-between shadow-2xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-600 text-white flex items-center justify-center text-xs shadow-sm">
+                                    <i className="fa-solid fa-key text-[11px]"></i>
+                                  </span>
+                                  <div className="text-left">
+                                    <div className="text-[10px] font-extrabold uppercase text-slate-500">VIP Reset Passcode</div>
+                                    <div className="text-xs font-black font-mono text-pink-600 tracking-widest">
+                                      {devOtpCode}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    playPopSound(740);
+                                    const chars = devOtpCode.slice(0, 6).split('');
+                                    const filled = ['', '', '', '', '', ''];
+                                    chars.forEach((c, i) => (filled[i] = c));
+                                    setOtpDigits(filled);
+                                    showToast('✨ Auto-filled Reset Passcode!');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-500 hover:text-white text-emerald-700 border border-emerald-200 text-[10px] font-extrabold transition shadow-2xs cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                  <i className="fa-solid fa-wand-magic-sparkles"></i>
+                                  <span>Auto-Fill</span>
+                                </button>
+                              </div>
+                            )}
+
+                            {/* Instant Preview & 1-Tap Auto-fill */}
+                            {devOtpCode && (
+                              <div className="bg-gradient-to-r from-amber-50 to-pink-50 p-2.5 rounded-2xl border border-pink-200/90 flex items-center justify-between shadow-2xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-7 h-7 rounded-xl bg-gradient-to-br from-pink-500 to-rose-600 text-white flex items-center justify-center text-xs shadow-sm">
+                                    <i className="fa-solid fa-key text-[11px]"></i>
+                                  </span>
+                                  <div className="text-left">
+                                    <div className="text-[10px] font-extrabold uppercase text-slate-500">VIP Security Passcode</div>
+                                    <div className="text-xs font-black font-mono text-pink-600 tracking-widest">
+                                      {devOtpCode}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    playPopSound(740);
+                                    const chars = devOtpCode.slice(0, 6).split('');
+                                    const filled = ['', '', '', '', '', ''];
+                                    chars.forEach((c, i) => (filled[i] = c));
+                                    setOtpDigits(filled);
+                                    showToast('✨ Auto-filled Passcode!');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-pink-500 hover:text-white text-pink-600 border border-pink-200 text-[10px] font-extrabold transition shadow-2xs cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                  <i className="fa-solid fa-wand-magic-sparkles"></i>
+                                  <span>Auto-Fill</span>
+                                </button>
+                              </div>
+                            )}
+
                             <div className="space-y-2 pt-1">
                               <button
                                 type="submit"
@@ -5534,6 +5650,38 @@ export default function App({
                                 </button>
                               )}
                             </div>
+
+                            {/* Instant Preview & 1-Tap Auto-fill */}
+                            {devOtpCode && (
+                              <div className="bg-gradient-to-r from-amber-50 to-pink-50 p-2.5 rounded-2xl border border-pink-200/90 flex items-center justify-between shadow-2xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="w-7 h-7 rounded-xl bg-gradient-to-br from-emerald-500 to-indigo-600 text-white flex items-center justify-center text-xs shadow-sm">
+                                    <i className="fa-solid fa-key text-[11px]"></i>
+                                  </span>
+                                  <div className="text-left">
+                                    <div className="text-[10px] font-extrabold uppercase text-slate-500">VIP Reset Passcode</div>
+                                    <div className="text-xs font-black font-mono text-pink-600 tracking-widest">
+                                      {devOtpCode}
+                                    </div>
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    playPopSound(740);
+                                    const chars = devOtpCode.slice(0, 6).split('');
+                                    const filled = ['', '', '', '', '', ''];
+                                    chars.forEach((c, i) => (filled[i] = c));
+                                    setOtpDigits(filled);
+                                    showToast('✨ Auto-filled Reset Passcode!');
+                                  }}
+                                  className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-emerald-500 hover:text-white text-emerald-700 border border-emerald-200 text-[10px] font-extrabold transition shadow-2xs cursor-pointer flex items-center gap-1 active:scale-95"
+                                >
+                                  <i className="fa-solid fa-wand-magic-sparkles"></i>
+                                  <span>Auto-Fill</span>
+                                </button>
+                              </div>
+                            )}
 
                             {/* New Password & Confirm */}
                             <div className="space-y-2.5 pt-1">
