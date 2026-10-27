@@ -1755,15 +1755,15 @@ export default function App({
           email: email,
           user_email: email,
           to_name: email.split('@')[0],
-          from_name: 'Saqib Visuals Hub VIP Security',
+          from_name: 'Saqib Visuals Hub',
           from_email: 'foraivelloging@gmail.com',
           reply_to: 'foraivelloging@gmail.com',
           passcode: otp,
           time: '15 minutes',
           subject: isForgot
-            ? `🔐 Reset Your VIP Password - Verification Code: ${otp}`
-            : `🚀 Verify Your VIP Account - Code: ${otp}`,
-          message: `Your VIP Verification Code is ${otp}. Valid for 15 minutes.`,
+            ? `Saqib Visuals - Reset password code: ${otp}`
+            : `Saqib Visuals - Verification code: ${otp}`,
+          message: `Your verification code is ${otp}. Valid for 15 minutes.`,
         },
         publicKey
       );

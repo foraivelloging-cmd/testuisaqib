@@ -197,11 +197,11 @@ export async function sendPaymentProofEmail(data: EmailPaymentParams) {
 export async function sendOtpEmail(data: EmailOtpParams) {
   const isForgot = data.purpose === 'forgot_password';
   const subject = isForgot
-    ? `🔐 Reset Your VIP Password - Verification Code: ${data.passcode}`
-    : `🚀 Verify Your VIP Account - Code: ${data.passcode}`;
+    ? `Saqib Visuals - Reset password code: ${data.passcode}`
+    : `Saqib Visuals - Verification code: ${data.passcode}`;
 
   return sendEmailViaRest({
-    to_name: data.name || 'VIP Member',
+    to_name: data.name || 'User',
     to_email: data.toEmail,
     email: data.toEmail,
     user_email: data.toEmail,
@@ -209,7 +209,7 @@ export async function sendOtpEmail(data: EmailOtpParams) {
     reply_to: data.toEmail,
     to: data.toEmail,
     send_to: data.toEmail,
-    from_name: 'Saqib Visuals Hub VIP Security',
+    from_name: 'Saqib Visuals Hub',
     from_email: 'foraivelloging@gmail.com',
     passcode: data.passcode,
     time: data.time || '15 minutes',
