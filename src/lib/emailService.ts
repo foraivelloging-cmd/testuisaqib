@@ -61,7 +61,7 @@ function getEmailCredentials() {
 }
 
 /**
- * Universal sender using EmailJS REST API
+ * Universal sender using @emailjs/browser (Client) and REST API (Server)
  */
 async function sendEmailViaRest(templateParams: Record<string, any>): Promise<{ success: boolean; error?: string }> {
   const { serviceId, templateId, publicKey, privateKey } = getEmailCredentials();
@@ -71,6 +71,18 @@ async function sendEmailViaRest(templateParams: Record<string, any>): Promise<{ 
     return { success: false, error: 'EmailJS credentials not configured' };
   }
 
+  // 1. Client-Side Browser Execution via official SDK
+  if (typeof window !== 'undefined') {
+    try {
+      const emailjs = (await import('@emailjs/browser')).default;
+      await emailjs.send(serviceId, templateId, templateParams, publicKey);
+      return { success: true };
+    } catch (browserErr: any) {
+      console.warn('[EmailJS] Browser SDK fallback to REST:', browserErr);
+    }
+  }
+
+  // 2. Server-Side Execution via REST API
   try {
     const payload: Record<string, any> = {
       service_id: serviceId,
