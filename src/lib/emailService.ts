@@ -210,6 +210,7 @@ export async function sendOtpEmail(data: EmailOtpParams) {
     to: data.toEmail,
     send_to: data.toEmail,
     from_name: 'Saqib Visuals Hub VIP Security',
+    from_email: 'foraivelloging@gmail.com',
     passcode: data.passcode,
     time: data.time || '15 minutes',
     subject: subject,
