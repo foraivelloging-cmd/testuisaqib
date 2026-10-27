@@ -782,27 +782,31 @@ export default function App({
       })
       .catch(() => {});
 
-    // 3. Fetch Cloud Payment Proofs
-    fetch('/api/payments')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && Array.isArray(data.proofs)) {
-          setPaymentProofs(data.proofs);
-        }
-      })
-      .catch(() => {});
-
-    // 4. Fetch Cloud Wallet Balance
+    // 3. Fetch Cloud Payment Proofs (Only for currently logged-in VIP user)
     const targetUserId = vipUser?.identifier;
     if (targetUserId) {
-    fetch(`/api/wallet?userId=${encodeURIComponent(targetUserId)}`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success && typeof data.balance === 'number') {
-          setWalletBalance(data.balance);
-        }
-      })
-      .catch(() => {});
+      fetch(`/api/payments?userId=${encodeURIComponent(targetUserId)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && Array.isArray(data.proofs)) {
+            setPaymentProofs(data.proofs);
+          }
+        })
+        .catch(() => {});
+    } else {
+      setPaymentProofs([]);
+    }
+
+    // 4. Fetch Cloud Wallet Balance
+    if (targetUserId) {
+      fetch(`/api/wallet?userId=${encodeURIComponent(targetUserId)}`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && typeof data.balance === 'number') {
+            setWalletBalance(data.balance);
+          }
+        })
+        .catch(() => {});
     }
 
     // 5. Fetch Cloud Web Tools (Skip if already provided by SSR)
@@ -907,7 +911,16 @@ export default function App({
           try {
             const parsed = JSON.parse(savedProofs);
             if (Array.isArray(parsed)) {
-              const realOnly = parsed.filter((p) => p && p.id !== 'DEP-9042' && p.id !== 'DEP-9038');
+              const realOnly = parsed.filter(
+                (p) =>
+                  p &&
+                  p.id !== 'DEP-9042' &&
+                  p.id !== 'DEP-9038' &&
+                  !p.id.startsWith('TEST-') &&
+                  !p.id.startsWith('proof-') &&
+                  !p.id.startsWith('PROOF-') &&
+                  !p.id.startsWith('DEP-VERIFY-')
+              );
               setPaymentProofs(realOnly);
               localStorage.setItem(PAYMENT_PROOFS_STORAGE_KEY, JSON.stringify(realOnly));
             }
@@ -5128,37 +5141,39 @@ export default function App({
                           <div className="auth-perk-card bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
                             <div>
                               <div className="text-[10px] font-extrabold uppercase text-slate-500">
-                                Active Subscriptions
+                                VIP Reseller Tier
                               </div>
                               <div className="font-display font-bold text-lg text-purple-700 mt-0.5">
-                                CapCut + Lovable + Gemini
+                                20% Discount Active
                               </div>
                               <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                                ● Full Warranty Active
+                                ● Priority WhatsApp Support
                               </div>
                             </div>
                             <span className="w-11 h-11 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-lg">
-                              <i className="fa-solid fa-wand-magic-sparkles"></i>
+                              <i className="fa-solid fa-crown text-amber-500"></i>
                             </span>
                           </div>
 
                           <div className="auth-perk-card bg-white/85 p-4 rounded-2xl border border-white shadow-sm flex items-center justify-between">
                             <div>
                               <div className="text-[10px] font-extrabold uppercase text-slate-500">
-                                Franchise &amp; SIM Quota
+                                Account Authentication
                               </div>
-                              <div className="font-display font-bold text-2xl text-pink-600 mt-0.5">Unlimited</div>
-                              <div className="text-[10px] font-bold text-slate-600 mt-0.5">
-                                Priority CDR &amp; NADRA Desk
+                              <div className="font-display font-bold text-lg text-pink-600 mt-0.5">
+                                {vipUser.identifier.includes('@') ? 'Google Verified' : 'WhatsApp Protected'}
+                              </div>
+                              <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
+                                ● 1-Click Fast Checkout
                               </div>
                             </div>
                             <span className="w-11 h-11 rounded-2xl bg-pink-100 text-pink-600 flex items-center justify-center text-lg">
-                              <i className="fa-solid fa-sim-card"></i>
+                              <i className="fa-solid fa-shield-halved text-emerald-500"></i>
                             </span>
                           </div>
                         </div>
 
-                        {/* Recent VIP Orders Table */}
+                        {/* Recent VIP Orders & Deposit Activity Table */}
                         <div className="bg-white/80 rounded-2xl p-4 border border-white space-y-2.5">
                           <div className="flex items-center justify-between">
                             <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-800">
@@ -5171,32 +5186,54 @@ export default function App({
                               + Add Funds &amp; Submit Proof
                             </button>
                           </div>
-                          <div className="space-y-2 text-xs">
-                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                              <div className="font-bold text-slate-900">
-                                <i className="fa-solid fa-wand-magic-sparkles text-purple-600 mr-1.5"></i>Google Gemini 18-Month Pro + ElevenLabs 300k
-                              </div>
-                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                                Active License ✓
-                              </span>
+
+                          {paymentProofs.length > 0 ? (
+                            <div className="space-y-2 text-xs">
+                              {paymentProofs.slice(0, 5).map((p) => (
+                                <div
+                                  key={p.id}
+                                  className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2 shadow-xs"
+                                >
+                                  <div>
+                                    <div className="font-bold text-slate-900 flex items-center gap-1.5">
+                                      <i className="fa-solid fa-receipt text-pink-500"></i>
+                                      <span>Deposit via {p.method} — Rs. {p.amount.toLocaleString()}</span>
+                                    </div>
+                                    <div className="text-[10px] text-slate-500">
+                                      {new Date(p.createdAt).toLocaleDateString()} • Trx: {p.trxId || 'N/A'}
+                                    </div>
+                                  </div>
+                                  <span
+                                    className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold capitalize ${
+                                      p.status === 'approved'
+                                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                        : p.status === 'rejected'
+                                        ? 'bg-rose-100 text-rose-800 border border-rose-300'
+                                        : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                    }`}
+                                  >
+                                    {p.status === 'approved' ? 'Approved ✓' : p.status === 'rejected' ? 'Declined ✕' : 'Pending Verification ⏳'}
+                                  </span>
+                                </div>
+                              ))}
                             </div>
-                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                              <div className="font-bold text-slate-900">
-                                <i className="fa-brands fa-tiktok text-rose-500 mr-1.5"></i>TikTok UK Monetizable Account + Ad Agency Setup
+                          ) : (
+                            <div className="py-6 px-4 text-center rounded-xl bg-white/70 border border-pink-100/60 flex flex-col items-center justify-center">
+                              <div className="w-10 h-10 rounded-full bg-pink-50 text-pink-500 flex items-center justify-center mb-2 border border-pink-200">
+                                <i className="fa-solid fa-receipt text-base"></i>
                               </div>
-                              <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                                Completed ✓
-                              </span>
+                              <p className="text-xs font-bold text-slate-800">No deposit or order history yet</p>
+                              <p className="text-[11px] text-slate-500 mt-0.5 max-w-sm">
+                                Top-up your VIP wallet or order tools to see your verified receipts and live updates here.
+                              </p>
+                              <button
+                                onClick={() => setLoginPortalSection('wallet')}
+                                className="mt-3 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-extrabold text-[11px] shadow-sm hover:scale-105 transition cursor-pointer"
+                              >
+                                <i className="fa-solid fa-plus mr-1"></i>Top-Up Wallet
+                              </button>
                             </div>
-                            <div className="p-2.5 rounded-xl bg-white border border-pink-100 flex flex-wrap items-center justify-between gap-2">
-                              <div className="font-bold text-slate-900">
-                                <i className="fa-solid fa-satellite-dish text-blue-600 mr-1.5"></i>Fresh 2026 SIM Owner &amp; CDR Report
-                              </div>
-                              <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-extrabold">
-                                Delivered on WA ✓
-                              </span>
-                            </div>
-                          </div>
+                          )}
                         </div>
                       </div>
                     </div>
