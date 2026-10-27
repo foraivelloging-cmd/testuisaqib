@@ -4,7 +4,7 @@ import { supabaseAdmin } from '@/src/lib/supabaseAdmin';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { action, identifier, password, fullName, role } = body;
+    const { action, identifier, password, fullName, role, avatarUrl } = body;
 
     const cleanId = (identifier || '').trim();
     const cleanPass = (password || '').trim();
@@ -39,6 +39,7 @@ export async function POST(req: Request) {
             balance: 0,
             status: 'active',
             ban_reason: '',
+            avatar_url: avatarUrl || null,
             last_login_at: nowIso,
             created_at: nowIso,
             updated_at: nowIso,
@@ -67,11 +68,20 @@ export async function POST(req: Request) {
 
         profile = insertResult?.data;
       } else {
-        // Update last login
-        await supabaseAdmin
+        // Update last login & avatar if provided
+        const updatePayload: Record<string, any> = { last_login_at: nowIso };
+        if (avatarUrl) updatePayload.avatar_url = avatarUrl;
+        const updRes = await supabaseAdmin
           .from('profiles')
-          .update({ last_login_at: nowIso })
+          .update(updatePayload)
           .eq('id', email);
+
+        if (updRes.error && updRes.error.message?.includes('column')) {
+          await supabaseAdmin
+            .from('profiles')
+            .update({ last_login_at: nowIso })
+            .eq('id', email);
+        }
       }
 
       if (profile && profile.status === 'banned') {
@@ -95,6 +105,7 @@ export async function POST(req: Request) {
           role: profile?.role || 'member',
           balance: Number(profile?.balance || 0),
           status: profile?.status || 'active',
+          avatarUrl: avatarUrl || profile?.avatar_url || '',
           lastLoginAt: nowIso,
         },
       });

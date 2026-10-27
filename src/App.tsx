@@ -624,7 +624,11 @@ export default function App({
   const [authPassword, setAuthPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const [isGoogleAuthLoading, setIsGoogleAuthLoading] = useState<boolean>(false);
-  const [vipUser, setVipUser] = useState<{ name: string; identifier: string } | null>(null);
+  const [vipUser, setVipUser] = useState<{
+    name: string;
+    identifier: string;
+    avatarUrl?: string;
+  } | null>(null);
   const [vipDashSubTab, setVipDashSubTab] = useState<'overview' | 'admin'>('admin');
   const [loginPortalSection, setLoginPortalSection] = useState<'auth' | 'wallet'>('auth');
 
@@ -667,6 +671,10 @@ export default function App({
         sessionUser.user_metadata?.name ||
         sessionUser.user_metadata?.user_name ||
         email.split('@')[0];
+      const avatar =
+        sessionUser.user_metadata?.avatar_url ||
+        sessionUser.user_metadata?.picture ||
+        '';
 
       try {
         const res = await fetch('/api/auth', {
@@ -676,6 +684,7 @@ export default function App({
             action: 'google_sync',
             identifier: email,
             fullName: metaName,
+            avatarUrl: avatar,
             role: 'Regular Customer (Free)',
           }),
         });
@@ -684,6 +693,7 @@ export default function App({
           setVipUser({
             name: data.profile.name || metaName,
             identifier: data.profile.id || email,
+            avatarUrl: data.profile.avatarUrl || avatar,
           });
           if (typeof data.profile.balance === 'number') {
             setWalletBalance(data.profile.balance);
@@ -693,7 +703,7 @@ export default function App({
         }
       } catch {
         if (isMounted) {
-          setVipUser({ name: metaName, identifier: email });
+          setVipUser({ name: metaName, identifier: email, avatarUrl: avatar });
           showToast(`Welcome, ${metaName}! Signed in with Google.`);
         }
       }
@@ -2716,11 +2726,20 @@ export default function App({
                     : 'font-bold text-slate-800 hover:bg-white hover:text-slate-950'
                 }`}
               >
-                <i
-                  className={`fa-solid fa-wallet mr-1 ${
-                    activeTab === 'login' ? 'text-white' : 'text-emerald-600'
-                  }`}
-                ></i>
+                {vipUser?.avatarUrl ? (
+                  <img
+                    src={vipUser.avatarUrl}
+                    alt={vipUser.name}
+                    referrerPolicy="no-referrer"
+                    className="w-4 h-4 rounded-full object-cover inline-block mr-1.5 border border-white shrink-0"
+                  />
+                ) : (
+                  <i
+                    className={`fa-solid fa-wallet mr-1 ${
+                      activeTab === 'login' ? 'text-white' : 'text-emerald-600'
+                    }`}
+                  ></i>
+                )}
                 {vipUser ? t.navVipWallet : t.navWallet}
               </button>
             )}
@@ -5032,9 +5051,18 @@ export default function App({
                       <div className="plush-pillow plush-login rounded-[26px] p-4 sm:p-6 space-y-5">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-pink-200">
                           <div className="flex items-center gap-3">
-                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-2xl font-display font-bold shadow-md border-2 border-white">
-                              <span>{vipUser.name.charAt(0).toUpperCase()}</span>
-                            </div>
+                            {vipUser.avatarUrl ? (
+                              <img
+                                src={vipUser.avatarUrl}
+                                alt={vipUser.name}
+                                referrerPolicy="no-referrer"
+                                className="w-14 h-14 rounded-2xl object-cover shadow-md border-2 border-white ring-2 ring-pink-400/40 shrink-0"
+                              />
+                            ) : (
+                              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-pink-500 to-purple-600 text-white flex items-center justify-center text-2xl font-display font-bold shadow-md border-2 border-white shrink-0">
+                                <span>{vipUser.name.charAt(0).toUpperCase()}</span>
+                              </div>
+                            )}
                             <div>
                               <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
                                 <i className="fa-solid fa-crown text-amber-500"></i> VERIFIED VIP MEMBER
@@ -5043,7 +5071,7 @@ export default function App({
                                 {vipUser.name}
                               </h3>
                               <p className="text-xs font-mono-code font-semibold text-slate-600">
-                                WhatsApp: {vipUser.identifier} • 20% Reseller Discount Active
+                                {vipUser.identifier.includes('@') ? 'Google / Email' : 'WhatsApp'}: {vipUser.identifier} • 20% Reseller Discount Active
                               </p>
                             </div>
                           </div>
